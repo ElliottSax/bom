@@ -138,7 +138,7 @@ export default function ScriptureNetwork({ onBack }: ScriptureNetworkProps) {
         >
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl shadow-xl p-6 h-full overflow-y-auto">
             {selectedNode ? (
-              <VerseDetails verse={selectedNode} connections={getCon nections(selectedNode.id, mockCrossReferences, mockVerses)} />
+              <VerseDetails verse={selectedNode} connections={getConnections(selectedNode.id, mockCrossReferences, mockVerses)} />
             ) : (
               <EmptyState />
             )}

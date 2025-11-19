@@ -82,7 +82,7 @@ export const mockVerses: Verse[] = [
     verse: 9,
     reference: 'D&C 164:9',
     scripture: 'doctrine-and-covenants',
-    text: 'The earth, lovingly created as an environment for life to flourish, shudders in distress because creation's natural and living systems are becoming exhausted from carrying the burden of human greed and conflict.',
+    text: 'The earth, lovingly created as an environment for life to flourish, shudders in distress because creation\'s natural and living systems are becoming exhausted from carrying the burden of human greed and conflict.',
     themes: ['environment', 'stewardship', 'creation', 'peace'],
     mood: 'solemn'
   },
@@ -93,7 +93,7 @@ export const mockVerses: Verse[] = [
     verse: 2,
     reference: 'D&C 163:2',
     scripture: 'doctrine-and-covenants',
-    text: 'The passionate longing of God's heart is that all people might experience peace and joy in diverse and sustainable communities.',
+    text: 'The passionate longing of God\'s heart is that all people might experience peace and joy in diverse and sustainable communities.',
     themes: ['peace', 'joy', 'diversity', 'community', 'inclusion'],
     mood: 'hopeful'
   },
