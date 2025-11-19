@@ -13,7 +13,8 @@
     "type-check": "tsc --noEmit",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
-    "db:seed": "tsx src/scripts/seed.ts",
+    "db:seed": "prisma db seed",
+    "db:reset": "prisma migrate reset --force",
     "codegen": "graphql-codegen --config codegen.yml",
     "clean": "rm -rf dist node_modules"
   },
@@ -43,5 +44,8 @@
     "prisma": "^5.8.1",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }

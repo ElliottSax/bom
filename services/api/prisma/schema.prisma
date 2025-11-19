@@ -1,0 +1,343 @@
+// Book of Mormon Study Tools - Database Schema
+// See API_SPECIFICATION.md and ADR-003 for architecture context
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// Users and Authentication
+// ============================================================================
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String   // Hashed with bcrypt
+  displayName String?
+  avatarUrl   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  preferences      UserPreferences?
+  highlights       Highlight[]
+  notes            Note[]
+  readingProgress  ReadingProgress[]
+  studyStreak      StudyStreak?
+  memoryCards      MemoryCard[]
+  groupMemberships GroupMember[]
+  notifications    Notification[]
+
+  @@map("users")
+}
+
+model UserPreferences {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Display preferences
+  language              String  @default("en")
+  fontSize              String  @default("medium") // small, medium, large, extra-large
+  theme                 String  @default("light")  // light, dark, sepia, auto
+
+  // Notifications
+  notificationsEnabled  Boolean @default(true)
+  dailyReminderTime     String? // Format: "HH:MM" in user's timezone
+
+  // AI features
+  semanticSearchEnabled    Boolean @default(true)
+  chatbotEnabled           Boolean @default(true)
+  autoSuggestionsEnabled   Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_preferences")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ============================================================================
+// Scripture Content (Read-Only - populated via seed)
+// ============================================================================
+
+model Verse {
+  id        String @id // Format: "1-nephi-3-7"
+  book      String
+  chapter   Int
+  verse     Int
+  text      String @db.Text
+  language  String @default("en")
+
+  // Relations
+  highlights       Highlight[]
+  notes            Note[]
+  crossReferencesFrom CrossReference[] @relation("FromVerse")
+  crossReferencesTo   CrossReference[] @relation("ToVerse")
+  memoryCards      MemoryCard[]
+
+  @@unique([book, chapter, verse, language])
+  @@index([book, chapter])
+  @@map("verses")
+}
+
+// ============================================================================
+// User Study Data
+// ============================================================================
+
+model Highlight {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verseId   String
+  verse     Verse    @relation(fields: [verseId], references: [id])
+  color     String   // yellow, blue, green, pink, orange, purple
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, verseId]) // One highlight per verse per user
+  @@index([userId])
+  @@map("highlights")
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verseId   String
+  verse     Verse    @relation(fields: [verseId], references: [id])
+  content   String   @db.Text
+  tags      String[] // Array of tag strings
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([verseId])
+  @@map("notes")
+}
+
+model CrossReference {
+  id         String   @id @default(cuid())
+  fromVerseId String
+  fromVerse   Verse    @relation("FromVerse", fields: [fromVerseId], references: [id])
+  toVerseId   String
+  toVerse     Verse    @relation("ToVerse", fields: [toVerseId], references: [id])
+  type        String   // official, ai_suggested, user_created
+  confidence  Float?   // For AI-suggested references (0-1)
+  createdAt   DateTime @default(now())
+
+  @@unique([fromVerseId, toVerseId, type])
+  @@index([fromVerseId])
+  @@index([toVerseId])
+  @@map("cross_references")
+}
+
+model ReadingProgress {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book       String
+  chapter    Int
+  verse      Int
+  percentage Float    // 0-100
+  lastReadAt DateTime @default(now())
+
+  @@unique([userId, book, chapter])
+  @@index([userId])
+  @@map("reading_progress")
+}
+
+model StudyStreak {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentStreak  Int      @default(0)
+  longestStreak  Int      @default(0)
+  lastStudyDate  DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("study_streaks")
+}
+
+// ============================================================================
+// Memory System (Spaced Repetition)
+// ============================================================================
+
+model MemoryCard {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verseId        String
+  verse          Verse    @relation(fields: [verseId], references: [id])
+
+  // SM-2 Algorithm fields
+  easeFactor     Float    @default(2.5)  // 1.3 - 3.0
+  interval       Int      @default(1)    // Days until next review
+  repetition     Int      @default(0)    // Number of successful reviews
+  nextReview     DateTime @default(now())
+
+  // Study history
+  lastReviewed   DateTime?
+  totalReviews   Int      @default(0)
+  correctReviews Int      @default(0)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([userId, verseId])
+  @@index([userId, nextReview])
+  @@map("memory_cards")
+}
+
+// ============================================================================
+// Group Study Features
+// ============================================================================
+
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  imageUrl    String?
+  isPrivate   Boolean  @default(false)
+  inviteCode  String?  @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  members      GroupMember[]
+  discussions  Discussion[]
+
+  @@map("groups")
+}
+
+model GroupMember {
+  id        String   @id @default(cuid())
+  groupId   String
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String   @default("member") // admin, moderator, member
+  joinedAt  DateTime @default(now())
+
+  @@unique([groupId, userId])
+  @@index([userId])
+  @@map("group_members")
+}
+
+model Discussion {
+  id        String   @id @default(cuid())
+  groupId   String
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  verseId   String
+  title     String
+  content   String   @db.Text
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  comments  Comment[]
+
+  @@index([groupId])
+  @@map("discussions")
+}
+
+model Comment {
+  id           String   @id @default(cuid())
+  discussionId String
+  discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  authorId     String
+  content      String   @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([discussionId])
+  @@map("comments")
+}
+
+// ============================================================================
+// Notifications
+// ============================================================================
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // daily_reminder, streak_milestone, new_feature, system
+  title     String
+  body      String   @db.Text
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// ============================================================================
+// AI/ML Data
+// ============================================================================
+
+model AIInteraction {
+  id        String   @id @default(cuid())
+  userId    String
+  question  String   @db.Text
+  answer    String   @db.Text
+  sources   String[] // Array of verse IDs
+  confidence Float   // 0-1
+  feedback  String?  // helpful, not_helpful, null
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("ai_interactions")
+}
+
+model SearchQuery {
+  id         String   @id @default(cuid())
+  userId     String?
+  query      String
+  type       String   // keyword, semantic, hybrid
+  resultCount Int
+  clickedResults String[] // Array of verse IDs that were clicked
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("search_queries")
+}
+
+// ============================================================================
+// Analytics (Privacy-Friendly)
+// ============================================================================
+
+model SessionEvent {
+  id         String   @id @default(cuid())
+  userId     String?
+  sessionId  String
+  eventType  String   // app_open, verse_read, search, highlight_create, etc.
+  eventData  Json?    // Flexible JSON data for event-specific information
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([sessionId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@map("session_events")
+}
