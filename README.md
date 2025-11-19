@@ -2,6 +2,12 @@
 
 Comprehensive research on LDS Church's Book of Mormon study tools with competitive analysis, improvement recommendations, and technical implementation guidance.
 
+## 📋 Quick Links
+
+- **[PROJECT_SUMMARY.md](./PROJECT_SUMMARY.md)** - Complete project overview with all deliverables
+- **[DEVELOPER_ONBOARDING.md](./DEVELOPER_ONBOARDING.md)** - Get started in <30 minutes
+- **[PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)** - Codebase layout and architecture
+
 ## 🏗️ Project Structure
 
 This is a production-ready monorepo using npm workspaces and Turborepo. See [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md) for complete directory layout and setup instructions.
