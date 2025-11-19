@@ -1,0 +1,76 @@
+name: Mobile CI
+
+on:
+  push:
+    branches: [main, develop, claude/**]
+    paths:
+      - 'apps/mobile/**'
+      - 'packages/**'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'apps/mobile/**'
+      - 'packages/**'
+
+jobs:
+  ios:
+    name: iOS Build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd apps/mobile/ios && pod install
+      - name: Build iOS
+        run: |
+          cd apps/mobile
+          xcodebuild -workspace ios/BoMStudyTools.xcworkspace \
+            -scheme BoMStudyTools \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -derivedDataPath ios/build
+
+  android:
+    name: Android Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build Android
+        run: |
+          cd apps/mobile/android
+          ./gradlew assembleRelease
+
+  e2e:
+    name: E2E Tests
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build app for Detox
+        run: |
+          cd apps/mobile
+          detox build --configuration ios.sim.release
+      - name: Run Detox tests
+        run: |
+          cd apps/mobile
+          detox test --configuration ios.sim.release --cleanup

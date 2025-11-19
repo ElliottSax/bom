@@ -2,6 +2,25 @@
 
 Comprehensive research on LDS Church's Book of Mormon study tools with competitive analysis, improvement recommendations, and technical implementation guidance.
 
+## 🏗️ Project Structure
+
+This is a production-ready monorepo using npm workspaces and Turborepo. See [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md) for complete directory layout and setup instructions.
+
+**Quick Start:**
+```bash
+npm install           # Install all dependencies
+make docker-up        # Start PostgreSQL, Redis, Qdrant
+make db-migrate       # Run database migrations
+make dev              # Start all development servers
+```
+
+**Workspaces:**
+- `apps/mobile` - React Native mobile app (iOS + Android)
+- `apps/web` - Next.js 14 web application
+- `services/api` - GraphQL API server (Apollo + Fastify)
+- `packages/shared` - Shared utilities and types
+- `packages/graphql` - GraphQL schema and generated types
+
 ## 📚 Research Documents
 
 ### [LDS_STUDY_TOOLS_RESEARCH.md](./LDS_STUDY_TOOLS_RESEARCH.md)

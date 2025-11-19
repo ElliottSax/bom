@@ -1,0 +1,59 @@
+{
+  "name": "bom-study-tools",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Book of Mormon Study Tools - Mobile, Web, and Backend Platform",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "type-check": "turbo run type-check",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "prepare": "husky install",
+    "mobile:ios": "cd apps/mobile && npm run ios",
+    "mobile:android": "cd apps/mobile && npm run android",
+    "web:dev": "cd apps/web && npm run dev",
+    "api:dev": "cd services/api && npm run dev",
+    "db:migrate": "cd services/api && npm run db:migrate",
+    "db:seed": "cd services/api && npm run db:seed"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "husky": "^9.0.7",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.2.4",
+    "turbo": "^1.12.1",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ElliottSax/bom.git"
+  },
+  "keywords": [
+    "book-of-mormon",
+    "scripture-study",
+    "lds",
+    "react-native",
+    "graphql",
+    "semantic-search"
+  ],
+  "author": "Elliott Sax",
+  "license": "MIT"
+}

@@ -1,0 +1,253 @@
+# Book of Mormon Study Tools - GraphQL Schema
+# See API_SPECIFICATION.md for full documentation
+
+type Query {
+  # Scripture queries
+  verse(reference: String!): Verse
+  chapter(book: String!, chapter: Int!): Chapter!
+  searchScriptures(query: String!, filters: SearchFilters): SearchResults!
+  semanticSearch(query: String!, limit: Int = 10): [Verse!]!
+
+  # User data queries
+  me: User
+  myHighlights(verseId: String): [Highlight!]!
+  myNotes(verseId: String): [Note!]!
+  myReadingProgress: [ReadingProgress!]!
+  myStudyStreak: StudyStreak!
+
+  # AI queries
+  askQuestion(question: String!): AIResponse!
+  suggestCrossReferences(verseId: String!): [Verse!]!
+  generateStudyQuestions(verseId: String!): [String!]!
+}
+
+type Mutation {
+  # Authentication
+  login(email: String!, password: String!): AuthPayload!
+  register(email: String!, password: String!, displayName: String): AuthPayload!
+  refreshToken(refreshToken: String!): AuthPayload!
+
+  # Highlights
+  createHighlight(input: CreateHighlightInput!): Highlight!
+  updateHighlight(id: ID!, input: UpdateHighlightInput!): Highlight!
+  deleteHighlight(id: ID!): Boolean!
+
+  # Notes
+  createNote(input: CreateNoteInput!): Note!
+  updateNote(id: ID!, input: UpdateNoteInput!): Note!
+  deleteNote(id: ID!): Boolean!
+
+  # Progress
+  updateReadingProgress(input: UpdateReadingProgressInput!): ReadingProgress!
+
+  # User preferences
+  updatePreferences(input: UpdatePreferencesInput!): User!
+}
+
+type Subscription {
+  syncStatusChanged: SyncStatus!
+  notificationReceived: Notification!
+}
+
+# Types
+type Verse {
+  id: ID!
+  reference: String!
+  book: String!
+  chapter: Int!
+  verse: Int!
+  text(language: String = "en"): String!
+  highlights: [Highlight!]!
+  notes: [Note!]!
+  crossReferences: [CrossReference!]!
+  aiSuggestions: [Verse!]!
+}
+
+type Chapter {
+  book: String!
+  chapter: Int!
+  verses: [Verse!]!
+  summary: String
+}
+
+type Highlight {
+  id: ID!
+  verseId: String!
+  color: HighlightColor!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum HighlightColor {
+  YELLOW
+  BLUE
+  GREEN
+  PINK
+  ORANGE
+  PURPLE
+}
+
+type Note {
+  id: ID!
+  verseId: String!
+  content: String!
+  tags: [String!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type User {
+  id: ID!
+  email: String!
+  displayName: String
+  avatarUrl: String
+  preferences: UserPreferences!
+  createdAt: DateTime!
+}
+
+type UserPreferences {
+  language: String!
+  fontSize: FontSize!
+  theme: Theme!
+  notificationsEnabled: Boolean!
+  dailyReminderTime: String
+  aiFeatures: AIPreferences!
+}
+
+enum FontSize {
+  SMALL
+  MEDIUM
+  LARGE
+  EXTRA_LARGE
+}
+
+enum Theme {
+  LIGHT
+  DARK
+  SEPIA
+  AUTO
+}
+
+type AIPreferences {
+  semanticSearchEnabled: Boolean!
+  chatbotEnabled: Boolean!
+  autoSuggestionsEnabled: Boolean!
+}
+
+type CrossReference {
+  id: ID!
+  fromVerse: String!
+  toVerse: Verse!
+  type: CrossReferenceType!
+}
+
+enum CrossReferenceType {
+  OFFICIAL
+  AI_SUGGESTED
+  USER_CREATED
+}
+
+type ReadingProgress {
+  book: String!
+  chapter: Int!
+  verse: Int!
+  percentage: Float!
+  lastReadAt: DateTime!
+}
+
+type StudyStreak {
+  currentStreak: Int!
+  longestStreak: Int!
+  lastStudyDate: DateTime!
+}
+
+type SearchResults {
+  results: [Verse!]!
+  total: Int!
+  hasMore: Boolean!
+}
+
+type AIResponse {
+  answer: String!
+  sources: [Verse!]!
+  confidence: Float!
+  disclaimer: String!
+}
+
+type AuthPayload {
+  token: String!
+  refreshToken: String!
+  user: User!
+}
+
+type SyncStatus {
+  isSyncing: Boolean!
+  lastSyncAt: DateTime
+  pendingChanges: Int!
+}
+
+type Notification {
+  id: ID!
+  type: NotificationType!
+  title: String!
+  body: String!
+  createdAt: DateTime!
+}
+
+enum NotificationType {
+  DAILY_REMINDER
+  STREAK_MILESTONE
+  NEW_FEATURE
+  SYSTEM
+}
+
+# Inputs
+input CreateHighlightInput {
+  verseId: String!
+  color: HighlightColor!
+}
+
+input UpdateHighlightInput {
+  color: HighlightColor
+}
+
+input CreateNoteInput {
+  verseId: String!
+  content: String!
+  tags: [String!]
+}
+
+input UpdateNoteInput {
+  content: String
+  tags: [String!]
+}
+
+input UpdateReadingProgressInput {
+  book: String!
+  chapter: Int!
+  verse: Int!
+}
+
+input UpdatePreferencesInput {
+  language: String
+  fontSize: FontSize
+  theme: Theme
+  notificationsEnabled: Boolean
+  dailyReminderTime: String
+  aiFeatures: AIPreferencesInput
+}
+
+input AIPreferencesInput {
+  semanticSearchEnabled: Boolean
+  chatbotEnabled: Boolean
+  autoSuggestionsEnabled: Boolean
+}
+
+input SearchFilters {
+  books: [String!]
+  startDate: DateTime
+  endDate: DateTime
+}
+
+# Scalars
+scalar DateTime

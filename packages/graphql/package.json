@@ -1,0 +1,29 @@
+{
+  "name": "@bom/graphql",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GraphQL schema and generated types",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "codegen": "graphql-codegen --config codegen.yml",
+    "test": "jest",
+    "lint": "eslint src --ext .ts",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist node_modules"
+  },
+  "dependencies": {
+    "graphql": "^16.8.1",
+    "@bom/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^5.0.0",
+    "@graphql-codegen/typescript": "^4.0.1",
+    "@graphql-codegen/typescript-operations": "^4.0.1",
+    "@graphql-codegen/typescript-react-apollo": "^4.1.0",
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  }
+}
