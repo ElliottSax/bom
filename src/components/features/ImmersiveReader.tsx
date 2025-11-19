@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { ArrowLeft, Maximize2, Minimize2, Type, Moon, Sun } from 'lucide-react';
+import { ArrowLeft, Maximize2, Minimize2, Type, Moon, Sun, Bookmark, Copy, Check, ChevronUp, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { mockVerses, type Verse } from '@/lib/mock-data';
+import { useToast } from '@/components/ui/Toast';
 
 interface ImmersiveReaderProps {
   onBack: () => void;
@@ -15,10 +16,54 @@ export default function ImmersiveReader({ onBack }: ImmersiveReaderProps) {
   const [readingMode, setReadingMode] = useState<'normal' | 'focus' | 'immersive'>('normal');
   const [fontSize, setFontSize] = useState(18);
   const [darkMode, setDarkMode] = useState(false);
+  const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
+  const [copiedVerse, setCopiedVerse] = useState<string | null>(null);
   const { scrollYProgress } = useScroll();
+  const { addToast } = useToast();
 
   // Sample verses for demonstration
   const verses = mockVerses.filter(v => v.scripture === 'book-of-mormon').slice(0, 5);
+
+  // Load bookmarks from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('bookmarks');
+    if (saved) {
+      setBookmarks(new Set(JSON.parse(saved)));
+    }
+  }, []);
+
+  // Save bookmarks to localStorage
+  useEffect(() => {
+    localStorage.setItem('bookmarks', JSON.stringify(Array.from(bookmarks)));
+  }, [bookmarks]);
+
+  // Toggle bookmark
+  const toggleBookmark = (verseId: string) => {
+    setBookmarks(prev => {
+      const newBookmarks = new Set(prev);
+      if (newBookmarks.has(verseId)) {
+        newBookmarks.delete(verseId);
+        addToast('Bookmark removed', 'info');
+      } else {
+        newBookmarks.add(verseId);
+        addToast('Verse bookmarked!', 'success');
+      }
+      return newBookmarks;
+    });
+  };
+
+  // Copy verse to clipboard
+  const copyVerse = async (verse: Verse) => {
+    const text = `${verse.text}\n\n— ${verse.reference}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedVerse(verse.id);
+      addToast('Verse copied to clipboard!', 'success');
+      setTimeout(() => setCopiedVerse(null), 2000);
+    } catch (err) {
+      addToast('Failed to copy verse', 'error');
+    }
+  };
 
   // Background gradient based on scroll
   const background1 = useTransform(
@@ -159,7 +204,11 @@ export default function ImmersiveReader({ onBack }: ImmersiveReaderProps) {
             darkMode={darkMode}
             readingMode={readingMode}
             isFocused={focusedVerse === verse.id}
+            isBookmarked={bookmarks.has(verse.id)}
+            isCopied={copiedVerse === verse.id}
             onFocus={() => setFocusedVerse(verse.id)}
+            onToggleBookmark={() => toggleBookmark(verse.id)}
+            onCopy={() => copyVerse(verse)}
           />
         ))}
       </div>
@@ -189,11 +238,16 @@ interface VerseBlockProps {
   darkMode: boolean;
   readingMode: 'normal' | 'focus' | 'immersive';
   isFocused: boolean;
+  isBookmarked: boolean;
+  isCopied: boolean;
   onFocus: () => void;
+  onToggleBookmark: () => void;
+  onCopy: () => void;
 }
 
-function VerseBlock({ verse, index, fontSize, darkMode, readingMode, isFocused, onFocus }: VerseBlockProps) {
+function VerseBlock({ verse, index, fontSize, darkMode, readingMode, isFocused, isBookmarked, isCopied, onFocus, onToggleBookmark, onCopy }: VerseBlockProps) {
   const shouldBlur = readingMode === 'focus' && !isFocused;
+  const [isHovered, setIsHovered] = useState(false);
 
   return (
     <motion.div
@@ -202,8 +256,10 @@ function VerseBlock({ verse, index, fontSize, darkMode, readingMode, isFocused, 
       viewport={{ once: false, margin: "-100px" }}
       transition={{ duration: 0.6, delay: index * 0.1 }}
       onClick={onFocus}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
       className={cn(
-        "mb-12 transition-all duration-500 cursor-pointer",
+        "mb-12 transition-all duration-500 cursor-pointer group",
         shouldBlur && "opacity-30 blur-sm scale-95",
         isFocused && readingMode === 'focus' && "scale-105 opacity-100 blur-0"
       )}
@@ -238,6 +294,66 @@ function VerseBlock({ verse, index, fontSize, darkMode, readingMode, isFocused, 
           </span>
           {verse.text}
         </motion.p>
+
+        {/* Action Buttons - Appear on hover */}
+        <AnimatePresence>
+          {isHovered && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="flex items-center gap-2 mt-3"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={onCopy}
+                className={cn(
+                  "flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
+                  darkMode
+                    ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                    : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                )}
+                title="Copy verse"
+              >
+                {isCopied ? (
+                  <>
+                    <Check className="w-4 h-4 text-green-500" />
+                    <span>Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4" />
+                    <span>Copy</span>
+                  </>
+                )}
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={onToggleBookmark}
+                className={cn(
+                  "flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
+                  isBookmarked
+                    ? darkMode
+                      ? "bg-blue-900 text-blue-300"
+                      : "bg-blue-100 text-blue-700"
+                    : darkMode
+                    ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                    : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                )}
+                title={isBookmarked ? "Remove bookmark" : "Bookmark verse"}
+              >
+                <Bookmark
+                  className={cn("w-4 h-4", isBookmarked && "fill-current")}
+                />
+                <span>{isBookmarked ? "Bookmarked" : "Bookmark"}</span>
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Theme Tags */}
         {verse.themes && (
