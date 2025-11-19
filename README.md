@@ -78,6 +78,53 @@ Complete project plan with detailed timelines, team structure, budgets, and risk
 - **Phases:** Foundation → Core Platform → Intelligence → Engagement → Community → Launch
 - **Target:** 1M downloads, 200K DAU, 4.7+ rating within 6 months of launch
 
+### [USER_STORIES.md](./USER_STORIES.md)
+**Product Requirements & User Stories**
+
+Complete set of user stories organized by development phase with acceptance criteria and effort estimates.
+
+**Contents:**
+- 54 user stories across all 6 phases
+- Stories organized by epic (Scripture Reading, Search, Highlighting, Notes, AI, Memory, Groups)
+- Each story includes: acceptance criteria, priority (P0-P3), effort (story points), sprint assignment
+- Epic summaries with total story points per phase
+- Bug report and technical spike templates
+- Story point scale (Fibonacci: 1, 2, 3, 5, 8, 13, 21)
+
+**Story Distribution:**
+- Phase 0 (Foundation): 3 stories, 26 points
+- Phase 1 (Core Platform): 18 stories, 177 points
+- Phase 2 (Intelligence): 11 stories, 150 points
+- Phase 3 (Engagement): 11 stories, 106 points
+- Phase 4 (Community): 6 stories, 89 points
+- Phase 5 (Launch): 5 stories, 76 points
+- **Total: 54 stories, 624 points**
+
+### [API_SPECIFICATION.md](./API_SPECIFICATION.md)
+**GraphQL & REST API Documentation**
+
+Complete API contract with schema definitions, examples, and integration patterns.
+
+**Contents:**
+- Complete GraphQL schema (types, queries, mutations, subscriptions)
+- 50+ example queries and mutations with variables and responses
+- REST endpoints for file uploads, data export (GDPR), health checks
+- Authentication with JWT tokens
+- Error handling with comprehensive error codes
+- Rate limiting (1000 req/hour authenticated, 100 req/minute)
+- Pagination (cursor-based and offset-based)
+- Versioning strategy
+- cURL examples for common operations
+
+**Key Features:**
+- Verse queries with highlights, notes, cross-references
+- Semantic and keyword search
+- AI chatbot interactions
+- Memory card spaced repetition
+- Group study and discussions
+- Real-time sync subscriptions
+- Study statistics and analytics
+
 ## 🎯 Executive Summary
 
 ### Current State: Gospel Library App
