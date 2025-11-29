@@ -1,8 +1,21 @@
 # Project Summary
 
-## Book of Mormon Study Tools - Complete Development Package
+## Book of Mormon Study Tools - Community of Christ Edition
 
-This repository contains a comprehensive, production-ready plan and implementation foundation for building modern Book of Mormon study tools that address gaps in the current Gospel Library app.
+This repository contains a comprehensive, production-ready plan and implementation foundation for building modern **Community of Christ** scripture study tools featuring the Book of Mormon (original 1830 versification), Doctrine & Covenants (167 sections), and Inspired Version Bible.
+
+## 🎯 Project Scope
+
+**Target Audience:** Community of Christ members and investigators
+
+**Scripture Texts:**
+1. **Book of Mormon** - Original 1830 chapter divisions (not LDS Pratt 1879 versification)
+2. **Doctrine & Covenants** - 167 sections (sections 114+ are CoC-specific revelations)
+3. **Holy Scriptures** - Inspired Version (Joseph Smith Translation) and NRSV
+
+**Key Differentiator:** Proper support for Community of Christ versification systems with cross-reference mapping to LDS editions for scholarship and comparison.
+
+**Competitive Research Note:** The `LDS_STUDY_TOOLS_*.md` files contain competitive analysis of LDS Gospel Library and other platforms, used as market research for feature planning.
 
 ---
 
@@ -540,9 +553,11 @@ The implementation code examples are provided as educational references and shou
 
 ---
 
-**Research Completed:** November 19, 2025
-**Methodology:** Competitive analysis, technical research, industry benchmarking
-**Focus:** LDS Book of Mormon study tools improvement opportunities
+**Project Started:** November 19, 2025
+**Target Denomination:** Community of Christ
+**Scripture Texts:** Book of Mormon (1830 versification), D&C (167 sections), Inspired Version Bible
+**Competitive Research:** LDS Gospel Library, YouVersion, Logos (for feature benchmarking)
+**Versification:** CoC original chapters with LDS Pratt cross-reference mapping
 **Status:** Phase 0 Complete ✅ | Ready for Phase 1 Implementation 🚀
 
 ---

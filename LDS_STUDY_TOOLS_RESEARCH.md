@@ -1,8 +1,20 @@
-# LDS Book of Mormon Study Tools - Research & Improvement Opportunities
+# LDS Book of Mormon Study Tools - Competitive Analysis
+
+> **📌 PROJECT SCOPE NOTE:**
+> This document contains **competitive analysis** of LDS Church's Gospel Library app and other scripture study platforms. This research is used for **benchmarking and feature planning** only.
+>
+> **This project builds study tools for Community of Christ**, featuring:
+> - Book of Mormon (1830 original versification, not LDS Pratt system)
+> - Doctrine & Covenants (167 sections, including CoC-specific sections 114+)
+> - Inspired Version Bible (Joseph Smith Translation) and NRSV
+>
+> See [COMMUNITY_OF_CHRIST_VERSIFICATION.md](./docs/COMMUNITY_OF_CHRIST_VERSIFICATION.md) for details on CoC scripture texts.
+
+---
 
 ## Executive Summary
 
-This research analyzes the LDS Church's Book of Mormon study tools and compares them with leading scripture study platforms to identify improvement opportunities. The findings reveal that while the Gospel Library app provides solid foundational features, there are significant opportunities to enhance user engagement through AI-powered features, advanced visualization, community learning, and personalized study experiences.
+This research analyzes the LDS Church's Book of Mormon study tools and compares them with leading scripture study platforms to identify improvement opportunities that can inform Community of Christ study tool development. The findings reveal that while the Gospel Library app provides solid foundational features, there are significant opportunities to enhance user engagement through AI-powered features, advanced visualization, community learning, and personalized study experiences.
 
 ---
 

@@ -1,10 +1,23 @@
-# Book of Mormon Study Tools - Research & Analysis
+# Book of Mormon Study Tools - Community of Christ
 
-Comprehensive research on LDS Church's Book of Mormon study tools with competitive analysis, improvement recommendations, and technical implementation guidance.
+Digital scripture study platform for **Community of Christ** scripture texts, featuring the Book of Mormon, Doctrine and Covenants (167 sections), and Inspired Version Bible with proper versification support.
+
+## Project Focus
+
+This project is designed specifically for **Community of Christ** scriptures and their unique versification systems:
+
+- **Book of Mormon** - Original 1830 chapter divisions (not LDS Pratt 1879 versification)
+- **Doctrine & Covenants** - 167 sections (sections 114+ are CoC-specific revelations)
+- **Bible** - Inspired Version (Joseph Smith Translation) and NRSV
+
+### About the LDS Research Documents
+
+The `LDS_STUDY_TOOLS_*.md` files contain **competitive analysis** of LDS Church's Gospel Library app and other scripture study platforms. This research informs our feature decisions but the platform is built specifically for Community of Christ texts and theology.
 
 ## 📋 Quick Links
 
 - **[PROJECT_SUMMARY.md](./PROJECT_SUMMARY.md)** - Complete project overview with all deliverables
+- **[COMMUNITY_OF_CHRIST_VERSIFICATION.md](./docs/COMMUNITY_OF_CHRIST_VERSIFICATION.md)** - CoC scripture versification guide
 - **[DEVELOPER_ONBOARDING.md](./DEVELOPER_ONBOARDING.md)** - Get started in <30 minutes
 - **[PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)** - Codebase layout and architecture
 
@@ -30,9 +43,9 @@ make dev              # Start all development servers
 ## 📚 Research Documents
 
 ### [LDS_STUDY_TOOLS_RESEARCH.md](./LDS_STUDY_TOOLS_RESEARCH.md)
-**Strategic Analysis & Recommendations**
+**Competitive Analysis** (for reference only)
 
-Detailed competitive analysis comparing Gospel Library app with leading scripture study platforms (YouVersion, Logos, Blue Letter Bible, AI-powered apps).
+Analysis of LDS Gospel Library app and other scripture study platforms used as competitive intelligence for feature planning. Note: This project focuses on Community of Christ scriptures, not LDS tools.
 
 **Contents:**
 - Current LDS study tools (Gospel Library, manuals, web resources)
@@ -150,9 +163,40 @@ Complete API contract with schema definitions, examples, and integration pattern
 - Real-time sync subscriptions
 - Study statistics and analytics
 
-## 🎯 Executive Summary
+## 🎯 Community of Christ Scripture Texts
 
-### Current State: Gospel Library App
+### Supported Scripture Works
+
+**1. Book of Mormon**
+- **Versification:** Original 1830 chapter divisions (not Pratt 1879)
+- **Example:** III Nephi 5:8 (CoC) vs. 3 Nephi 11:7 (LDS)
+- **Chapters:** Longer narrative-based chapters
+- **Publisher:** Herald Publishing House
+- **Status:** Public domain
+
+**2. Doctrine and Covenants**
+- **Sections:** 167 (and growing!)
+- **CoC-Specific:** Sections 114-167 are Community of Christ revelations
+- **Latest:** Section 167 (2025, Stephen M. Veazey presidency)
+- **Divergence:** Section numbering differs from LDS after section 2
+- **Publisher:** Herald Publishing House
+- **Status:** Early sections public domain, recent sections © Community of Christ
+
+**3. Holy Scriptures (Bible)**
+- **Inspired Version** (Joseph Smith Translation) - Primary
+- **NRSV** (New Revised Standard Version) - Recommended alternative
+- **Publisher:** Herald Publishing House
+- **Status:** Inspired Version 1867 edition is public domain
+
+See **[COMMUNITY_OF_CHRIST_VERSIFICATION.md](./docs/COMMUNITY_OF_CHRIST_VERSIFICATION.md)** for detailed versification guide.
+
+---
+
+## 🎯 Executive Summary (Competitive Analysis)
+
+The research documents analyze LDS Gospel Library app and competitors as **competitive intelligence** for building Community of Christ study tools.
+
+### Current State: Gospel Library App (LDS)
 
 **Strengths:**
 - ✅ Comprehensive LDS content (scriptures, manuals, conference talks)
@@ -166,6 +210,8 @@ Complete API contract with schema definitions, examples, and integration pattern
 - ❌ No visualization tools (cross-reference graphs, study insights)
 - ❌ Minimal community features (no group study, collaboration)
 - ❌ Limited personalization (same experience for everyone)
+
+**Note:** These gaps inform our feature planning for Community of Christ study tools.
 
 ### Market Context
 
@@ -375,6 +421,8 @@ The implementation code examples are provided as educational references and shou
 
 ---
 
-**Research Completed:** November 19, 2025
-**Methodology:** Competitive analysis, technical research, industry benchmarking
-**Focus:** LDS Book of Mormon study tools improvement opportunities
+**Project Started:** November 19, 2025
+**Target Audience:** Community of Christ members and investigators
+**Scripture Focus:** CoC Book of Mormon, D&C (167 sections), Inspired Version Bible
+**Versification:** Original 1830 chapters (not LDS Pratt system)
+**Competitive Research:** LDS Gospel Library, YouVersion, Logos (for feature planning only)

@@ -1,8 +1,18 @@
-# Book of Mormon Study Tools - Development Plan
+# Community of Christ Scripture Study Tools - Development Plan
+
+> **📌 PROJECT SCOPE:**
+> This development plan outlines building scripture study tools for **Community of Christ**, featuring:
+> - **Book of Mormon** - 1830 original versification (not LDS Pratt system)
+> - **Doctrine & Covenants** - 167 sections (sections 114+ are CoC-specific)
+> - **Bible** - Inspired Version (Joseph Smith Translation) and NRSV
+>
+> The competitive analysis of LDS Gospel Library informs our feature planning but is not the project focus.
+
+---
 
 ## Executive Summary
 
-This development plan outlines a 18-month roadmap to build a modern, AI-powered Book of Mormon study platform that addresses critical gaps identified in competitive analysis while maintaining the Gospel Library's strengths of authoritative content and spiritual reverence.
+This development plan outlines an 18-month roadmap to build a modern, AI-powered Community of Christ scripture study platform. The plan draws on competitive analysis of LDS Gospel Library and other platforms while focusing specifically on Community of Christ scripture texts, versification systems, and theological needs.
 
 **Project Goals:**
 - Increase daily active users (DAU) by 200% through enhanced engagement features

@@ -1,8 +1,19 @@
-# LDS Book of Mormon Study Tools - Technical Implementation Guide
+# Scripture Study Tools - Technical Implementation Guide
+
+> **📌 PROJECT SCOPE NOTE:**
+> This document provides technical implementation guidance for scripture study features. While the research references LDS Gospel Library and other platforms, **this project is built for Community of Christ scriptures**.
+>
+> **Community of Christ Specific Requirements:**
+> - Book of Mormon: Original 1830 chapter divisions (not Pratt 1879)
+> - Doctrine & Covenants: 167 sections (sections 114+ are CoC revelations)
+> - Bible: Inspired Version (JST) and NRSV
+> - See [COMMUNITY_OF_CHRIST_VERSIFICATION.md](./docs/COMMUNITY_OF_CHRIST_VERSIFICATION.md)
+
+---
 
 ## Executive Summary
 
-This document provides technical implementation details and recommendations for building modern Book of Mormon study tools. It complements the main research document with specific technologies, architectures, and implementation patterns discovered through comprehensive market research.
+This document provides technical implementation details and recommendations for building modern scripture study tools for Community of Christ. It draws on competitive analysis of LDS Gospel Library and other platforms to inform technology choices, architectures, and implementation patterns.
 
 ---
 
