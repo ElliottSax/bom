@@ -76,24 +76,111 @@ model RefreshToken {
 // Scripture Content (Read-Only - populated via seed)
 // ============================================================================
 
-model Verse {
-  id        String @id // Format: "1-nephi-3-7"
-  book      String
-  chapter   Int
-  verse     Int
-  text      String @db.Text
-  language  String @default("en")
+// Scripture works (Book of Mormon, Doctrine & Covenants, Bible)
+model ScriptureWork {
+  id           String    @id // "book-of-mormon", "doctrine-and-covenants", "bible"
+  name         String    // "Book of Mormon", "Doctrine and Covenants", "Holy Scriptures"
+  abbreviation String    // "BoM", "D&C", "Bible"
+  description  String?   @db.Text
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   // Relations
-  highlights       Highlight[]
-  notes            Note[]
-  crossReferencesFrom CrossReference[] @relation("FromVerse")
-  crossReferencesTo   CrossReference[] @relation("ToVerse")
-  memoryCards      MemoryCard[]
+  editions     Edition[]
 
-  @@unique([book, chapter, verse, language])
-  @@index([book, chapter])
+  @@map("scripture_works")
+}
+
+// Editions of scripture works (e.g., CoC 1908 BoM, LDS 2013 BoM, Inspired Version)
+model Edition {
+  id                   String        @id // "coc-bom-1908", "lds-bom-2013", "coc-dc-2017", "iv-bible-1867"
+  workId               String
+  work                 ScriptureWork @relation(fields: [workId], references: [id])
+
+  name                 String        // "Community of Christ Book of Mormon (1908)"
+  shortName            String        // "CoC BoM"
+  publisher            String        // "Herald Publishing House"
+  year                 Int           // 1908, 2013, etc.
+  language             String        @default("en")
+
+  versificationSystem  String        // "original-chapters", "pratt-1879", "section-numbering"
+  description          String?       @db.Text
+
+  // Copyright and licensing
+  isPublicDomain       Boolean       @default(false)
+  copyrightHolder      String?       // "Community of Christ", "LDS Church", etc.
+  licenseNotes         String?       @db.Text
+
+  // Metadata
+  isDefault            Boolean       @default(false) // Default edition for this work
+  isPrimary            Boolean       @default(false) // Primary edition for CoC users
+  displayOrder         Int           @default(0)     // For UI sorting
+
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  // Relations
+  verses               Verse[]
+
+  @@index([workId])
+  @@index([isDefault])
+  @@index([displayOrder])
+  @@map("editions")
+}
+
+// Individual verses within an edition
+model Verse {
+  id        String  @id // Format: "coc-bom-1908:1-nephi-3-7"
+  editionId String
+  edition   Edition @relation(fields: [editionId], references: [id], onDelete: Cascade)
+
+  // Reference components
+  book      String  // "1 Nephi", "Doctrine and Covenants", "Genesis"
+  chapter   Int     // Chapter number
+  verse     Int     // Verse number
+
+  // Text content
+  text      String  @db.Text
+
+  // Metadata
+  verseType String  @default("standard") // "standard", "heading", "footnote", "summary"
+
+  // Relations
+  highlights           Highlight[]
+  notes                Note[]
+  crossReferencesFrom  CrossReference[]      @relation("FromVerse")
+  crossReferencesTo    CrossReference[]      @relation("ToVerse")
+  memoryCards          MemoryCard[]
+  equivalentVerses     VerseMapping[]        @relation("FromVerseMapping")
+  mappedFromVerses     VerseMapping[]        @relation("ToVerseMapping")
+
+  @@unique([editionId, book, chapter, verse])
+  @@index([editionId, book, chapter])
+  @@index([editionId, book])
   @@map("verses")
+}
+
+// Cross-edition verse mapping (e.g., CoC III Nephi 5:8 = LDS 3 Nephi 11:7)
+model VerseMapping {
+  id          String   @id @default(cuid())
+  fromVerseId String
+  fromVerse   Verse    @relation("FromVerseMapping", fields: [fromVerseId], references: [id], onDelete: Cascade)
+  toVerseId   String
+  toVerse     Verse    @relation("ToVerseMapping", fields: [toVerseId], references: [id], onDelete: Cascade)
+
+  mappingType String   // "exact" (1:1), "partial" (content overlap), "merged" (many:1), "split" (1:many)
+  confidence  Float    @default(1.0) // 0.0-1.0 for algorithmic mappings
+
+  // Metadata
+  verified    Boolean  @default(false) // Manually verified by scholars
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([fromVerseId, toVerseId])
+  @@index([fromVerseId])
+  @@index([toVerseId])
+  @@map("verse_mappings")
 }
 
 // ============================================================================
