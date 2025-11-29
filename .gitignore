@@ -17,6 +17,19 @@ out/
 .env
 .env*.local
 .env.production
+.env.prod
+services/api/.env.production
+services/api/.env.prod
+
+# Production secrets and certificates
+/data/
+certificates/
+*.pem
+*.crt
+*.cert
+acme.json
+redis/redis.conf.prod
+postgres/init/*.prod.sql
 
 # Debug logs
 npm-debug.log*

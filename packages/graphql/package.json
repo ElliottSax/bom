@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "graphql": "^16.8.1",
-    "@bom/shared": "workspace:*"
+    "@bom/shared": "file:../shared"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^5.0.0",

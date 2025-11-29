@@ -21,6 +21,8 @@
   "dependencies": {
     "@apollo/server": "^4.10.0",
     "@as-integrations/fastify": "^2.1.1",
+    "@fastify/cors": "^8.5.0",
+    "@fastify/helmet": "^11.1.1",
     "fastify": "^4.25.2",
     "graphql": "^16.8.1",
     "graphql-scalars": "^1.22.4",
@@ -32,7 +34,9 @@
     "pino": "^8.17.2",
     "pino-pretty": "^10.3.1",
     "dotenv": "^16.4.1",
-    "@bom/shared": "workspace:*"
+    "zod": "^3.22.4",
+    "sanitize-html": "^2.11.0",
+    "@bom/shared": "file:../../packages/shared"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^5.0.0",
@@ -41,6 +45,11 @@
     "@types/bcrypt": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20.11.0",
+    "@types/sanitize-html": "^2.9.5",
+    "jest": "^29.7.0",
+    "@jest/globals": "^29.7.0",
+    "@types/jest": "^29.5.11",
+    "ts-jest": "^29.1.1",
     "prisma": "^5.8.1",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"

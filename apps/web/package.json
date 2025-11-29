@@ -24,8 +24,8 @@
     "tailwindcss": "^3.4.1",
     "clsx": "^2.1.0",
     "class-variance-authority": "^0.7.0",
-    "@bom/shared": "workspace:*",
-    "@bom/graphql": "workspace:*"
+    "@bom/shared": "file:../../packages/shared",
+    "@bom/graphql": "file:../../packages/graphql"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

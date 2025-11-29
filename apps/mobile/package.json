@@ -23,8 +23,8 @@
     "graphql": "^16.8.1",
     "pouchdb-react-native": "^8.0.1",
     "react-native-sqlite-storage": "^6.0.1",
-    "@bom/shared": "workspace:*",
-    "@bom/graphql": "workspace:*"
+    "@bom/shared": "file:../../packages/shared",
+    "@bom/graphql": "file:../../packages/graphql"
   },
   "devDependencies": {
     "@babel/core": "^7.23.7",

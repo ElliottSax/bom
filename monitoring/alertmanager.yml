@@ -1,0 +1,83 @@
+# Alertmanager Configuration
+
+global:
+  resolve_timeout: 5m
+  # TODO: Configure your SMTP settings
+  smtp_from: 'alertmanager@yourdomain.com'
+  smtp_smarthost: 'smtp.yourdomain.com:587'
+  smtp_auth_username: 'alerts@yourdomain.com'
+  smtp_auth_password: 'YOUR_SMTP_PASSWORD'
+  smtp_require_tls: true
+
+# Templates
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Route tree
+route:
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 12h
+  receiver: 'default'
+
+  routes:
+    # Critical alerts - immediate notification
+    - match:
+        severity: critical
+      receiver: 'critical'
+      group_wait: 0s
+      group_interval: 1m
+      repeat_interval: 1h
+
+    # Warning alerts - standard notification
+    - match:
+        severity: warning
+      receiver: 'warning'
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+
+# Receivers
+receivers:
+  - name: 'default'
+    email_configs:
+      - to: 'ops@yourdomain.com'
+        headers:
+          Subject: '[BOM] Alert Notification'
+        html: '{{ template "email.default.html" . }}'
+        send_resolved: true
+
+  - name: 'critical'
+    email_configs:
+      - to: 'ops@yourdomain.com,oncall@yourdomain.com'
+        headers:
+          Subject: '[BOM] CRITICAL: {{ .GroupLabels.alertname }}'
+        html: '{{ template "email.default.html" . }}'
+        send_resolved: true
+    # TODO: Add PagerDuty, Slack, or other critical notification channels
+    # pagerduty_configs:
+    #   - service_key: YOUR_PAGERDUTY_KEY
+    # slack_configs:
+    #   - api_url: YOUR_SLACK_WEBHOOK
+    #     channel: '#alerts-critical'
+
+  - name: 'warning'
+    email_configs:
+      - to: 'ops@yourdomain.com'
+        headers:
+          Subject: '[BOM] Warning: {{ .GroupLabels.alertname }}'
+        html: '{{ template "email.default.html" . }}'
+        send_resolved: true
+    # slack_configs:
+    #   - api_url: YOUR_SLACK_WEBHOOK
+    #     channel: '#alerts-warning'
+
+# Inhibit rules (prevent notification spam)
+inhibit_rules:
+  # Inhibit warning if critical alert is firing
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'cluster', 'service']

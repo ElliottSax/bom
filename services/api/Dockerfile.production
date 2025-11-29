@@ -1,0 +1,111 @@
+# ============================================================================
+# Production Dockerfile for BOM Study Tools API
+# Multi-stage build for optimal image size and security
+# ============================================================================
+
+# -----------------------------------------------------------------------------
+# Stage 1: Dependencies
+# -----------------------------------------------------------------------------
+FROM node:20-alpine AS dependencies
+
+# Install pnpm
+RUN npm install -g pnpm@latest
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json pnpm-lock.yaml* ./
+COPY pnpm-workspace.yaml ./
+
+# Copy workspace package files
+COPY services/api/package.json ./services/api/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/graphql/package.json ./packages/graphql/
+
+# Install all dependencies (including dev dependencies for build)
+# Note: First build will generate lockfile
+RUN pnpm install --no-frozen-lockfile
+
+# -----------------------------------------------------------------------------
+# Stage 2: Build
+# -----------------------------------------------------------------------------
+FROM node:20-alpine AS builder
+
+# Install pnpm
+RUN npm install -g pnpm@latest
+
+WORKDIR /app
+
+# Copy dependencies from previous stage
+COPY --from=dependencies /app/node_modules ./node_modules
+COPY --from=dependencies /app/services/api/node_modules ./services/api/node_modules
+COPY --from=dependencies /app/packages/shared/node_modules ./packages/shared/node_modules
+COPY --from=dependencies /app/packages/graphql/node_modules ./packages/graphql/node_modules
+
+# Copy source code
+COPY . .
+
+# Generate Prisma Client
+WORKDIR /app/services/api
+RUN npx prisma generate
+
+# Build TypeScript
+RUN pnpm run build
+
+# -----------------------------------------------------------------------------
+# Stage 3: Production Runtime
+# -----------------------------------------------------------------------------
+FROM node:20-alpine AS production
+
+# Install pnpm and production tools
+RUN npm install -g pnpm@latest && \
+    apk add --no-cache \
+    postgresql-client \
+    curl \
+    dumb-init
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+WORKDIR /app
+
+# Copy production dependencies only
+COPY --from=dependencies /app/package.json ./
+COPY --from=dependencies /app/pnpm-workspace.yaml ./
+COPY --from=dependencies /app/services/api/package.json ./services/api/
+COPY --from=dependencies /app/packages/shared/package.json ./packages/shared/
+COPY --from=dependencies /app/packages/graphql/package.json ./packages/graphql/
+
+# Install production dependencies only
+RUN pnpm install --prod --no-frozen-lockfile
+
+# Copy built application
+COPY --from=builder /app/services/api/dist ./services/api/dist
+COPY --from=builder /app/services/api/prisma ./services/api/prisma
+COPY --from=builder /app/services/api/node_modules/.prisma ./services/api/node_modules/.prisma
+
+# Copy scripts
+COPY scripts ./scripts
+
+# Change ownership to non-root user
+RUN chown -R nodejs:nodejs /app
+
+# Switch to non-root user
+USER nodejs
+
+# Set working directory to API service
+WORKDIR /app/services/api
+
+# Expose port
+EXPOSE 4000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:4000/health || exit 1
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["dumb-init", "--"]
+
+# Start application
+CMD ["node", "dist/index.js"]
