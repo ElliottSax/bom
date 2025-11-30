@@ -21,7 +21,7 @@
     "@react-navigation/native-stack": "^6.9.17",
     "@apollo/client": "^3.8.8",
     "graphql": "^16.8.1",
-    "pouchdb-react-native": "^8.0.1",
+    "pouchdb-react-native": "^7.0.0",
     "react-native-sqlite-storage": "^6.0.1",
     "@bom/shared": "file:../../packages/shared",
     "@bom/graphql": "file:../../packages/graphql"
