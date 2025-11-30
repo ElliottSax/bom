@@ -1,0 +1,20 @@
+[
+  {
+    "id": "book-of-mormon",
+    "name": "Book of Mormon",
+    "abbreviation": "BoM",
+    "description": "An ancient record of God's dealings with the people in the Americas, translated by Joseph Smith Jr."
+  },
+  {
+    "id": "doctrine-and-covenants",
+    "name": "Doctrine and Covenants",
+    "abbreviation": "D&C",
+    "description": "Modern revelations received by prophets of the Restoration movement, including Joseph Smith and subsequent Community of Christ prophets"
+  },
+  {
+    "id": "bible",
+    "name": "Holy Scriptures",
+    "abbreviation": "Bible",
+    "description": "The Bible, including the Inspired Version (Joseph Smith Translation) and modern translations"
+  }
+]
