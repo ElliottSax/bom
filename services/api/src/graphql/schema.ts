@@ -36,16 +36,52 @@ export const typeDefs = `#graphql
   # Scripture Types
   # ============================================================================
 
+  type ScriptureWork {
+    id: ID!
+    name: String!
+    abbreviation: String!
+    description: String
+    editions: [Edition!]!
+  }
+
+  type Edition {
+    id: ID!
+    work: ScriptureWork!
+    name: String!
+    shortName: String!
+    publisher: String!
+    year: Int!
+    language: String!
+    versificationSystem: String!
+    description: String
+    isPublicDomain: Boolean!
+    copyrightHolder: String
+    isPrimary: Boolean!
+    isDefault: Boolean!
+  }
+
   type Verse {
     id: ID!
+    edition: Edition!
     book: String!
     chapter: Int!
     verse: Int!
     text: String!
-    language: String!
+    verseType: String!
     highlights: [Highlight!]!
     notes: [Note!]!
     crossReferences: [CrossReference!]!
+    equivalentVerses: [VerseMapping!]!
+  }
+
+  type VerseMapping {
+    id: ID!
+    fromVerse: Verse!
+    toVerse: Verse!
+    mappingType: String!
+    confidence: Float!
+    verified: Boolean!
+    notes: String
   }
 
   type CrossReference {
@@ -277,11 +313,22 @@ export const typeDefs = `#graphql
     # User queries
     me: User
 
-    # Scripture queries
+    # Scripture work queries
+    scriptureWorks: [ScriptureWork!]!
+    scriptureWork(id: ID!): ScriptureWork
+
+    # Edition queries
+    editions(workId: ID): [Edition!]!
+    edition(id: ID!): Edition
+
+    # Scripture queries (with edition support)
     verse(id: ID!): Verse
-    verses(book: String!, chapter: Int!): [Verse!]!
-    verseByReference(book: String!, chapter: Int!, verse: Int!): Verse
+    verses(book: String!, chapter: Int!, editionId: ID!): [Verse!]!
+    verseByReference(book: String!, chapter: Int!, verse: Int!, editionId: ID!): Verse
     searchVerses(input: SearchInput!): SearchResponse!
+
+    # Cross-edition queries
+    verseEquivalents(verseId: ID!): [VerseMapping!]!
 
     # Study queries
     myHighlights(verseId: ID): [Highlight!]!

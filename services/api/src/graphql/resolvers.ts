@@ -40,11 +40,67 @@ export const resolvers = {
     },
 
     /**
+     * Get all scripture works
+     */
+    scriptureWorks: async (_parent: any, _args: any, context: GraphQLContext) => {
+      return context.prisma.scriptureWork.findMany({
+        orderBy: { name: 'asc' },
+      });
+    },
+
+    /**
+     * Get a single scripture work by ID
+     */
+    scriptureWork: async (_parent: any, args: { id: string }, context: GraphQLContext) => {
+      const work = await context.prisma.scriptureWork.findUnique({
+        where: { id: args.id },
+      });
+
+      if (!work) {
+        throw new GraphQLError('Scripture work not found', {
+          extensions: { code: 'WORK_NOT_FOUND' },
+        });
+      }
+
+      return work;
+    },
+
+    /**
+     * Get editions (optionally filtered by work)
+     */
+    editions: async (_parent: any, args: { workId?: string }, context: GraphQLContext) => {
+      return context.prisma.edition.findMany({
+        where: args.workId ? { workId: args.workId } : undefined,
+        orderBy: { displayOrder: 'asc' },
+      });
+    },
+
+    /**
+     * Get a single edition by ID
+     */
+    edition: async (_parent: any, args: { id: string }, context: GraphQLContext) => {
+      const edition = await context.prisma.edition.findUnique({
+        where: { id: args.id },
+      });
+
+      if (!edition) {
+        throw new GraphQLError('Edition not found', {
+          extensions: { code: 'EDITION_NOT_FOUND' },
+        });
+      }
+
+      return edition;
+    },
+
+    /**
      * Get a single verse by ID
      */
     verse: async (_parent: any, args: { id: string }, context: GraphQLContext) => {
       const verse = await context.prisma.verse.findUnique({
         where: { id: args.id },
+        include: {
+          edition: true,
+        },
       });
 
       if (!verse) {
@@ -57,37 +113,45 @@ export const resolvers = {
     },
 
     /**
-     * Get all verses for a chapter
+     * Get all verses for a chapter in a specific edition
      */
     verses: async (
       _parent: any,
-      args: { book: string; chapter: number },
+      args: { book: string; chapter: number; editionId: string },
       context: GraphQLContext
     ) => {
       return context.prisma.verse.findMany({
         where: {
+          editionId: args.editionId,
           book: args.book,
           chapter: args.chapter,
         },
         orderBy: {
           verse: 'asc',
         },
+        include: {
+          edition: true,
+        },
       });
     },
 
     /**
-     * Get verse by book, chapter, verse reference
+     * Get verse by book, chapter, verse reference in a specific edition
      */
     verseByReference: async (
       _parent: any,
-      args: { book: string; chapter: number; verse: number },
+      args: { book: string; chapter: number; verse: number; editionId: string },
       context: GraphQLContext
     ) => {
       const verse = await context.prisma.verse.findFirst({
         where: {
+          editionId: args.editionId,
           book: args.book,
           chapter: args.chapter,
           verse: args.verse,
+        },
+        include: {
+          edition: true,
         },
       });
 
@@ -98,6 +162,34 @@ export const resolvers = {
       }
 
       return verse;
+    },
+
+    /**
+     * Get verse equivalents (cross-edition mappings)
+     */
+    verseEquivalents: async (
+      _parent: any,
+      args: { verseId: string },
+      context: GraphQLContext
+    ) => {
+      const mappings = await context.prisma.verseMapping.findMany({
+        where: {
+          OR: [
+            { fromVerseId: args.verseId },
+            { toVerseId: args.verseId },
+          ],
+        },
+        include: {
+          fromVerse: {
+            include: { edition: true },
+          },
+          toVerse: {
+            include: { edition: true },
+          },
+        },
+      });
+
+      return mappings;
     },
 
     /**
@@ -513,6 +605,24 @@ export const resolvers = {
   // ============================================================================
   // Field Resolvers
   // ============================================================================
+
+  ScriptureWork: {
+    editions: async (parent: any, _args: any, context: GraphQLContext) => {
+      return context.prisma.edition.findMany({
+        where: { workId: parent.id },
+        orderBy: { displayOrder: 'asc' },
+      });
+    },
+  },
+
+  Edition: {
+    work: async (parent: any, _args: any, context: GraphQLContext) => {
+      return context.prisma.scriptureWork.findUnique({
+        where: { id: parent.workId },
+      });
+    },
+  },
+
   User: {
     highlights: async (parent: any, _args: any, context: GraphQLContext) => {
       return context.prisma.highlight.findMany({
@@ -530,6 +640,15 @@ export const resolvers = {
   },
 
   Verse: {
+    edition: async (parent: any, _args: any, context: GraphQLContext) => {
+      // Return if already loaded
+      if (parent.edition) return parent.edition;
+
+      return context.prisma.edition.findUnique({
+        where: { id: parent.editionId },
+      });
+    },
+
     highlights: async (parent: any, _args: any, context: GraphQLContext) => {
       if (!context.user) return [];
 
@@ -549,6 +668,7 @@ export const resolvers = {
           verseId: parent.id,
           userId: context.user.userId,
         },
+        orderBy: { createdAt: 'desc' },
       });
     },
 
@@ -557,6 +677,21 @@ export const resolvers = {
         where: { fromVerseId: parent.id },
         include: {
           toVerse: true,
+        },
+      });
+    },
+
+    equivalentVerses: async (parent: any, _args: any, context: GraphQLContext) => {
+      return context.prisma.verseMapping.findMany({
+        where: {
+          OR: [
+            { fromVerseId: parent.id },
+            { toVerseId: parent.id },
+          ],
+        },
+        include: {
+          fromVerse: { include: { edition: true } },
+          toVerse: { include: { edition: true } },
         },
       });
     },
