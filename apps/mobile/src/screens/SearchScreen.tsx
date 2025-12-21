@@ -4,7 +4,7 @@
  * Full-featured scripture search with filtering and highlighting
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,8 +16,12 @@ import {
   Keyboard,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSearch, highlightSearchTerm, SearchResult } from '../hooks/useSearch';
 import { useTheme } from '../contexts/ThemeContext';
+
+const RECENT_SEARCHES_KEY = '@bom_recent_searches';
+const MAX_RECENT_SEARCHES = 8;
 
 const EDITIONS = [
   { id: 'all', name: 'All Editions' },
@@ -30,19 +34,68 @@ export function SearchScreen() {
   const { colors } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEdition, setSelectedEdition] = useState('all');
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const { results, loading, error, search, clearResults, hasSearched, totalResults } = useSearch(100);
 
+  // Load recent searches on mount
+  useEffect(() => {
+    loadRecentSearches();
+  }, []);
+
+  const loadRecentSearches = async () => {
+    try {
+      const saved = await AsyncStorage.getItem(RECENT_SEARCHES_KEY);
+      if (saved) {
+        setRecentSearches(JSON.parse(saved));
+      }
+    } catch (error) {
+      console.error('Failed to load recent searches:', error);
+    }
+  };
+
+  const saveRecentSearch = async (query: string) => {
+    try {
+      const trimmed = query.trim().toLowerCase();
+      if (trimmed.length < 2) return;
+
+      const updated = [trimmed, ...recentSearches.filter(s => s !== trimmed)].slice(0, MAX_RECENT_SEARCHES);
+      setRecentSearches(updated);
+      await AsyncStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+    } catch (error) {
+      console.error('Failed to save recent search:', error);
+    }
+  };
+
+  const clearRecentSearches = async () => {
+    try {
+      setRecentSearches([]);
+      await AsyncStorage.removeItem(RECENT_SEARCHES_KEY);
+    } catch (error) {
+      console.error('Failed to clear recent searches:', error);
+    }
+  };
+
   const handleSearch = useCallback(
-    (text: string) => {
+    (text: string, saveToRecent: boolean = false) => {
       setSearchQuery(text);
       if (text.length >= 2) {
         search(text, selectedEdition === 'all' ? undefined : selectedEdition);
+        if (saveToRecent) {
+          saveRecentSearch(text);
+        }
       } else if (text.length === 0) {
         clearResults();
       }
     },
-    [search, clearResults, selectedEdition]
+    [search, clearResults, selectedEdition, saveRecentSearch]
   );
+
+  const handleSubmitSearch = useCallback(() => {
+    if (searchQuery.length >= 2) {
+      saveRecentSearch(searchQuery);
+      Keyboard.dismiss();
+    }
+  }, [searchQuery, saveRecentSearch]);
 
   const handleEditionChange = useCallback(
     (editionId: string) => {
@@ -82,7 +135,8 @@ export function SearchScreen() {
             placeholder="Search scriptures..."
             placeholderTextColor={colors.textSecondary}
             value={searchQuery}
-            onChangeText={handleSearch}
+            onChangeText={(text) => handleSearch(text, false)}
+            onSubmitEditing={handleSubmitSearch}
             autoCapitalize="none"
             autoCorrect={false}
             returnKeyType="search"
@@ -184,14 +238,42 @@ export function SearchScreen() {
             <Text style={[styles.promptText, { color: colors.textSecondary }]}>
               Enter at least 2 characters to search through all verses
             </Text>
+
+            {/* Recent Searches */}
+            {recentSearches.length > 0 && (
+              <View style={styles.suggestionsContainer}>
+                <View style={styles.recentHeader}>
+                  <Text style={[styles.suggestionsTitle, { color: colors.textSecondary }]}>Recent searches:</Text>
+                  <Pressable onPress={clearRecentSearches}>
+                    <Text style={[styles.clearRecentText, { color: colors.error }]}>Clear</Text>
+                  </Pressable>
+                </View>
+                <View style={styles.suggestions}>
+                  {recentSearches.map((term) => (
+                    <Pressable
+                      key={term}
+                      style={[styles.recentChip, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                      onPress={() => handleSearch(term, true)}
+                    >
+                      <Text style={[styles.recentIcon, { color: colors.textSecondary }]}>🕐</Text>
+                      <Text style={[styles.recentText, { color: colors.text }]}>{term}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* Suggested Searches */}
             <View style={styles.suggestionsContainer}>
-              <Text style={[styles.suggestionsTitle, { color: colors.textSecondary }]}>Try searching for:</Text>
+              <Text style={[styles.suggestionsTitle, { color: colors.textSecondary }]}>
+                {recentSearches.length > 0 ? 'Popular searches:' : 'Try searching for:'}
+              </Text>
               <View style={styles.suggestions}>
                 {['faith', 'hope', 'charity', 'repent', 'Jesus'].map((term) => (
                   <Pressable
                     key={term}
                     style={[styles.suggestionChip, { backgroundColor: colors.primary + '20' }]}
-                    onPress={() => handleSearch(term)}
+                    onPress={() => handleSearch(term, true)}
                   >
                     <Text style={[styles.suggestionText, { color: colors.primary }]}>{term}</Text>
                   </Pressable>
@@ -433,11 +515,24 @@ const styles = StyleSheet.create({
   },
   suggestionsContainer: {
     alignItems: 'center',
+    width: '100%',
+    marginTop: 16,
+  },
+  recentHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 20,
+    marginBottom: 12,
+  },
+  clearRecentText: {
+    fontSize: 14,
+    fontWeight: '500',
   },
   suggestionsTitle: {
     fontSize: 14,
     color: '#666666',
-    marginBottom: 12,
   },
   suggestions: {
     flexDirection: 'row',
@@ -454,6 +549,22 @@ const styles = StyleSheet.create({
   suggestionText: {
     fontSize: 14,
     color: '#0066cc',
+    fontWeight: '500',
+  },
+  recentChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 6,
+  },
+  recentIcon: {
+    fontSize: 12,
+  },
+  recentText: {
+    fontSize: 14,
     fontWeight: '500',
   },
 });
