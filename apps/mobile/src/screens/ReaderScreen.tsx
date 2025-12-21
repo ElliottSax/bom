@@ -5,14 +5,17 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ScriptureReader } from '../components/ScriptureReader';
 import { VerseActionMenu, VerseData } from '../components/VerseActionMenu';
 import { ChapterNavigation } from '../components/ChapterNavigation';
+import { NoteEditor } from '../components/NoteEditor';
 import type { ReadStackParamList } from '../navigation/RootNavigator';
 import { saveLastReadPosition } from './HomeScreen';
 import { useBookmarks } from '../hooks/useBookmarks';
+import { useHighlights } from '../hooks/useHighlights';
+import { useNotes } from '../hooks/useNotes';
 import { useBookNavigation } from '../hooks/useBookInfo';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -21,12 +24,18 @@ type Props = NativeStackScreenProps<ReadStackParamList, 'Reader'>;
 export function ReaderScreen({ route, navigation }: Props) {
   const { editionId, book, chapter } = route.params;
   const { colors } = useTheme();
-  const { bookmarks, addBookmark, removeBookmark, isBookmarked } = useBookmarks();
+  const { addBookmark, removeBookmark, isBookmarked } = useBookmarks();
+  const { addHighlight, removeHighlight, getHighlight } = useHighlights();
+  const { addNote, updateNote, deleteNote, getNote } = useNotes();
   const bookNav = useBookNavigation(book, chapter);
 
   // Verse action menu state
   const [menuVisible, setMenuVisible] = useState(false);
   const [selectedVerse, setSelectedVerse] = useState<VerseData | null>(null);
+
+  // Note editor state
+  const [noteEditorVisible, setNoteEditorVisible] = useState(false);
+  const [editingNote, setEditingNote] = useState<{ content: string; updatedAt?: number } | null>(null);
 
   // Save last read position when chapter changes
   React.useEffect(() => {
@@ -73,25 +82,68 @@ export function ReaderScreen({ route, navigation }: Props) {
     if (!selectedVerse) return;
 
     if (color) {
-      // TODO: Save highlight to storage
-      Alert.alert(
-        'Highlight Added',
-        `Verse ${selectedVerse.verseNumber} highlighted in ${color === '#ffeb3b' ? 'yellow' : color === '#2196f3' ? 'blue' : color === '#4caf50' ? 'green' : color === '#e91e63' ? 'pink' : 'orange'}`
-      );
+      addHighlight({
+        verseId: selectedVerse.verseId,
+        editionId: selectedVerse.editionId,
+        book: selectedVerse.book,
+        chapter: selectedVerse.chapter,
+        verse: selectedVerse.verseNumber,
+        color,
+      });
     } else {
-      Alert.alert('Highlight Removed', `Highlight removed from verse ${selectedVerse.verseNumber}`);
+      removeHighlight(selectedVerse.verseId);
     }
-  }, [selectedVerse]);
+  }, [selectedVerse, addHighlight, removeHighlight]);
 
   const handleAddNote = useCallback(() => {
     if (!selectedVerse) return;
 
-    // TODO: Navigate to note editor or show note input modal
-    Alert.alert(
-      'Add Note',
-      `Notes feature coming soon for ${book} ${chapter}:${selectedVerse.verseNumber}`
-    );
-  }, [selectedVerse, book, chapter]);
+    // Check if there's an existing note
+    const existingNote = getNote(selectedVerse.verseId);
+    if (existingNote) {
+      setEditingNote({
+        content: existingNote.content,
+        updatedAt: existingNote.updatedAt,
+      });
+    } else {
+      setEditingNote(null);
+    }
+
+    setMenuVisible(false);
+    setNoteEditorVisible(true);
+  }, [selectedVerse, getNote]);
+
+  const handleSaveNote = useCallback(
+    (content: string) => {
+      if (!selectedVerse) return;
+
+      const existingNote = getNote(selectedVerse.verseId);
+      if (existingNote) {
+        updateNote(selectedVerse.verseId, content);
+      } else {
+        addNote({
+          verseId: selectedVerse.verseId,
+          editionId: selectedVerse.editionId,
+          book: selectedVerse.book,
+          chapter: selectedVerse.chapter,
+          verse: selectedVerse.verseNumber,
+          content,
+        });
+      }
+    },
+    [selectedVerse, getNote, addNote, updateNote]
+  );
+
+  const handleDeleteNote = useCallback(() => {
+    if (!selectedVerse) return;
+    deleteNote(selectedVerse.verseId);
+  }, [selectedVerse, deleteNote]);
+
+  const handleCloseNoteEditor = useCallback(() => {
+    setNoteEditorVisible(false);
+    setEditingNote(null);
+    setSelectedVerse(null);
+  }, []);
 
   const handleCloseMenu = useCallback(() => {
     setMenuVisible(false);
@@ -151,6 +203,17 @@ export function ReaderScreen({ route, navigation }: Props) {
         onBookmark={handleBookmark}
         onHighlight={handleHighlight}
         onAddNote={handleAddNote}
+      />
+
+      <NoteEditor
+        visible={noteEditorVisible}
+        verseReference={selectedVerse ? `${selectedVerse.book} ${selectedVerse.chapter}:${selectedVerse.verseNumber}` : ''}
+        verseText={selectedVerse?.text || ''}
+        initialContent={editingNote?.content}
+        lastUpdated={editingNote?.updatedAt}
+        onSave={handleSaveNote}
+        onDelete={editingNote ? handleDeleteNote : undefined}
+        onClose={handleCloseNoteEditor}
       />
     </View>
   );

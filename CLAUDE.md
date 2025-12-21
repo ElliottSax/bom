@@ -72,6 +72,9 @@ bom/
 5. **Chapter Navigation** - Previous/Next with cross-book support
 6. **HomeScreen** - Dynamic stats, last read position, featured verse
 7. **Theme Integration** - All components now use theme colors
+8. **Highlights System** - useHighlights hook with persistent storage
+9. **Notes System** - useNotes hook + NoteEditor modal + NotesScreen
+10. **Full Study Tools** - Complete bookmark, highlight, and note integration
 
 ## Mobile App Features
 
@@ -81,6 +84,8 @@ bom/
 - Last read position tracking
 - Verse action menu (long-press)
 - Bookmarks with sorting
+- Verse highlighting (5 colors)
+- Note-taking with editor modal
 - Persistent reading settings
 - Dark/Light/System theme
 - Featured verse display
@@ -95,18 +100,21 @@ apps/mobile/src/
 │   ├── useSearch.ts            # Search hook
 │   ├── useStats.ts             # Statistics hook
 │   ├── useBookmarks.ts         # Bookmarks hook
+│   ├── useHighlights.ts        # Highlights hook
+│   ├── useNotes.ts             # Notes hook
 │   └── useBookInfo.ts          # Book/chapter info
 ├── components/
 │   ├── VerseActionMenu.tsx     # Long-press menu
-│   └── ChapterNavigation.tsx   # Prev/Next nav
+│   ├── ChapterNavigation.tsx   # Prev/Next nav
+│   └── NoteEditor.tsx          # Note editor modal
 └── screens/
-    └── BookmarksScreen.tsx     # Bookmark list
+    ├── BookmarksScreen.tsx     # Bookmark list
+    └── NotesScreen.tsx         # Notes list
 ```
 
 ## TODO
 
-- [ ] Implement verse highlighting persistence
-- [ ] Complete notes editor
 - [ ] Complete offline download feature
 - [ ] Add cross-reference lookups
 - [ ] Implement study plans
+- [ ] Add reading progress tracking
