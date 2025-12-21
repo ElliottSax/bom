@@ -4,29 +4,61 @@
  * Main landing screen with "Continue Reading" and quick access
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Pressable,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useStats, formatNumber } from '../hooks/useStats';
+
+const LAST_READ_KEY = '@bom_last_read';
+
+interface LastReadPosition {
+  editionId: string;
+  book: string;
+  chapter: number;
+  timestamp: number;
+}
 
 export function HomeScreen() {
   const navigation = useNavigation();
+  const { totalVerses, totalBooks, totalChapters, loading: statsLoading } = useStats();
+  const [lastRead, setLastRead] = useState<LastReadPosition | null>(null);
+  const [loadingLastRead, setLoadingLastRead] = useState(true);
+
+  // Load last read position on mount
+  useEffect(() => {
+    async function loadLastRead() {
+      try {
+        const stored = await AsyncStorage.getItem(LAST_READ_KEY);
+        if (stored) {
+          setLastRead(JSON.parse(stored));
+        }
+      } catch (error) {
+        console.error('Failed to load last read position:', error);
+      } finally {
+        setLoadingLastRead(false);
+      }
+    }
+    loadLastRead();
+  }, []);
 
   const handleContinueReading = () => {
-    // Future: Get last read position from storage
-    // For now, go to I Nephi 1
+    const position = lastRead || {
+      editionId: 'coc-bom-1908',
+      book: 'I Nephi',
+      chapter: 1,
+    };
+
     navigation.navigate('Read', {
       screen: 'Reader',
-      params: {
-        editionId: 'coc-bom-1908',
-        book: 'I Nephi',
-        chapter: 1,
-      },
+      params: position,
     });
   };
 
@@ -39,6 +71,10 @@ export function HomeScreen() {
     });
   };
 
+  const continueLabel = lastRead
+    ? `${lastRead.book}, Chapter ${lastRead.chapter}`
+    : 'I Nephi, Chapter 1';
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
@@ -49,13 +85,19 @@ export function HomeScreen() {
       {/* Continue Reading Card */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Continue Reading</Text>
-        <Text style={styles.cardSubtitle}>I Nephi, Chapter 1</Text>
-        <Pressable
-          style={styles.primaryButton}
-          onPress={handleContinueReading}
-        >
-          <Text style={styles.primaryButtonText}>Continue</Text>
-        </Pressable>
+        {loadingLastRead ? (
+          <ActivityIndicator size="small" color="#0066cc" />
+        ) : (
+          <>
+            <Text style={styles.cardSubtitle}>{continueLabel}</Text>
+            <Pressable
+              style={styles.primaryButton}
+              onPress={handleContinueReading}
+            >
+              <Text style={styles.primaryButtonText}>Continue</Text>
+            </Pressable>
+          </>
+        )}
       </View>
 
       {/* Quick Actions */}
@@ -70,7 +112,7 @@ export function HomeScreen() {
           <View style={styles.actionContent}>
             <Text style={styles.actionTitle}>Browse Books</Text>
             <Text style={styles.actionSubtitle}>
-              15 books, 119 chapters available
+              {totalBooks} books, {totalChapters} chapters available
             </Text>
           </View>
           <Text style={styles.chevron}>›</Text>
@@ -84,7 +126,7 @@ export function HomeScreen() {
           <View style={styles.actionContent}>
             <Text style={styles.actionTitle}>Search Scriptures</Text>
             <Text style={styles.actionSubtitle}>
-              Search 8,701 verses
+              {statsLoading ? 'Loading...' : `Search ${formatNumber(totalVerses)} verses`}
             </Text>
           </View>
           <Text style={styles.chevron}>›</Text>
@@ -92,13 +134,13 @@ export function HomeScreen() {
 
         <Pressable
           style={styles.actionCard}
-          onPress={() => {}}
+          onPress={() => navigation.navigate('Settings')}
         >
-          <Text style={styles.actionIcon}>📥</Text>
+          <Text style={styles.actionIcon}>⚙️</Text>
           <View style={styles.actionContent}>
-            <Text style={styles.actionTitle}>Download for Offline</Text>
+            <Text style={styles.actionTitle}>Settings</Text>
             <Text style={styles.actionSubtitle}>
-              Coming soon
+              Customize your reading experience
             </Text>
           </View>
           <Text style={styles.chevron}>›</Text>
@@ -108,20 +150,55 @@ export function HomeScreen() {
       {/* Stats */}
       <View style={styles.statsSection}>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>8,701</Text>
+          {statsLoading ? (
+            <ActivityIndicator size="small" color="#0066cc" />
+          ) : (
+            <Text style={styles.statNumber}>{formatNumber(totalVerses)}</Text>
+          )}
           <Text style={styles.statLabel}>Verses</Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>15</Text>
+          <Text style={styles.statNumber}>{totalBooks}</Text>
           <Text style={styles.statLabel}>Books</Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>119</Text>
+          <Text style={styles.statNumber}>{totalChapters}</Text>
           <Text style={styles.statLabel}>Chapters</Text>
         </View>
       </View>
+
+      {/* Daily Verse */}
+      <View style={styles.dailyVerseCard}>
+        <Text style={styles.dailyVerseLabel}>Featured Verse</Text>
+        <Text style={styles.dailyVerseText}>
+          "And now, as ye are desirous to come into the fold of God, and to be called his people,
+          and are willing to bear one another's burdens, that they may be light..."
+        </Text>
+        <Text style={styles.dailyVerseReference}>Mosiah 18:8</Text>
+      </View>
     </ScrollView>
   );
+}
+
+/**
+ * Save last read position (to be called from ReaderScreen)
+ */
+export async function saveLastReadPosition(
+  editionId: string,
+  book: string,
+  chapter: number
+): Promise<void> {
+  try {
+    const position: LastReadPosition = {
+      editionId,
+      book,
+      chapter,
+      timestamp: Date.now(),
+    };
+    await AsyncStorage.setItem(LAST_READ_KEY, JSON.stringify(position));
+  } catch (error) {
+    console.error('Failed to save last read position:', error);
+  }
 }
 
 const styles = StyleSheet.create({
@@ -251,5 +328,34 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666666',
     textTransform: 'uppercase',
+  },
+  dailyVerseCard: {
+    margin: 16,
+    marginTop: 8,
+    padding: 20,
+    backgroundColor: '#e3f2fd',
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#0066cc',
+  },
+  dailyVerseLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#0066cc',
+    textTransform: 'uppercase',
+    marginBottom: 8,
+  },
+  dailyVerseText: {
+    fontSize: 16,
+    color: '#333333',
+    fontStyle: 'italic',
+    lineHeight: 24,
+    marginBottom: 8,
+  },
+  dailyVerseReference: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0066cc',
+    textAlign: 'right',
   },
 });

@@ -4,7 +4,7 @@
  * Main component for reading scripture chapters with offline support
  */
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import {
   View,
   ScrollView,
@@ -15,14 +15,15 @@ import {
   Pressable,
 } from 'react-native';
 import { useChapter } from '../hooks/useChapter';
+import { useSettings } from '../contexts/SettingsContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface ScriptureReaderProps {
   editionId: string;
   book: string;
   chapter: number;
   onVersePress?: (verseId: string, verseNumber: number) => void;
-  fontSize?: number;
-  lineHeight?: number;
+  onVerseLongPress?: (verseId: string, verseNumber: number, text: string) => void;
 }
 
 export function ScriptureReader({
@@ -30,9 +31,11 @@ export function ScriptureReader({
   book,
   chapter,
   onVersePress,
-  fontSize = 16,
-  lineHeight = 1.6,
+  onVerseLongPress,
 }: ScriptureReaderProps) {
+  const { settings } = useSettings();
+  const { colors } = useTheme();
+  const { fontSize, lineHeight, showVerseNumbers } = settings.reading;
   const { verses, loading, error, isOffline, refetch } = useChapter(
     editionId,
     book,
@@ -77,20 +80,20 @@ export function ScriptureReader({
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Offline indicator */}
       {isOffline && (
-        <View style={styles.offlineBanner}>
-          <Text style={styles.offlineText}>📡 Offline Mode</Text>
+        <View style={[styles.offlineBanner, { backgroundColor: colors.warning }]}>
+          <Text style={styles.offlineText}>Offline Mode</Text>
         </View>
       )}
 
       {/* Chapter title */}
-      <View style={styles.header}>
-        <Text style={styles.chapterTitle}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <Text style={[styles.chapterTitle, { color: colors.text }]}>
           {book} {chapter}
         </Text>
-        <Text style={styles.verseCount}>{verses.length} verses</Text>
+        <Text style={[styles.verseCount, { color: colors.textSecondary }]}>{verses.length} verses</Text>
       </View>
 
       {/* Verses */}
@@ -112,8 +115,11 @@ export function ScriptureReader({
             verse={verse}
             fontSize={fontSize}
             lineHeight={lineHeight}
+            showVerseNumbers={showVerseNumbers}
             onPress={onVersePress}
+            onLongPress={onVerseLongPress}
             isFirst={index === 0}
+            colors={colors}
           />
         ))}
 
@@ -134,30 +140,60 @@ interface VerseItemProps {
   };
   fontSize: number;
   lineHeight: number;
+  showVerseNumbers: boolean;
   onPress?: (verseId: string, verseNumber: number) => void;
+  onLongPress?: (verseId: string, verseNumber: number, text: string) => void;
   isFirst: boolean;
+  colors: any;
 }
 
-function VerseItem({ verse, fontSize, lineHeight, onPress, isFirst }: VerseItemProps) {
+function VerseItem({
+  verse,
+  fontSize,
+  lineHeight,
+  showVerseNumbers,
+  onPress,
+  onLongPress,
+  isFirst,
+  colors,
+}: VerseItemProps) {
   const handlePress = () => {
     if (onPress) {
       onPress(verse.id, verse.verse);
     }
   };
 
+  const handleLongPress = () => {
+    if (onLongPress) {
+      onLongPress(verse.id, verse.verse, verse.text);
+    }
+  };
+
   return (
     <Pressable
-      style={[styles.verseContainer, isFirst && styles.firstVerse]}
+      style={[
+        styles.verseContainer,
+        isFirst && styles.firstVerse,
+        { backgroundColor: colors.surface },
+      ]}
       onPress={handlePress}
-      android_ripple={{ color: '#e0e0e0' }}
+      onLongPress={handleLongPress}
+      delayLongPress={500}
+      android_ripple={{ color: colors.primary + '20' }}
     >
-      <Text style={styles.verseNumber}>{verse.verse}</Text>
+      {showVerseNumbers && (
+        <Text style={[styles.verseNumber, { color: colors.primary }]}>
+          {verse.verse}
+        </Text>
+      )}
       <Text
         style={[
           styles.verseText,
           {
             fontSize,
             lineHeight: fontSize * lineHeight,
+            color: colors.text,
+            marginLeft: showVerseNumbers ? 0 : 4,
           },
         ]}
       >
