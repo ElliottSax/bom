@@ -116,6 +116,25 @@ export function HomeScreen() {
         <Text style={styles.subtitle}>Study Tools</Text>
       </View>
 
+      {/* Reading Streak Card */}
+      {progressStats.currentStreak > 0 && (
+        <Pressable style={[styles.streakCard, { backgroundColor: colors.warning + '20' }]} onPress={handleProgressPress}>
+          <Text style={styles.streakIcon}>🔥</Text>
+          <View style={styles.streakContent}>
+            <Text style={[styles.streakCount, { color: colors.warning }]}>
+              {progressStats.currentStreak} day streak!
+            </Text>
+            <Text style={[styles.streakMessage, { color: colors.text }]}>
+              {progressStats.currentStreak >= 7
+                ? "Amazing dedication!"
+                : progressStats.currentStreak >= 3
+                ? "Keep it going!"
+                : "Great start!"}
+            </Text>
+          </View>
+        </Pressable>
+      )}
+
       {/* Reading Progress Card */}
       {progressStats.totalChaptersRead > 0 && (
         <Pressable style={[styles.progressCard, { backgroundColor: colors.surface }]} onPress={handleProgressPress}>
@@ -333,6 +352,29 @@ const styles = StyleSheet.create({
   header: {
     padding: 24,
     alignItems: 'center',
+  },
+  streakCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    margin: 16,
+    marginBottom: 0,
+    padding: 16,
+    borderRadius: 12,
+  },
+  streakIcon: {
+    fontSize: 36,
+    marginRight: 12,
+  },
+  streakContent: {
+    flex: 1,
+  },
+  streakCount: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  streakMessage: {
+    fontSize: 14,
+    marginTop: 2,
   },
   progressCard: {
     margin: 16,
