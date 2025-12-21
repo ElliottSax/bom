@@ -80,6 +80,7 @@ bom/
 13. **Study Plans** - Multiple reading plans (30-day to 1-year) with progress tracking
 14. **Cross-References** - Biblical cross-references for related verses
 15. **Enhanced Scripture Reader** - Shows highlight colors, bookmark/note indicators, and reading time estimates
+16. **Share Study Plans** - Share progress and invite friends to join reading plans
 
 ## Mobile App Features
 
@@ -101,6 +102,7 @@ bom/
 - Cross-references to Bible
 - Reading time estimates
 - Visual indicators for annotations
+- Share progress with friends
 
 ## New Files Created
 
