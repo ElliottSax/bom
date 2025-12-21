@@ -13,6 +13,7 @@ import {
   Pressable,
   Alert,
   Modal,
+  Share,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
@@ -105,6 +106,43 @@ export function StudyPlanScreen() {
     Alert.alert('Well Done!', 'You completed today\'s reading!');
   };
 
+  const handleShareProgress = async () => {
+    if (!currentPlan || !activePlan) return;
+
+    const daysCompleted = dayProgress.completed;
+    const totalDays = dayProgress.total;
+    const percent = dayProgress.percent;
+
+    const message = `I'm reading the Book of Mormon with the "${currentPlan.name}" plan!\n\n` +
+      `Progress: ${percent}% complete (Day ${daysCompleted} of ${totalDays})\n\n` +
+      `Join me in studying the scriptures!`;
+
+    try {
+      await Share.share({
+        message,
+        title: 'My Book of Mormon Reading Progress',
+      });
+    } catch (error) {
+      console.error('Error sharing:', error);
+    }
+  };
+
+  const handleSharePlanInvite = async (plan: StudyPlan) => {
+    const message = `Join me in reading the Book of Mormon!\n\n` +
+      `I'm starting the "${plan.name}" - ${plan.description}\n\n` +
+      `It's ${getPlanDurationLabel(plan.totalDays)} of reading, about ${Math.round(plan.chaptersPerDay)} chapters per day.\n\n` +
+      `Download the BOM Study Tools app to get started!`;
+
+    try {
+      await Share.share({
+        message,
+        title: `Join the ${plan.name}`,
+      });
+    } catch (error) {
+      console.error('Error sharing:', error);
+    }
+  };
+
   if (loading) {
     return (
       <View style={[styles.centered, { backgroundColor: colors.background }]}>
@@ -120,7 +158,15 @@ export function StudyPlanScreen() {
         <>
           {/* Current Plan Header */}
           <View style={[styles.planHeader, { backgroundColor: colors.primary }]}>
-            <Text style={styles.planName}>{currentPlan.name}</Text>
+            <View style={styles.planHeaderTop}>
+              <Text style={styles.planName}>{currentPlan.name}</Text>
+              <Pressable
+                style={styles.shareButton}
+                onPress={handleShareProgress}
+              >
+                <Text style={styles.shareButtonText}>Share</Text>
+              </Pressable>
+            </View>
             <View style={styles.progressContainer}>
               <Text style={styles.progressText}>
                 Day {dayProgress.completed} of {dayProgress.total}
@@ -282,9 +328,22 @@ export function StudyPlanScreen() {
                   <Text style={[styles.planCardStat, { color: colors.textSecondary }]}>
                     {Math.round(plan.chaptersPerDay)} chapters/day
                   </Text>
-                  <Text style={[styles.startText, { color: colors.primary }]}>
-                    Start →
-                  </Text>
+                  <View style={styles.planCardActions}>
+                    <Pressable
+                      style={styles.inviteButton}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        handleSharePlanInvite(plan);
+                      }}
+                    >
+                      <Text style={[styles.inviteText, { color: colors.textSecondary }]}>
+                        Invite
+                      </Text>
+                    </Pressable>
+                    <Text style={[styles.startText, { color: colors.primary }]}>
+                      Start →
+                    </Text>
+                  </View>
                 </View>
               </Pressable>
             ))}
@@ -382,11 +441,27 @@ const styles = StyleSheet.create({
   planHeader: {
     padding: 24,
   },
+  planHeaderTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   planName: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#ffffff',
-    marginBottom: 16,
+  },
+  shareButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+  },
+  shareButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   progressContainer: {
     flexDirection: 'row',
@@ -600,6 +675,17 @@ const styles = StyleSheet.create({
   startText: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  planCardActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  inviteButton: {
+    paddingVertical: 4,
+  },
+  inviteText: {
+    fontSize: 14,
   },
   modalOverlay: {
     flex: 1,
