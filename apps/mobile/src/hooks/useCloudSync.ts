@@ -5,9 +5,9 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
-import * as Device from 'expo-device';
 
 // Storage keys
 const SYNC_CONFIG_KEY = '@bom_sync_config';
@@ -121,7 +121,7 @@ export function useCloudSync() {
         setConfig(JSON.parse(savedConfig));
       } else {
         // Generate device ID on first run
-        const deviceId = `${Device.brand || 'unknown'}-${Device.modelName || 'device'}-${Date.now()}`;
+        const deviceId = `${Platform.OS}-${Platform.Version}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         const newConfig = { ...DEFAULT_CONFIG, deviceId };
         await saveConfig(newConfig);
       }

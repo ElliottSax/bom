@@ -5,10 +5,11 @@
  */
 
 import { useState, useCallback } from 'react';
+import { Platform, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
-import * as DocumentPicker from 'expo-document-picker';
+import RNFS from 'react-native-fs';
+import Share from 'react-native-share';
+import DocumentPicker from 'react-native-document-picker';
 
 // Storage keys for user data
 const STORAGE_KEYS = {
@@ -121,22 +122,26 @@ export function useDataBackup() {
       // Create filename with date
       const date = new Date().toISOString().split('T')[0];
       const filename = `bom-backup-${date}.json`;
-      const filePath = `${FileSystem.documentDirectory}${filename}`;
+      const filePath = `${RNFS.DocumentDirectoryPath}/${filename}`;
 
       // Write to file
-      await FileSystem.writeAsStringAsync(filePath, JSON.stringify(backupData, null, 2));
+      await RNFS.writeFile(filePath, JSON.stringify(backupData, null, 2), 'utf8');
 
       // Share the file
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(filePath, {
-          mimeType: 'application/json',
-          dialogTitle: 'Export BOM Study Data',
-        });
-      }
+      await Share.open({
+        url: Platform.OS === 'android' ? `file://${filePath}` : filePath,
+        type: 'application/json',
+        title: 'Export BOM Study Data',
+      });
 
       setExporting(false);
       return true;
-    } catch (err) {
+    } catch (err: any) {
+      // User cancelled share is not an error
+      if (err?.message?.includes('User did not share')) {
+        setExporting(false);
+        return true;
+      }
       console.error('Export failed:', err);
       setError('Failed to export data. Please try again.');
       setExporting(false);
@@ -151,20 +156,19 @@ export function useDataBackup() {
 
     try {
       // Pick a document
-      const result = await DocumentPicker.getDocumentAsync({
-        type: 'application/json',
-        copyToCacheDirectory: true,
+      const result = await DocumentPicker.pick({
+        type: [DocumentPicker.types.json, DocumentPicker.types.allFiles],
       });
 
-      if (result.canceled || !result.assets?.[0]) {
+      if (!result || result.length === 0) {
         setImporting(false);
         return false;
       }
 
-      const fileUri = result.assets[0].uri;
+      const fileUri = result[0].uri;
 
       // Read file content
-      const content = await FileSystem.readAsStringAsync(fileUri);
+      const content = await RNFS.readFile(fileUri, 'utf8');
       const backupData: BackupData = JSON.parse(content);
 
       // Validate backup format

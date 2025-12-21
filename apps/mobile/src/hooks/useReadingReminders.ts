@@ -5,9 +5,9 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { Platform, PermissionsAndroid } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
+import PushNotification from 'react-native-push-notification';
 
 const REMINDERS_KEY = '@bom_reading_reminders';
 
@@ -27,14 +27,28 @@ const DEFAULT_REMINDER: ReminderSettings = {
   notificationIds: [],
 };
 
-// Configure notification handler
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
+// Channel ID for Android
+const CHANNEL_ID = 'bom-reading-reminders';
+
+// Configure push notifications
+PushNotification.configure({
+  onNotification: function (notification) {
+    console.log('NOTIFICATION:', notification);
+  },
+  requestPermissions: Platform.OS === 'ios',
 });
+
+// Create notification channel for Android
+PushNotification.createChannel(
+  {
+    channelId: CHANNEL_ID,
+    channelName: 'Reading Reminders',
+    channelDescription: 'Daily scripture study reminders',
+    importance: 4, // IMPORTANCE_HIGH
+    vibrate: true,
+  },
+  (created) => console.log(`Channel created: ${created}`)
+);
 
 export function useReadingReminders() {
   const [settings, setSettings] = useState<ReminderSettings>(DEFAULT_REMINDER);
@@ -70,33 +84,38 @@ export function useReadingReminders() {
   };
 
   const checkPermissions = async () => {
-    const { status } = await Notifications.getPermissionsAsync();
-    setPermissionStatus(status);
-    return status;
+    if (Platform.OS === 'android') {
+      if (Platform.Version >= 33) {
+        const granted = await PermissionsAndroid.check(
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+        );
+        setPermissionStatus(granted ? 'granted' : 'denied');
+        return granted ? 'granted' : 'denied';
+      }
+      setPermissionStatus('granted');
+      return 'granted';
+    }
+    // iOS permissions are requested during configure
+    setPermissionStatus('granted');
+    return 'granted';
   };
 
   const requestPermissions = async (): Promise<boolean> => {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-
-    if (existingStatus === 'granted') {
-      setPermissionStatus('granted');
-      return true;
+    if (Platform.OS === 'android' && Platform.Version >= 33) {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+      );
+      const isGranted = granted === PermissionsAndroid.RESULTS.GRANTED;
+      setPermissionStatus(isGranted ? 'granted' : 'denied');
+      return isGranted;
     }
-
-    const { status } = await Notifications.requestPermissionsAsync();
-    setPermissionStatus(status);
-    return status === 'granted';
+    setPermissionStatus('granted');
+    return true;
   };
 
   // Cancel all existing reminders
   const cancelAllReminders = async () => {
-    if (settings.notificationIds.length > 0) {
-      await Promise.all(
-        settings.notificationIds.map((id) =>
-          Notifications.cancelScheduledNotificationAsync(id)
-        )
-      );
-    }
+    PushNotification.cancelAllLocalNotifications();
   };
 
   // Schedule reminders based on settings
@@ -107,7 +126,7 @@ export function useReadingReminders() {
       return notificationIds;
     }
 
-    // Get a random inspirational message
+    // Get inspirational messages
     const messages = [
       "Time for your daily scripture study!",
       "Feed your soul with scripture today.",
@@ -118,26 +137,43 @@ export function useReadingReminders() {
       "Ready to learn something new today?",
     ];
 
-    for (const dayOfWeek of reminderSettings.daysOfWeek) {
-      const trigger: Notifications.WeeklyTriggerInput = {
-        weekday: dayOfWeek + 1, // Expo uses 1-7 (Sunday = 1)
-        hour: reminderSettings.time.hour,
-        minute: reminderSettings.time.minute,
-        repeats: true,
-      };
+    // Calculate next occurrence for each day
+    const now = new Date();
 
-      const id = await Notifications.scheduleNotificationAsync({
-        content: {
-          title: "Scripture Study",
-          body: messages[Math.floor(Math.random() * messages.length)],
-          sound: true,
-          priority: Notifications.AndroidNotificationPriority.HIGH,
-          data: { type: 'reading_reminder' },
-        },
-        trigger,
+    for (const dayOfWeek of reminderSettings.daysOfWeek) {
+      // Calculate next occurrence of this day
+      const targetDate = new Date();
+      const currentDay = targetDate.getDay();
+      let daysUntil = dayOfWeek - currentDay;
+
+      if (daysUntil < 0 || (daysUntil === 0 &&
+          (targetDate.getHours() > reminderSettings.time.hour ||
+           (targetDate.getHours() === reminderSettings.time.hour &&
+            targetDate.getMinutes() >= reminderSettings.time.minute)))) {
+        daysUntil += 7;
+      }
+
+      targetDate.setDate(targetDate.getDate() + daysUntil);
+      targetDate.setHours(reminderSettings.time.hour, reminderSettings.time.minute, 0, 0);
+
+      const notificationId = `reminder-${dayOfWeek}`;
+
+      PushNotification.localNotificationSchedule({
+        id: notificationId,
+        channelId: CHANNEL_ID,
+        title: "Scripture Study",
+        message: messages[Math.floor(Math.random() * messages.length)],
+        date: targetDate,
+        repeatType: 'week',
+        allowWhileIdle: true,
+        importance: 'high',
+        priority: 'high',
+        vibrate: true,
+        playSound: true,
+        userInfo: { type: 'reading_reminder' },
       });
 
-      notificationIds.push(id);
+      notificationIds.push(notificationId);
     }
 
     return notificationIds;
