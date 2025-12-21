@@ -103,6 +103,7 @@ bom/
 - Reading time estimates
 - Visual indicators for annotations
 - Share progress with friends
+- Bulk offline downloads with pause/resume
 
 ## New Files Created
 
@@ -120,7 +121,8 @@ apps/mobile/src/
 │   ├── useReadingProgress.ts   # Reading progress tracking
 │   ├── useDailyVerse.ts        # Daily verse rotation
 │   ├── useStudyPlan.ts         # Study plan management
-│   └── useCrossReferences.ts   # Cross-reference lookups
+│   ├── useCrossReferences.ts   # Cross-reference lookups
+│   └── useOfflineDownload.ts   # Bulk download management
 ├── components/
 │   ├── VerseActionMenu.tsx     # Long-press menu
 │   ├── ChapterNavigation.tsx   # Prev/Next nav
@@ -129,12 +131,13 @@ apps/mobile/src/
     ├── BookmarksScreen.tsx     # Bookmark list
     ├── NotesScreen.tsx         # Notes list
     ├── ProgressScreen.tsx      # Reading progress stats
-    └── StudyPlanScreen.tsx     # Study plan management
+    ├── StudyPlanScreen.tsx     # Study plan management
+    └── OfflineDownloadScreen.tsx # Offline download manager
 ```
 
 ## TODO
 
-- [ ] Complete offline download feature
+- [x] Complete offline download feature
 - [x] Add cross-reference lookups
 - [x] Implement study plans
 - [x] Add reading progress tracking

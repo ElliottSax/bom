@@ -14,11 +14,17 @@ import {
   Switch,
   Alert,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Slider from '@react-native-community/slider';
 import { useTheme, ThemeMode } from '../contexts/ThemeContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { HomeStackParamList } from '../navigation/RootNavigator';
+
+type SettingsNavigationProp = NativeStackNavigationProp<HomeStackParamList>;
 
 export function SettingsScreen() {
+  const navigation = useNavigation<SettingsNavigationProp>();
   const { theme, setTheme, colors, isDark } = useTheme();
   const {
     settings,
@@ -354,9 +360,22 @@ export function SettingsScreen() {
         </View>
       </View>
 
-      {/* Sync Settings */}
-      <Text style={dynamicStyles.sectionTitle}>Sync & Backup</Text>
+      {/* Offline & Sync Settings */}
+      <Text style={dynamicStyles.sectionTitle}>Offline & Sync</Text>
       <View style={dynamicStyles.section}>
+        <Pressable
+          style={dynamicStyles.settingItem}
+          onPress={() => navigation.navigate('OfflineDownload')}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={dynamicStyles.settingLabel}>Offline Downloads</Text>
+            <Text style={dynamicStyles.settingDescription}>
+              Download scriptures for offline reading
+            </Text>
+          </View>
+          <Text style={{ fontSize: 20, color: colors.textSecondary }}>→</Text>
+        </Pressable>
+
         <View style={dynamicStyles.settingItem}>
           <View style={{ flex: 1 }}>
             <Text style={dynamicStyles.settingLabel}>Auto-Sync</Text>

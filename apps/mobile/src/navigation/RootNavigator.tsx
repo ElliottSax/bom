@@ -22,6 +22,7 @@ import { BookmarksScreen } from '../screens/BookmarksScreen';
 import { NotesScreen } from '../screens/NotesScreen';
 import { ProgressScreen } from '../screens/ProgressScreen';
 import { StudyPlanScreen } from '../screens/StudyPlanScreen';
+import { OfflineDownloadScreen } from '../screens/OfflineDownloadScreen';
 
 // Type definitions for navigation
 export type RootStackParamList = {
@@ -47,6 +48,7 @@ export type HomeStackParamList = {
   Notes: undefined;
   Progress: undefined;
   StudyPlan: undefined;
+  OfflineDownload: undefined;
 };
 
 export type ReadStackParamList = {
@@ -111,6 +113,11 @@ function HomeStackNavigator() {
         name="StudyPlan"
         component={StudyPlanScreen}
         options={{ title: 'Study Plan' }}
+      />
+      <HomeStack.Screen
+        name="OfflineDownload"
+        component={OfflineDownloadScreen}
+        options={{ title: 'Offline Downloads' }}
       />
     </HomeStack.Navigator>
   );
