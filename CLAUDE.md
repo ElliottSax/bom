@@ -70,11 +70,15 @@ bom/
 3. **Bookmarks System** - useBookmarks hook + BookmarksScreen with sorting
 4. **Verse Action Menu** - Long-press menu for bookmark, highlight, copy, share
 5. **Chapter Navigation** - Previous/Next with cross-book support
-6. **HomeScreen** - Dynamic stats, last read position, featured verse
+6. **HomeScreen** - Dynamic stats, last read position, daily verse with rotation
 7. **Theme Integration** - All components now use theme colors
 8. **Highlights System** - useHighlights hook with persistent storage
 9. **Notes System** - useNotes hook + NoteEditor modal + NotesScreen
 10. **Full Study Tools** - Complete bookmark, highlight, and note integration
+11. **Reading Progress** - Track chapters read, streaks, and completion percentage
+12. **Daily Verse** - Rotating inspirational verse (31 curated verses)
+13. **Study Plans** - Multiple reading plans (30-day to 1-year) with progress tracking
+14. **Cross-References** - Biblical cross-references for related verses
 
 ## Mobile App Features
 
@@ -88,7 +92,12 @@ bom/
 - Note-taking with editor modal
 - Persistent reading settings
 - Dark/Light/System theme
-- Featured verse display
+- Daily verse with rotation
+- Reading progress tracking
+- Reading streaks
+- Study plans (5 options)
+- Mark chapters as complete
+- Cross-references to Bible
 
 ## New Files Created
 
@@ -102,19 +111,25 @@ apps/mobile/src/
 │   ├── useBookmarks.ts         # Bookmarks hook
 │   ├── useHighlights.ts        # Highlights hook
 │   ├── useNotes.ts             # Notes hook
-│   └── useBookInfo.ts          # Book/chapter info
+│   ├── useBookInfo.ts          # Book/chapter info
+│   ├── useReadingProgress.ts   # Reading progress tracking
+│   ├── useDailyVerse.ts        # Daily verse rotation
+│   ├── useStudyPlan.ts         # Study plan management
+│   └── useCrossReferences.ts   # Cross-reference lookups
 ├── components/
 │   ├── VerseActionMenu.tsx     # Long-press menu
 │   ├── ChapterNavigation.tsx   # Prev/Next nav
 │   └── NoteEditor.tsx          # Note editor modal
 └── screens/
     ├── BookmarksScreen.tsx     # Bookmark list
-    └── NotesScreen.tsx         # Notes list
+    ├── NotesScreen.tsx         # Notes list
+    ├── ProgressScreen.tsx      # Reading progress stats
+    └── StudyPlanScreen.tsx     # Study plan management
 ```
 
 ## TODO
 
 - [ ] Complete offline download feature
-- [ ] Add cross-reference lookups
-- [ ] Implement study plans
-- [ ] Add reading progress tracking
+- [x] Add cross-reference lookups
+- [x] Implement study plans
+- [x] Add reading progress tracking

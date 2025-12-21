@@ -9,13 +9,19 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
-// Import screens (to be created)
+import { Text } from 'react-native';
+
+// Import screens
 import { HomeScreen } from '../screens/HomeScreen';
 import { BookListScreen } from '../screens/BookListScreen';
 import { ChapterListScreen } from '../screens/ChapterListScreen';
 import { ReaderScreen } from '../screens/ReaderScreen';
 import { SearchScreen } from '../screens/SearchScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
+import { BookmarksScreen } from '../screens/BookmarksScreen';
+import { NotesScreen } from '../screens/NotesScreen';
+import { ProgressScreen } from '../screens/ProgressScreen';
+import { StudyPlanScreen } from '../screens/StudyPlanScreen';
 
 // Type definitions for navigation
 export type RootStackParamList = {
@@ -31,7 +37,16 @@ export type MainTabParamList = {
   Home: undefined;
   Read: undefined;
   Search: undefined;
+  Study: undefined;
   Settings: undefined;
+};
+
+export type HomeStackParamList = {
+  HomeMain: undefined;
+  Bookmarks: undefined;
+  Notes: undefined;
+  Progress: undefined;
+  StudyPlan: undefined;
 };
 
 export type ReadStackParamList = {
@@ -53,6 +68,53 @@ export type ReadStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const ReadStack = createNativeStackNavigator<ReadStackParamList>();
+const HomeStack = createNativeStackNavigator<HomeStackParamList>();
+
+/**
+ * Home Stack Navigator
+ * Handles Home -> Bookmarks/Notes/Progress flow
+ */
+function HomeStackNavigator() {
+  return (
+    <HomeStack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: '#0066cc',
+        },
+        headerTintColor: '#ffffff',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+      }}
+    >
+      <HomeStack.Screen
+        name="HomeMain"
+        component={HomeScreen}
+        options={{ headerShown: false }}
+      />
+      <HomeStack.Screen
+        name="Bookmarks"
+        component={BookmarksScreen}
+        options={{ title: 'Bookmarks' }}
+      />
+      <HomeStack.Screen
+        name="Notes"
+        component={NotesScreen}
+        options={{ title: 'Notes' }}
+      />
+      <HomeStack.Screen
+        name="Progress"
+        component={ProgressScreen}
+        options={{ title: 'Reading Progress' }}
+      />
+      <HomeStack.Screen
+        name="StudyPlan"
+        component={StudyPlanScreen}
+        options={{ title: 'Study Plan' }}
+      />
+    </HomeStack.Navigator>
+  );
+}
 
 /**
  * Reading Stack Navigator
@@ -110,7 +172,7 @@ function MainTabNavigator() {
     >
       <Tab.Screen
         name="Home"
-        component={HomeScreen}
+        component={HomeStackNavigator}
         options={{
           tabBarLabel: 'Home',
           tabBarIcon: () => <Text>🏠</Text>,
@@ -131,6 +193,23 @@ function MainTabNavigator() {
           tabBarLabel: 'Search',
           tabBarIcon: () => <Text>🔍</Text>,
           headerShown: true,
+          headerStyle: {
+            backgroundColor: '#0066cc',
+          },
+          headerTintColor: '#ffffff',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      />
+      <Tab.Screen
+        name="Study"
+        component={StudyPlanScreen}
+        options={{
+          tabBarLabel: 'Study',
+          tabBarIcon: () => <Text>📅</Text>,
+          headerShown: true,
+          headerTitle: 'Study Plan',
           headerStyle: {
             backgroundColor: '#0066cc',
           },

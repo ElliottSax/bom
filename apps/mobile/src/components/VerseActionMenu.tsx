@@ -4,7 +4,7 @@
  * Bottom sheet menu for verse actions (bookmark, highlight, copy, share)
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -13,9 +13,19 @@ import {
   Pressable,
   Share,
   Platform,
+  ScrollView,
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { useTheme } from '../contexts/ThemeContext';
+import {
+  useCrossReferences,
+  formatCrossReference,
+  getCrossRefTypeLabel,
+  getCrossRefTypeColor,
+} from '../hooks/useCrossReferences';
+import type { CrossReference } from '../hooks/useCrossReferences';
+
+export type { CrossReference };
 
 export interface VerseData {
   verseId: string;
@@ -34,6 +44,7 @@ interface VerseActionMenuProps {
   onBookmark: () => void;
   onHighlight: (color: string) => void;
   onAddNote: () => void;
+  onCrossRefPress?: (ref: CrossReference) => void;
 }
 
 const HIGHLIGHT_COLORS = [
@@ -52,8 +63,15 @@ export function VerseActionMenu({
   onBookmark,
   onHighlight,
   onAddNote,
+  onCrossRefPress,
 }: VerseActionMenuProps) {
   const { colors, isDark } = useTheme();
+  const { getCrossReferences } = useCrossReferences();
+
+  const crossRefs = useMemo(() => {
+    if (!verse) return [];
+    return getCrossReferences(verse.verseId);
+  }, [verse, getCrossReferences]);
 
   if (!verse) return null;
 
@@ -179,6 +197,54 @@ export function VerseActionMenu({
             </Pressable>
           </View>
         </View>
+
+        {/* Cross-References */}
+        {crossRefs.length > 0 && (
+          <View style={styles.crossRefSection}>
+            <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
+              Cross-References
+            </Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={styles.crossRefRow}>
+                {crossRefs.map((ref, index) => (
+                  <Pressable
+                    key={index}
+                    style={[
+                      styles.crossRefChip,
+                      { backgroundColor: getCrossRefTypeColor(ref.type) + '20' },
+                    ]}
+                    onPress={() => {
+                      if (onCrossRefPress) {
+                        onCrossRefPress(ref);
+                        onClose();
+                      }
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.crossRefType,
+                        { color: getCrossRefTypeColor(ref.type) },
+                      ]}
+                    >
+                      {getCrossRefTypeLabel(ref.type)}
+                    </Text>
+                    <Text style={[styles.crossRefText, { color: colors.text }]}>
+                      {formatCrossReference(ref)}
+                    </Text>
+                    {ref.note && (
+                      <Text
+                        style={[styles.crossRefNote, { color: colors.textSecondary }]}
+                        numberOfLines={1}
+                      >
+                        {ref.note}
+                      </Text>
+                    )}
+                  </Pressable>
+                ))}
+              </View>
+            </ScrollView>
+          </View>
+        )}
 
         {/* Cancel Button */}
         <Pressable
@@ -334,5 +400,34 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  crossRefSection: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  crossRefRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  crossRefChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    minWidth: 120,
+  },
+  crossRefType: {
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
+  crossRefText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  crossRefNote: {
+    fontSize: 12,
+    marginTop: 4,
   },
 });

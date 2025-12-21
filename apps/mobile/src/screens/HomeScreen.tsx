@@ -16,6 +16,9 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useStats, formatNumber } from '../hooks/useStats';
+import { useDailyVerse } from '../hooks/useDailyVerse';
+import { useReadingProgress, getProgressMessage } from '../hooks/useReadingProgress';
+import { useTheme } from '../contexts/ThemeContext';
 
 const LAST_READ_KEY = '@bom_last_read';
 
@@ -28,7 +31,10 @@ interface LastReadPosition {
 
 export function HomeScreen() {
   const navigation = useNavigation();
+  const { colors } = useTheme();
   const { totalVerses, totalBooks, totalChapters, loading: statsLoading } = useStats();
+  const { verse: dailyVerse, loading: verseLoading, navigateToVerse } = useDailyVerse();
+  const { stats: progressStats } = useReadingProgress();
   const [lastRead, setLastRead] = useState<LastReadPosition | null>(null);
   const [loadingLastRead, setLoadingLastRead] = useState(true);
 
@@ -71,27 +77,57 @@ export function HomeScreen() {
     });
   };
 
+  const handleDailyVersePress = () => {
+    const params = navigateToVerse();
+    navigation.navigate('Read', {
+      screen: 'Reader',
+      params,
+    });
+  };
+
+  const handleProgressPress = () => {
+    navigation.navigate('Progress');
+  };
+
   const continueLabel = lastRead
     ? `${lastRead.book}, Chapter ${lastRead.chapter}`
     : 'I Nephi, Chapter 1';
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.primary }]}>
         <Text style={styles.title}>Book of Mormon</Text>
         <Text style={styles.subtitle}>Study Tools</Text>
       </View>
 
+      {/* Reading Progress Card */}
+      {progressStats.totalChaptersRead > 0 && (
+        <Pressable style={[styles.progressCard, { backgroundColor: colors.surface }]} onPress={handleProgressPress}>
+          <View style={styles.progressHeader}>
+            <Text style={[styles.progressPercent, { color: colors.primary }]}>
+              {progressStats.percentComplete}%
+            </Text>
+            <Text style={[styles.progressLabel, { color: colors.text }]}>Complete</Text>
+          </View>
+          <View style={[styles.progressBarBg, { backgroundColor: colors.border }]}>
+            <View style={[styles.progressBarFill, { width: `${progressStats.percentComplete}%`, backgroundColor: colors.primary }]} />
+          </View>
+          <Text style={[styles.progressMessage, { color: colors.textSecondary }]}>
+            {getProgressMessage(progressStats.percentComplete)}
+          </Text>
+        </Pressable>
+      )}
+
       {/* Continue Reading Card */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Continue Reading</Text>
+      <View style={[styles.card, { backgroundColor: colors.surface }]}>
+        <Text style={[styles.cardTitle, { color: colors.textSecondary }]}>Continue Reading</Text>
         {loadingLastRead ? (
-          <ActivityIndicator size="small" color="#0066cc" />
+          <ActivityIndicator size="small" color={colors.primary} />
         ) : (
           <>
-            <Text style={styles.cardSubtitle}>{continueLabel}</Text>
+            <Text style={[styles.cardSubtitle, { color: colors.text }]}>{continueLabel}</Text>
             <Pressable
-              style={styles.primaryButton}
+              style={[styles.primaryButton, { backgroundColor: colors.primary }]}
               onPress={handleContinueReading}
             >
               <Text style={styles.primaryButtonText}>Continue</Text>
@@ -102,80 +138,108 @@ export function HomeScreen() {
 
       {/* Quick Actions */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Quick Actions</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Quick Actions</Text>
 
         <Pressable
-          style={styles.actionCard}
+          style={[styles.actionCard, { backgroundColor: colors.surface }]}
           onPress={handleStartReading}
         >
           <Text style={styles.actionIcon}>📖</Text>
           <View style={styles.actionContent}>
-            <Text style={styles.actionTitle}>Browse Books</Text>
-            <Text style={styles.actionSubtitle}>
+            <Text style={[styles.actionTitle, { color: colors.text }]}>Browse Books</Text>
+            <Text style={[styles.actionSubtitle, { color: colors.textSecondary }]}>
               {totalBooks} books, {totalChapters} chapters available
             </Text>
           </View>
-          <Text style={styles.chevron}>›</Text>
+          <Text style={[styles.chevron, { color: colors.textSecondary }]}>›</Text>
         </Pressable>
 
         <Pressable
-          style={styles.actionCard}
+          style={[styles.actionCard, { backgroundColor: colors.surface }]}
           onPress={() => navigation.navigate('Search')}
         >
           <Text style={styles.actionIcon}>🔍</Text>
           <View style={styles.actionContent}>
-            <Text style={styles.actionTitle}>Search Scriptures</Text>
-            <Text style={styles.actionSubtitle}>
+            <Text style={[styles.actionTitle, { color: colors.text }]}>Search Scriptures</Text>
+            <Text style={[styles.actionSubtitle, { color: colors.textSecondary }]}>
               {statsLoading ? 'Loading...' : `Search ${formatNumber(totalVerses)} verses`}
             </Text>
           </View>
-          <Text style={styles.chevron}>›</Text>
+          <Text style={[styles.chevron, { color: colors.textSecondary }]}>›</Text>
         </Pressable>
 
         <Pressable
-          style={styles.actionCard}
+          style={[styles.actionCard, { backgroundColor: colors.surface }]}
+          onPress={() => navigation.navigate('Progress')}
+        >
+          <Text style={styles.actionIcon}>📊</Text>
+          <View style={styles.actionContent}>
+            <Text style={[styles.actionTitle, { color: colors.text }]}>Reading Progress</Text>
+            <Text style={[styles.actionSubtitle, { color: colors.textSecondary }]}>
+              {progressStats.totalChaptersRead} of {progressStats.totalChapters} chapters
+            </Text>
+          </View>
+          <Text style={[styles.chevron, { color: colors.textSecondary }]}>›</Text>
+        </Pressable>
+
+        <Pressable
+          style={[styles.actionCard, { backgroundColor: colors.surface }]}
           onPress={() => navigation.navigate('Settings')}
         >
           <Text style={styles.actionIcon}>⚙️</Text>
           <View style={styles.actionContent}>
-            <Text style={styles.actionTitle}>Settings</Text>
-            <Text style={styles.actionSubtitle}>
+            <Text style={[styles.actionTitle, { color: colors.text }]}>Settings</Text>
+            <Text style={[styles.actionSubtitle, { color: colors.textSecondary }]}>
               Customize your reading experience
             </Text>
           </View>
-          <Text style={styles.chevron}>›</Text>
+          <Text style={[styles.chevron, { color: colors.textSecondary }]}>›</Text>
         </Pressable>
       </View>
 
       {/* Stats */}
       <View style={styles.statsSection}>
-        <View style={styles.statCard}>
+        <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
           {statsLoading ? (
-            <ActivityIndicator size="small" color="#0066cc" />
+            <ActivityIndicator size="small" color={colors.primary} />
           ) : (
-            <Text style={styles.statNumber}>{formatNumber(totalVerses)}</Text>
+            <Text style={[styles.statNumber, { color: colors.primary }]}>{formatNumber(totalVerses)}</Text>
           )}
-          <Text style={styles.statLabel}>Verses</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Verses</Text>
         </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{totalBooks}</Text>
-          <Text style={styles.statLabel}>Books</Text>
+        <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.statNumber, { color: colors.primary }]}>{totalBooks}</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Books</Text>
         </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{totalChapters}</Text>
-          <Text style={styles.statLabel}>Chapters</Text>
+        <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.statNumber, { color: colors.primary }]}>{totalChapters}</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Chapters</Text>
         </View>
       </View>
 
       {/* Daily Verse */}
-      <View style={styles.dailyVerseCard}>
-        <Text style={styles.dailyVerseLabel}>Featured Verse</Text>
-        <Text style={styles.dailyVerseText}>
-          "And now, as ye are desirous to come into the fold of God, and to be called his people,
-          and are willing to bear one another's burdens, that they may be light..."
-        </Text>
-        <Text style={styles.dailyVerseReference}>Mosiah 18:8</Text>
-      </View>
+      <Pressable
+        style={[styles.dailyVerseCard, { backgroundColor: colors.primary + '15', borderLeftColor: colors.primary }]}
+        onPress={handleDailyVersePress}
+      >
+        <Text style={[styles.dailyVerseLabel, { color: colors.primary }]}>Verse of the Day</Text>
+        {verseLoading ? (
+          <ActivityIndicator size="small" color={colors.primary} />
+        ) : (
+          <>
+            <Text style={[styles.dailyVerseText, { color: colors.text }]}>
+              "{dailyVerse.text.length > 200
+                ? dailyVerse.text.substring(0, 200) + '...'
+                : dailyVerse.text}"
+            </Text>
+            <Text style={[styles.dailyVerseReference, { color: colors.primary }]}>
+              {dailyVerse.reference}
+            </Text>
+          </>
+        )}
+      </Pressable>
+
+      <View style={styles.bottomPadding} />
     </ScrollView>
   );
 }
@@ -204,12 +268,48 @@ export async function saveLastReadPosition(
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   header: {
     padding: 24,
-    backgroundColor: '#0066cc',
     alignItems: 'center',
+  },
+  progressCard: {
+    margin: 16,
+    padding: 16,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  progressHeader: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: 8,
+  },
+  progressPercent: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginRight: 8,
+  },
+  progressLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  progressBarBg: {
+    height: 8,
+    borderRadius: 4,
+    marginBottom: 8,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  progressMessage: {
+    fontSize: 14,
+    fontStyle: 'italic',
   },
   title: {
     fontSize: 32,
@@ -224,7 +324,6 @@ const styles = StyleSheet.create({
   card: {
     margin: 16,
     padding: 20,
-    backgroundColor: '#ffffff',
     borderRadius: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -235,18 +334,15 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666666',
     marginBottom: 4,
     textTransform: 'uppercase',
   },
   cardSubtitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333333',
     marginBottom: 16,
   },
   primaryButton: {
-    backgroundColor: '#0066cc',
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
@@ -262,14 +358,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333333',
     marginBottom: 12,
   },
   actionCard: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: '#ffffff',
     borderRadius: 12,
     marginBottom: 12,
     shadowColor: '#000',
@@ -288,16 +382,13 @@ const styles = StyleSheet.create({
   actionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333333',
     marginBottom: 2,
   },
   actionSubtitle: {
     fontSize: 14,
-    color: '#666666',
   },
   chevron: {
     fontSize: 24,
-    color: '#999999',
   },
   statsSection: {
     flexDirection: 'row',
@@ -308,7 +399,6 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#ffffff',
     borderRadius: 12,
     alignItems: 'center',
     marginHorizontal: 4,
@@ -321,33 +411,27 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#0066cc',
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: '#666666',
     textTransform: 'uppercase',
   },
   dailyVerseCard: {
     margin: 16,
     marginTop: 8,
     padding: 20,
-    backgroundColor: '#e3f2fd',
     borderRadius: 12,
     borderLeftWidth: 4,
-    borderLeftColor: '#0066cc',
   },
   dailyVerseLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#0066cc',
     textTransform: 'uppercase',
     marginBottom: 8,
   },
   dailyVerseText: {
     fontSize: 16,
-    color: '#333333',
     fontStyle: 'italic',
     lineHeight: 24,
     marginBottom: 8,
@@ -355,7 +439,9 @@ const styles = StyleSheet.create({
   dailyVerseReference: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#0066cc',
     textAlign: 'right',
+  },
+  bottomPadding: {
+    height: 40,
   },
 });

@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Pressable, Text } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ScriptureReader } from '../components/ScriptureReader';
 import { VerseActionMenu, VerseData } from '../components/VerseActionMenu';
@@ -17,6 +17,7 @@ import { useBookmarks } from '../hooks/useBookmarks';
 import { useHighlights } from '../hooks/useHighlights';
 import { useNotes } from '../hooks/useNotes';
 import { useBookNavigation } from '../hooks/useBookInfo';
+import { useReadingProgress } from '../hooks/useReadingProgress';
 import { useTheme } from '../contexts/ThemeContext';
 
 type Props = NativeStackScreenProps<ReadStackParamList, 'Reader'>;
@@ -27,7 +28,11 @@ export function ReaderScreen({ route, navigation }: Props) {
   const { addBookmark, removeBookmark, isBookmarked } = useBookmarks();
   const { addHighlight, removeHighlight, getHighlight } = useHighlights();
   const { addNote, updateNote, deleteNote, getNote } = useNotes();
+  const { markChapterComplete, isChapterComplete } = useReadingProgress();
   const bookNav = useBookNavigation(book, chapter);
+
+  // Track if current chapter is complete
+  const chapterIsComplete = isChapterComplete(editionId, book, chapter);
 
   // Verse action menu state
   const [menuVisible, setMenuVisible] = useState(false);
@@ -176,6 +181,12 @@ export function ReaderScreen({ route, navigation }: Props) {
     });
   }, [navigation, editionId, book]);
 
+  const handleMarkComplete = useCallback(() => {
+    if (!chapterIsComplete) {
+      markChapterComplete(editionId, book, chapter);
+    }
+  }, [chapterIsComplete, markChapterComplete, editionId, book, chapter]);
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScriptureReader
@@ -194,6 +205,22 @@ export function ReaderScreen({ route, navigation }: Props) {
         onNext={handleNextChapter}
         onChapterSelect={handleChapterSelect}
       />
+
+      {/* Mark Complete Button */}
+      <Pressable
+        style={[
+          styles.completeButton,
+          {
+            backgroundColor: chapterIsComplete ? colors.success : colors.primary,
+          },
+        ]}
+        onPress={handleMarkComplete}
+        disabled={chapterIsComplete}
+      >
+        <Text style={styles.completeButtonText}>
+          {chapterIsComplete ? '✓ Completed' : 'Mark as Read'}
+        </Text>
+      </Pressable>
 
       <VerseActionMenu
         visible={menuVisible}
@@ -222,5 +249,23 @@ export function ReaderScreen({ route, navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  completeButton: {
+    position: 'absolute',
+    bottom: 80,
+    right: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  completeButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
