@@ -83,6 +83,9 @@ bom/
 16. **Share Study Plans** - Share progress and invite friends to join reading plans
 17. **Recent Searches** - Search history with quick access and clear option
 18. **Jump to Verse** - Quick verse navigation modal with grid selection
+19. **Data Backup/Restore** - Export/import all user data as JSON file
+20. **Reading Reminders** - Push notifications for daily study reminders
+21. **Cloud Sync** - Sync data across devices (bookmarks, notes, progress)
 
 ## Mobile App Features
 
@@ -110,6 +113,9 @@ bom/
 - Study Tools quick access grid on HomeScreen
 - Jump to verse with grid selection modal
 - Recent searches history
+- Data backup and restore (JSON export/import)
+- Reading reminder notifications (configurable schedule)
+- Cloud sync across devices
 
 ## New Files Created
 
@@ -128,7 +134,10 @@ apps/mobile/src/
 │   ├── useDailyVerse.ts        # Daily verse rotation
 │   ├── useStudyPlan.ts         # Study plan management
 │   ├── useCrossReferences.ts   # Cross-reference lookups
-│   └── useOfflineDownload.ts   # Bulk download management
+│   ├── useOfflineDownload.ts   # Bulk download management
+│   ├── useDataBackup.ts        # Export/import user data
+│   ├── useReadingReminders.ts  # Push notification reminders
+│   └── useCloudSync.ts         # Cloud sync management
 ├── components/
 │   ├── VerseActionMenu.tsx     # Long-press menu
 │   ├── ChapterNavigation.tsx   # Prev/Next nav
@@ -138,7 +147,10 @@ apps/mobile/src/
     ├── NotesScreen.tsx         # Notes list
     ├── ProgressScreen.tsx      # Reading progress stats
     ├── StudyPlanScreen.tsx     # Study plan management
-    └── OfflineDownloadScreen.tsx # Offline download manager
+    ├── OfflineDownloadScreen.tsx # Offline download manager
+    ├── BackupRestoreScreen.tsx # Data backup/restore
+    ├── RemindersScreen.tsx     # Reading reminder settings
+    └── CloudSyncScreen.tsx     # Cloud sync settings
 ```
 
 ## TODO

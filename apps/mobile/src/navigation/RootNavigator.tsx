@@ -17,12 +17,15 @@ import { BookListScreen } from '../screens/BookListScreen';
 import { ChapterListScreen } from '../screens/ChapterListScreen';
 import { ReaderScreen } from '../screens/ReaderScreen';
 import { SearchScreen } from '../screens/SearchScreen';
-import { SettingsScreen } from '../screens/SettingsScreen';
+import { SettingsScreen } from '../components/SettingsScreen';
 import { BookmarksScreen } from '../screens/BookmarksScreen';
 import { NotesScreen } from '../screens/NotesScreen';
 import { ProgressScreen } from '../screens/ProgressScreen';
 import { StudyPlanScreen } from '../screens/StudyPlanScreen';
 import { OfflineDownloadScreen } from '../screens/OfflineDownloadScreen';
+import { BackupRestoreScreen } from '../screens/BackupRestoreScreen';
+import { RemindersScreen } from '../screens/RemindersScreen';
+import { CloudSyncScreen } from '../screens/CloudSyncScreen';
 
 // Type definitions for navigation
 export type RootStackParamList = {
@@ -49,6 +52,9 @@ export type HomeStackParamList = {
   Progress: undefined;
   StudyPlan: undefined;
   OfflineDownload: undefined;
+  BackupRestore: undefined;
+  Reminders: undefined;
+  CloudSync: undefined;
 };
 
 export type ReadStackParamList = {
@@ -118,6 +124,21 @@ function HomeStackNavigator() {
         name="OfflineDownload"
         component={OfflineDownloadScreen}
         options={{ title: 'Offline Downloads' }}
+      />
+      <HomeStack.Screen
+        name="BackupRestore"
+        component={BackupRestoreScreen}
+        options={{ title: 'Backup & Restore' }}
+      />
+      <HomeStack.Screen
+        name="Reminders"
+        component={RemindersScreen}
+        options={{ title: 'Reading Reminders' }}
+      />
+      <HomeStack.Screen
+        name="CloudSync"
+        component={CloudSyncScreen}
+        options={{ title: 'Cloud Sync' }}
       />
     </HomeStack.Navigator>
   );

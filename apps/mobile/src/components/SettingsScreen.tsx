@@ -329,20 +329,18 @@ export function SettingsScreen() {
       {/* Study Tools */}
       <Text style={dynamicStyles.sectionTitle}>Study Tools</Text>
       <View style={dynamicStyles.section}>
-        <View style={dynamicStyles.settingItem}>
+        <Pressable
+          style={dynamicStyles.settingItem}
+          onPress={() => navigation.navigate('Reminders')}
+        >
           <View style={{ flex: 1 }}>
-            <Text style={dynamicStyles.settingLabel}>Daily Reminders</Text>
+            <Text style={dynamicStyles.settingLabel}>Reading Reminders</Text>
             <Text style={dynamicStyles.settingDescription}>
-              Get notifications for study plans
+              Set daily notification reminders
             </Text>
           </View>
-          <Switch
-            value={settings.study.dailyReminders}
-            onValueChange={toggleDailyReminders}
-            trackColor={{ false: '#767577', true: colors.primary }}
-            thumbColor={'#f4f3f4'}
-          />
-        </View>
+          <Text style={{ fontSize: 20, color: colors.textSecondary }}>→</Text>
+        </Pressable>
 
         <View style={[dynamicStyles.settingItem, { borderBottomWidth: 0 }]}>
           <View style={{ flex: 1 }}>
@@ -371,6 +369,32 @@ export function SettingsScreen() {
             <Text style={dynamicStyles.settingLabel}>Offline Downloads</Text>
             <Text style={dynamicStyles.settingDescription}>
               Download scriptures for offline reading
+            </Text>
+          </View>
+          <Text style={{ fontSize: 20, color: colors.textSecondary }}>→</Text>
+        </Pressable>
+
+        <Pressable
+          style={dynamicStyles.settingItem}
+          onPress={() => navigation.navigate('BackupRestore')}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={dynamicStyles.settingLabel}>Backup & Restore</Text>
+            <Text style={dynamicStyles.settingDescription}>
+              Export or import your data
+            </Text>
+          </View>
+          <Text style={{ fontSize: 20, color: colors.textSecondary }}>→</Text>
+        </Pressable>
+
+        <Pressable
+          style={dynamicStyles.settingItem}
+          onPress={() => navigation.navigate('CloudSync')}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={dynamicStyles.settingLabel}>Cloud Sync</Text>
+            <Text style={dynamicStyles.settingDescription}>
+              Sync data across devices
             </Text>
           </View>
           <Text style={{ fontSize: 20, color: colors.textSecondary }}>→</Text>
