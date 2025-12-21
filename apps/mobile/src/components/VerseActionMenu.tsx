@@ -15,7 +15,7 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
-import * as Clipboard from 'expo-clipboard';
+import Clipboard from '@react-native-clipboard/clipboard';
 import { useTheme } from '../contexts/ThemeContext';
 import {
   useCrossReferences,
@@ -77,9 +77,9 @@ export function VerseActionMenu({
 
   const reference = `${verse.book} ${verse.chapter}:${verse.verseNumber}`;
 
-  const handleCopy = async () => {
+  const handleCopy = () => {
     const textToCopy = `${verse.text}\n— ${reference}`;
-    await Clipboard.setStringAsync(textToCopy);
+    Clipboard.setString(textToCopy);
     onClose();
   };
 

@@ -38,7 +38,7 @@
     "react-native-fs": "^2.20.0",
     "react-native-share": "^10.0.2",
     "react-native-document-picker": "^9.1.1",
-    "expo-clipboard": "^5.0.1",
+    "@react-native-clipboard/clipboard": "^1.13.2",
     "@bom/shared": "file:../../packages/shared",
     "@bom/graphql": "file:../../packages/graphql"
   },
