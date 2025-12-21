@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSearch, highlightSearchTerm, SearchResult } from '../hooks/useSearch';
+import { useTheme } from '../contexts/ThemeContext';
 
 const EDITIONS = [
   { id: 'all', name: 'All Editions' },
@@ -26,6 +27,7 @@ const EDITIONS = [
 
 export function SearchScreen() {
   const navigation = useNavigation();
+  const { colors } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEdition, setSelectedEdition] = useState('all');
   const { results, loading, error, search, clearResults, hasSearched, totalResults } = useSearch(100);
@@ -67,29 +69,18 @@ export function SearchScreen() {
     [navigation]
   );
 
-  const renderSearchResult = useCallback(
-    ({ item }: { item: SearchResult }) => (
-      <SearchResultItem
-        result={item}
-        searchTerm={searchQuery}
-        onPress={() => handleResultPress(item)}
-      />
-    ),
-    [searchQuery, handleResultPress]
-  );
-
   const keyExtractor = useCallback((item: SearchResult) => item.id, []);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Search Header */}
-      <View style={styles.searchHeader}>
-        <View style={styles.searchInputContainer}>
+      <View style={[styles.searchHeader, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <View style={[styles.searchInputContainer, { backgroundColor: colors.background }]}>
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: colors.text }]}
             placeholder="Search scriptures..."
-            placeholderTextColor="#999"
+            placeholderTextColor={colors.textSecondary}
             value={searchQuery}
             onChangeText={handleSearch}
             autoCapitalize="none"
@@ -104,7 +95,7 @@ export function SearchScreen() {
               }}
               style={styles.clearButton}
             >
-              <Text style={styles.clearButtonText}>✕</Text>
+              <Text style={[styles.clearButtonText, { color: colors.textSecondary }]}>✕</Text>
             </Pressable>
           )}
         </View>
@@ -116,13 +107,15 @@ export function SearchScreen() {
               key={edition.id}
               style={[
                 styles.editionChip,
-                selectedEdition === edition.id && styles.editionChipSelected,
+                { backgroundColor: colors.background, borderColor: colors.border },
+                selectedEdition === edition.id && { backgroundColor: colors.primary, borderColor: colors.primary },
               ]}
               onPress={() => handleEditionChange(edition.id)}
             >
               <Text
                 style={[
                   styles.editionChipText,
+                  { color: colors.textSecondary },
                   selectedEdition === edition.id && styles.editionChipTextSelected,
                 ]}
               >
@@ -137,23 +130,23 @@ export function SearchScreen() {
       <View style={styles.resultsContainer}>
         {loading && (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#0066cc" />
-            <Text style={styles.loadingText}>Searching...</Text>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Searching...</Text>
           </View>
         )}
 
         {error && (
           <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>Search failed</Text>
-            <Text style={styles.errorDetail}>{error.message}</Text>
+            <Text style={[styles.errorText, { color: colors.error }]}>Search failed</Text>
+            <Text style={[styles.errorDetail, { color: colors.textSecondary }]}>{error.message}</Text>
           </View>
         )}
 
         {!loading && !error && hasSearched && results.length === 0 && (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyIcon}>📖</Text>
-            <Text style={styles.emptyText}>No results found</Text>
-            <Text style={styles.emptyDetail}>
+            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No results found</Text>
+            <Text style={[styles.emptyDetail, { color: colors.textSecondary }]}>
               Try different keywords or check your spelling
             </Text>
           </View>
@@ -162,13 +155,20 @@ export function SearchScreen() {
         {!loading && !error && results.length > 0 && (
           <>
             <View style={styles.resultsHeader}>
-              <Text style={styles.resultsCount}>
+              <Text style={[styles.resultsCount, { color: colors.textSecondary }]}>
                 {totalResults} {totalResults === 1 ? 'result' : 'results'}
               </Text>
             </View>
             <FlatList
               data={results}
-              renderItem={renderSearchResult}
+              renderItem={({ item }) => (
+                <SearchResultItem
+                  result={item}
+                  searchTerm={searchQuery}
+                  onPress={() => handleResultPress(item)}
+                  colors={colors}
+                />
+              )}
               keyExtractor={keyExtractor}
               contentContainerStyle={styles.resultsList}
               showsVerticalScrollIndicator={false}
@@ -180,20 +180,20 @@ export function SearchScreen() {
         {!hasSearched && !loading && (
           <View style={styles.promptContainer}>
             <Text style={styles.promptIcon}>🔍</Text>
-            <Text style={styles.promptTitle}>Search Scriptures</Text>
-            <Text style={styles.promptText}>
+            <Text style={[styles.promptTitle, { color: colors.text }]}>Search Scriptures</Text>
+            <Text style={[styles.promptText, { color: colors.textSecondary }]}>
               Enter at least 2 characters to search through all verses
             </Text>
             <View style={styles.suggestionsContainer}>
-              <Text style={styles.suggestionsTitle}>Try searching for:</Text>
+              <Text style={[styles.suggestionsTitle, { color: colors.textSecondary }]}>Try searching for:</Text>
               <View style={styles.suggestions}>
                 {['faith', 'hope', 'charity', 'repent', 'Jesus'].map((term) => (
                   <Pressable
                     key={term}
-                    style={styles.suggestionChip}
+                    style={[styles.suggestionChip, { backgroundColor: colors.primary + '20' }]}
                     onPress={() => handleSearch(term)}
                   >
-                    <Text style={styles.suggestionText}>{term}</Text>
+                    <Text style={[styles.suggestionText, { color: colors.primary }]}>{term}</Text>
                   </Pressable>
                 ))}
               </View>
@@ -210,26 +210,31 @@ interface SearchResultItemProps {
   result: SearchResult;
   searchTerm: string;
   onPress: () => void;
+  colors: any;
 }
 
-function SearchResultItem({ result, searchTerm, onPress }: SearchResultItemProps) {
+function SearchResultItem({ result, searchTerm, onPress, colors }: SearchResultItemProps) {
   const highlightedParts = highlightSearchTerm(result.text, searchTerm);
 
   return (
-    <Pressable style={styles.resultItem} onPress={onPress} android_ripple={{ color: '#e0e0e0' }}>
+    <Pressable
+      style={[styles.resultItem, { backgroundColor: colors.surface }]}
+      onPress={onPress}
+      android_ripple={{ color: colors.primary + '20' }}
+    >
       <View style={styles.resultHeader}>
-        <Text style={styles.resultReference}>
+        <Text style={[styles.resultReference, { color: colors.primary }]}>
           {result.book} {result.chapter}:{result.verse}
         </Text>
-        <Text style={styles.resultEdition}>
+        <Text style={[styles.resultEdition, { backgroundColor: colors.background, color: colors.textSecondary }]}>
           {result.editionId === 'coc-bom-1908' ? 'BoM' : 'D&C'}
         </Text>
       </View>
-      <Text style={styles.resultText} numberOfLines={3}>
+      <Text style={[styles.resultText, { color: colors.text }]} numberOfLines={3}>
         {highlightedParts.map((part, index) => (
           <Text
             key={index}
-            style={part.isHighlighted ? styles.highlightedText : undefined}
+            style={part.isHighlighted ? [styles.highlightedText, { backgroundColor: colors.warning + '40' }] : undefined}
           >
             {part.text}
           </Text>
