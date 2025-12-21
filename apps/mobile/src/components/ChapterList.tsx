@@ -4,7 +4,7 @@
  * Displays a list of chapters for a selected book
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   FlatList,
@@ -12,6 +12,10 @@ import {
   StyleSheet,
   Pressable,
 } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
+import { isChapterCached } from '../services/offlineStorage';
+
+const EDITION_ID = 'coc-bom-1908';
 
 interface ChapterListProps {
   bookName: string;
@@ -26,35 +30,63 @@ export function ChapterList({
   onChapterSelect,
   currentChapter,
 }: ChapterListProps) {
+  const { colors } = useTheme();
+  const [cachedChapters, setCachedChapters] = useState<Set<number>>(new Set());
+
   // Generate array of chapter numbers
   const chapters = Array.from({ length: totalChapters }, (_, i) => i + 1);
 
+  // Check which chapters are cached
+  useEffect(() => {
+    const checkCached = async () => {
+      const cached = new Set<number>();
+      for (let ch = 1; ch <= totalChapters; ch++) {
+        const isCached = await isChapterCached(EDITION_ID, bookName, ch);
+        if (isCached) cached.add(ch);
+      }
+      setCachedChapters(cached);
+    };
+    checkCached();
+  }, [bookName, totalChapters]);
+
+  const cachedCount = cachedChapters.size;
+  const allCached = cachedCount === totalChapters;
+
   const renderChapter = ({ item }: { item: number }) => {
     const isCurrentChapter = item === currentChapter;
+    const isCached = cachedChapters.has(item);
 
     return (
       <Pressable
         style={[
           styles.chapterItem,
-          isCurrentChapter && styles.currentChapterItem,
+          { backgroundColor: colors.surface, borderColor: colors.border },
+          isCurrentChapter && { backgroundColor: colors.primary + '15', borderColor: colors.primary },
         ]}
         onPress={() => onChapterSelect(item)}
-        android_ripple={{ color: '#e0e0e0' }}
+        android_ripple={{ color: colors.primary + '20' }}
       >
         <View style={styles.chapterContent}>
-          <Text
-            style={[
-              styles.chapterNumber,
-              isCurrentChapter && styles.currentChapterText,
-            ]}
-          >
-            Chapter {item}
-          </Text>
+          <View style={styles.chapterRow}>
+            <Text
+              style={[
+                styles.chapterNumber,
+                { color: colors.text },
+                isCurrentChapter && { color: colors.primary, fontWeight: 'bold' },
+              ]}
+            >
+              Chapter {item}
+            </Text>
+            {isCached && (
+              <Text style={[styles.offlineIcon, { color: colors.success }]}>✓</Text>
+            )}
+          </View>
         </View>
         <Text
           style={[
             styles.chevron,
-            isCurrentChapter && styles.currentChapterText,
+            { color: colors.textSecondary },
+            isCurrentChapter && { color: colors.primary },
           ]}
         >
           ›
@@ -64,12 +96,19 @@ export function ChapterList({
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.primary }]}>
         <Text style={styles.headerTitle}>{bookName}</Text>
-        <Text style={styles.headerSubtitle}>
-          {totalChapters} {totalChapters === 1 ? 'chapter' : 'chapters'}
-        </Text>
+        <View style={styles.headerRow}>
+          <Text style={styles.headerSubtitle}>
+            {totalChapters} {totalChapters === 1 ? 'chapter' : 'chapters'}
+          </Text>
+          {cachedCount > 0 && (
+            <Text style={styles.offlineStatus}>
+              {allCached ? '• All offline' : `• ${cachedCount} offline`}
+            </Text>
+          )}
+        </View>
       </View>
 
       <FlatList
@@ -77,7 +116,7 @@ export function ChapterList({
         renderItem={renderChapter}
         keyExtractor={(item) => item.toString()}
         contentContainerStyle={styles.listContent}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: colors.border }]} />}
         // Grid layout for many chapters
         numColumns={totalChapters > 15 ? 3 : 1}
         key={totalChapters > 15 ? 'grid' : 'list'}
@@ -108,6 +147,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#e3f2fd',
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  offlineStatus: {
+    fontSize: 14,
+    color: '#e3f2fd',
+    marginLeft: 8,
+  },
   listContent: {
     paddingVertical: 8,
   },
@@ -129,10 +177,19 @@ const styles = StyleSheet.create({
   chapterContent: {
     flex: 1,
   },
+  chapterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   chapterNumber: {
     fontSize: 16,
     fontWeight: '500',
     color: '#333333',
+  },
+  offlineIcon: {
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   currentChapterText: {
     color: '#0066cc',
