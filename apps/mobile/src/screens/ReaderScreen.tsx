@@ -42,9 +42,19 @@ export function ReaderScreen({ route, navigation }: Props) {
   const [noteEditorVisible, setNoteEditorVisible] = useState(false);
   const [editingNote, setEditingNote] = useState<{ content: string; updatedAt?: number } | null>(null);
 
+  // Jump to verse state
+  const [verseCount, setVerseCount] = useState(0);
+  const [scrollToVerse, setScrollToVerse] = useState<number | undefined>(undefined);
+
   // Save last read position when chapter changes
   React.useEffect(() => {
     saveLastReadPosition(editionId, book, chapter);
+  }, [editionId, book, chapter]);
+
+  // Reset verse state when chapter changes
+  React.useEffect(() => {
+    setVerseCount(0);
+    setScrollToVerse(undefined);
   }, [editionId, book, chapter]);
 
   const handleVersePress = useCallback((verseId: string, verseNumber: number) => {
@@ -187,6 +197,16 @@ export function ReaderScreen({ route, navigation }: Props) {
     }
   }, [chapterIsComplete, markChapterComplete, editionId, book, chapter]);
 
+  const handleVerseCountChange = useCallback((count: number) => {
+    setVerseCount(count);
+  }, []);
+
+  const handleJumpToVerse = useCallback((verse: number) => {
+    setScrollToVerse(verse);
+    // Clear after a short delay to allow re-jumping to the same verse
+    setTimeout(() => setScrollToVerse(undefined), 1000);
+  }, []);
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScriptureReader
@@ -195,15 +215,19 @@ export function ReaderScreen({ route, navigation }: Props) {
         chapter={chapter}
         onVersePress={handleVersePress}
         onVerseLongPress={handleVerseLongPress}
+        onVerseCountChange={handleVerseCountChange}
+        scrollToVerse={scrollToVerse}
       />
 
       <ChapterNavigation
         book={book}
         chapter={chapter}
         maxChapter={bookNav.maxChapter}
+        verseCount={verseCount}
         onPrevious={handlePreviousChapter}
         onNext={handleNextChapter}
         onChapterSelect={handleChapterSelect}
+        onJumpToVerse={handleJumpToVerse}
       />
 
       {/* Mark Complete Button */}

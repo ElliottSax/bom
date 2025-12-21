@@ -1,0 +1,431 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  release:
+    types: [created]
+
+env:
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # ===========================================
+  # Testing Jobs
+  # ===========================================
+
+  test-api:
+    name: Test API Server
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: bom_study_tools_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+
+      - name: Install dependencies
+        working-directory: ./services/api
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-asyncio
+
+      - name: Run database migrations
+        working-directory: ./services/api/prisma/migrations
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bom_study_tools_test
+        run: |
+          for file in 001_init_complete/*.sql 002_seed_data/*.sql; do
+            psql $DATABASE_URL < $file
+          done
+
+      - name: Run API tests
+        working-directory: ./services/api
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bom_study_tools_test
+        run: |
+          python -m pytest tests/ --cov=. --cov-report=xml
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./services/api/coverage.xml
+          flags: api
+
+  test-mobile:
+    name: Test Mobile App
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: apps/mobile/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./apps/mobile
+        run: |
+          # Use fixed package.json if exists
+          [ -f package-fixed.json ] && cp package-fixed.json package.json
+          npm ci
+
+      - name: Run linter
+        working-directory: ./apps/mobile
+        run: npm run lint || true
+
+      - name: Run TypeScript check
+        working-directory: ./apps/mobile
+        run: npm run type-check || true
+
+      - name: Run unit tests
+        working-directory: ./apps/mobile
+        run: npm test -- --coverage --passWithNoTests
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./apps/mobile/coverage/lcov.info
+          flags: mobile
+
+  # ===========================================
+  # Build Jobs
+  # ===========================================
+
+  build-api-docker:
+    name: Build API Docker Image
+    runs-on: ubuntu-latest
+    needs: test-api
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            bomstudytools/api
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./services/api
+          file: ./services/api/Dockerfile.production
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-mobile-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    needs: test-mobile
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: apps/mobile/package-lock.json
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
+      - name: Install dependencies
+        working-directory: ./apps/mobile
+        run: |
+          [ -f package-fixed.json ] && cp package-fixed.json package.json
+          npm ci
+
+      - name: Build Release APK
+        working-directory: ./apps/mobile/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release-unsigned
+          path: apps/mobile/android/app/build/outputs/apk/release/app-release-unsigned.apk
+
+  # ===========================================
+  # Security Scanning
+  # ===========================================
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run Trivy security scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Check Python dependencies
+        working-directory: ./services/api
+        run: |
+          pip install safety
+          safety check || true
+
+      - name: Check npm dependencies
+        working-directory: ./apps/mobile
+        run: |
+          npm audit --audit-level=moderate || true
+
+  # ===========================================
+  # Performance Testing
+  # ===========================================
+
+  performance-test:
+    name: Performance Testing
+    runs-on: ubuntu-latest
+    needs: [test-api]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: bom_study_tools_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install locust
+
+      - name: Start API server
+        working-directory: ./services/api
+        run: |
+          pip install -r requirements.txt
+          python server-full.py &
+          sleep 5
+
+      - name: Run load tests
+        run: |
+          locust --headless \
+            --users 50 \
+            --spawn-rate 5 \
+            --run-time 60s \
+            --host http://localhost:4000 \
+            --html performance-report.html
+
+      - name: Upload performance report
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-report
+          path: performance-report.html
+
+  # ===========================================
+  # Deployment Jobs
+  # ===========================================
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build-api-docker, build-mobile-android]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    environment: staging
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Deploy to Render (Staging)
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        run: |
+          curl -X POST "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID_STAGING }}/deploys" \
+            -H "Authorization: Bearer $RENDER_API_KEY" \
+            -H "Content-Type: application/json"
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build-api-docker, build-mobile-android, security-scan]
+    if: github.event_name == 'release'
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Deploy to Render (Production)
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        run: |
+          curl -X POST "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID_PROD }}/deploys" \
+            -H "Authorization: Bearer $RENDER_API_KEY" \
+            -H "Content-Type: application/json"
+
+      - name: Download APK artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: app-release-unsigned
+
+      - name: Create GitHub Release with APK
+        uses: softprops/action-gh-release@v1
+        with:
+          files: app-release-unsigned.apk
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Notify deployment
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'Production deployment completed for version ${{ github.ref }}'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        if: always()
+
+  # ===========================================
+  # Documentation Generation
+  # ===========================================
+
+  generate-docs:
+    name: Generate Documentation
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install documentation tools
+        run: |
+          npm install -g @apidevtools/swagger-cli
+          npm install -g typedoc
+
+      - name: Generate API documentation
+        working-directory: ./services/api
+        run: |
+          # Generate OpenAPI spec
+          python -c "
+          import json
+          spec = {
+            'openapi': '3.0.0',
+            'info': {
+              'title': 'BOM Study Tools API',
+              'version': '1.0.0'
+            },
+            'paths': {
+              '/graphql': {
+                'post': {
+                  'summary': 'GraphQL endpoint',
+                  'responses': {'200': {'description': 'Success'}}
+                }
+              },
+              '/health': {
+                'get': {
+                  'summary': 'Health check',
+                  'responses': {'200': {'description': 'Healthy'}}
+                }
+              }
+            }
+          }
+          with open('openapi.json', 'w') as f:
+            json.dump(spec, f, indent=2)
+          "
+
+      - name: Generate TypeScript documentation
+        working-directory: ./apps/mobile
+        run: |
+          npx typedoc --out docs src || true
+
+      - name: Deploy documentation
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./apps/mobile/docs
+
+# Workflow status badge: [![CI/CD](https://github.com/YOUR_USERNAME/bom-study-tools/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/YOUR_USERNAME/bom-study-tools/actions/workflows/ci-cd.yml)

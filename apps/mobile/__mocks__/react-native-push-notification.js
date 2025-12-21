@@ -1,0 +1,15 @@
+export default {
+  configure: jest.fn(),
+  localNotification: jest.fn(),
+  localNotificationSchedule: jest.fn(),
+  cancelLocalNotifications: jest.fn(),
+  cancelAllLocalNotifications: jest.fn(),
+  getScheduledLocalNotifications: jest.fn((callback) => callback([])),
+  requestPermissions: jest.fn(),
+  checkPermissions: jest.fn((callback) => callback({ alert: true, badge: true, sound: true })),
+  createChannel: jest.fn(),
+  deleteChannel: jest.fn(),
+  channelExists: jest.fn((channelId, callback) => callback(false)),
+  channelBlocked: jest.fn((channelId, callback) => callback(false)),
+  getChannels: jest.fn((callback) => callback([])),
+};

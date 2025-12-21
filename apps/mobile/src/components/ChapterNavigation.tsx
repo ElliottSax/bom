@@ -4,12 +4,15 @@
  * Previous/Next chapter navigation for the scripture reader
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   Pressable,
   StyleSheet,
+  Modal,
+  TextInput,
+  FlatList,
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -17,26 +20,99 @@ interface ChapterNavigationProps {
   book: string;
   chapter: number;
   maxChapter: number;
+  verseCount?: number;
   onPrevious: () => void;
   onNext: () => void;
   onChapterSelect: () => void;
+  onJumpToVerse?: (verse: number) => void;
 }
 
 export function ChapterNavigation({
   book,
   chapter,
   maxChapter,
+  verseCount,
   onPrevious,
   onNext,
   onChapterSelect,
+  onJumpToVerse,
 }: ChapterNavigationProps) {
   const { colors } = useTheme();
+  const [jumpModalVisible, setJumpModalVisible] = useState(false);
+  const [verseInput, setVerseInput] = useState('');
 
   const hasPrevious = chapter > 1;
   const hasNext = chapter < maxChapter;
 
+  const handleJumpToVerse = () => {
+    const verseNum = parseInt(verseInput, 10);
+    if (verseNum > 0 && verseNum <= (verseCount || 999) && onJumpToVerse) {
+      onJumpToVerse(verseNum);
+      setJumpModalVisible(false);
+      setVerseInput('');
+    }
+  };
+
+  const verses = verseCount ? Array.from({ length: verseCount }, (_, i) => i + 1) : [];
+
   return (
     <View style={[styles.container, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
+      {/* Jump to Verse Modal */}
+      {verseCount && onJumpToVerse && (
+        <Modal
+          visible={jumpModalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setJumpModalVisible(false)}
+        >
+          <Pressable style={styles.modalOverlay} onPress={() => setJumpModalVisible(false)}>
+            <View style={[styles.jumpModal, { backgroundColor: colors.surface }]}>
+              <Text style={[styles.jumpTitle, { color: colors.text }]}>Jump to Verse</Text>
+              <Text style={[styles.jumpSubtitle, { color: colors.textSecondary }]}>
+                {book} {chapter} ({verseCount} verses)
+              </Text>
+
+              <TextInput
+                style={[styles.verseInput, { color: colors.text, backgroundColor: colors.background, borderColor: colors.border }]}
+                placeholder="Verse number"
+                placeholderTextColor={colors.textSecondary}
+                value={verseInput}
+                onChangeText={setVerseInput}
+                keyboardType="number-pad"
+                autoFocus
+                onSubmitEditing={handleJumpToVerse}
+              />
+
+              <FlatList
+                data={verses}
+                numColumns={5}
+                keyExtractor={(item) => item.toString()}
+                style={styles.verseGrid}
+                contentContainerStyle={styles.verseGridContent}
+                renderItem={({ item }) => (
+                  <Pressable
+                    style={[styles.verseButton, { backgroundColor: colors.background }]}
+                    onPress={() => {
+                      onJumpToVerse(item);
+                      setJumpModalVisible(false);
+                      setVerseInput('');
+                    }}
+                  >
+                    <Text style={[styles.verseButtonText, { color: colors.primary }]}>{item}</Text>
+                  </Pressable>
+                )}
+              />
+
+              <Pressable
+                style={[styles.cancelButton, { backgroundColor: colors.background }]}
+                onPress={() => setJumpModalVisible(false)}
+              >
+                <Text style={[styles.cancelButtonText, { color: colors.text }]}>Cancel</Text>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Modal>
+      )}
       {/* Previous Button */}
       <Pressable
         style={[
@@ -65,14 +141,24 @@ export function ChapterNavigation({
       </Pressable>
 
       {/* Chapter Selector */}
-      <Pressable style={styles.chapterSelector} onPress={onChapterSelect}>
-        <Text style={[styles.chapterLabel, { color: colors.textSecondary }]}>
-          {book}
-        </Text>
-        <Text style={[styles.chapterNumber, { color: colors.primary }]}>
-          {chapter} / {maxChapter}
-        </Text>
-      </Pressable>
+      <View style={styles.centerSection}>
+        <Pressable style={styles.chapterSelector} onPress={onChapterSelect}>
+          <Text style={[styles.chapterLabel, { color: colors.textSecondary }]}>
+            {book}
+          </Text>
+          <Text style={[styles.chapterNumber, { color: colors.primary }]}>
+            {chapter} / {maxChapter}
+          </Text>
+        </Pressable>
+        {verseCount && onJumpToVerse && (
+          <Pressable
+            style={[styles.jumpButton, { backgroundColor: colors.primary + '15' }]}
+            onPress={() => setJumpModalVisible(true)}
+          >
+            <Text style={[styles.jumpButtonText, { color: colors.primary }]}>↓ Verse</Text>
+          </Pressable>
+        )}
+      </View>
 
       {/* Next Button */}
       <Pressable
@@ -184,6 +270,11 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginHorizontal: 4,
   },
+  centerSection: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+  },
   chapterSelector: {
     alignItems: 'center',
     paddingVertical: 8,
@@ -196,6 +287,78 @@ const styles = StyleSheet.create({
   chapterNumber: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  jumpButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  jumpButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  jumpModal: {
+    width: '100%',
+    maxWidth: 320,
+    borderRadius: 16,
+    padding: 20,
+    maxHeight: '70%',
+  },
+  jumpTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  jumpSubtitle: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  verseInput: {
+    height: 44,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  verseGrid: {
+    maxHeight: 200,
+  },
+  verseGridContent: {
+    gap: 8,
+  },
+  verseButton: {
+    flex: 1,
+    margin: 4,
+    aspectRatio: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 8,
+    minWidth: 44,
+  },
+  verseButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  cancelButton: {
+    marginTop: 16,
+    padding: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
   },
   floatingButton: {
     position: 'absolute',

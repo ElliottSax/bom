@@ -29,6 +29,8 @@ interface ScriptureReaderProps {
   chapter: number;
   onVersePress?: (verseId: string, verseNumber: number) => void;
   onVerseLongPress?: (verseId: string, verseNumber: number, text: string) => void;
+  onVerseCountChange?: (count: number) => void;
+  scrollToVerse?: number;
 }
 
 export function ScriptureReader({
@@ -37,6 +39,8 @@ export function ScriptureReader({
   chapter,
   onVersePress,
   onVerseLongPress,
+  onVerseCountChange,
+  scrollToVerse,
 }: ScriptureReaderProps) {
   const { settings } = useSettings();
   const { colors } = useTheme();
@@ -54,6 +58,24 @@ export function ScriptureReader({
   const { hasCrossReferences } = useCrossReferences();
 
   const scrollViewRef = useRef<ScrollView>(null);
+  const verseRefs = useRef<Map<number, number>>(new Map());
+
+  // Report verse count when verses change
+  React.useEffect(() => {
+    if (verses.length > 0 && onVerseCountChange) {
+      onVerseCountChange(verses.length);
+    }
+  }, [verses.length, onVerseCountChange]);
+
+  // Scroll to verse when requested
+  React.useEffect(() => {
+    if (scrollToVerse && scrollViewRef.current) {
+      const yPosition = verseRefs.current.get(scrollToVerse);
+      if (yPosition !== undefined) {
+        scrollViewRef.current.scrollTo({ y: yPosition - 100, animated: true });
+      }
+    }
+  }, [scrollToVerse]);
 
   // Build annotations map for efficient lookup
   const annotations = useMemo(() => {
@@ -178,6 +200,8 @@ export function ScriptureReader({
               hasNote={verseAnnotations?.hasNote}
               isBookmarked={verseAnnotations?.isBookmarked}
               hasCrossRefs={verseAnnotations?.hasCrossRefs}
+              isHighlighted={scrollToVerse === verse.verse}
+              onLayout={(y) => verseRefs.current.set(verse.verse, y)}
             />
           );
         })}
@@ -208,6 +232,8 @@ interface VerseItemProps {
   hasNote?: boolean;
   isBookmarked?: boolean;
   hasCrossRefs?: boolean;
+  isHighlighted?: boolean;
+  onLayout?: (y: number) => void;
 }
 
 function VerseItem({
@@ -223,6 +249,8 @@ function VerseItem({
   hasNote,
   isBookmarked,
   hasCrossRefs,
+  isHighlighted,
+  onLayout,
 }: VerseItemProps) {
   const handlePress = () => {
     if (onPress) {
@@ -239,7 +267,15 @@ function VerseItem({
   // Calculate background color based on highlight
   const backgroundColor = highlightColor
     ? highlightColor + '30' // 30% opacity
+    : isHighlighted
+    ? colors.primary + '15'
     : colors.surface;
+
+  const handleLayout = (event: any) => {
+    if (onLayout) {
+      onLayout(event.nativeEvent.layout.y);
+    }
+  };
 
   return (
     <Pressable
@@ -248,9 +284,11 @@ function VerseItem({
         isFirst && styles.firstVerse,
         { backgroundColor },
         highlightColor && styles.highlightedVerse,
+        isHighlighted && styles.jumpHighlightedVerse,
       ]}
       onPress={handlePress}
       onLongPress={handleLongPress}
+      onLayout={handleLayout}
       delayLongPress={500}
       android_ripple={{ color: colors.primary + '20' }}
     >
@@ -359,6 +397,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginHorizontal: -4,
     paddingHorizontal: 8,
+  },
+  jumpHighlightedVerse: {
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: '#0066cc',
   },
   firstVerse: {
     marginTop: 0,

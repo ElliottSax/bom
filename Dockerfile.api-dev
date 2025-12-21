@@ -1,0 +1,44 @@
+# Development Dockerfile for API server
+# Optimized for WSL2 - runs Node.js inside container to avoid /mnt issues
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apk add --no-cache \
+    curl \
+    python3 \
+    make \
+    g++ \
+    postgresql-client
+
+# Copy package files first (for better caching)
+COPY services/api/package*.json ./services/api/
+COPY packages/shared/package.json ./packages/shared/
+COPY package.json ./
+
+# Install dependencies (this layer is cached unless package.json changes)
+WORKDIR /app/services/api
+RUN npm install --legacy-peer-deps
+
+# Copy Prisma schema and generate client
+COPY services/api/prisma ./prisma
+RUN npx prisma generate
+
+# Copy source code
+WORKDIR /app
+COPY services/api/ ./services/api/
+COPY packages/shared/ ./packages/shared/
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:4000/health || exit 1
+
+# Set working directory to API service
+WORKDIR /app/services/api
+
+# Expose port
+EXPOSE 4000
+
+# Start development server with tsx watch
+CMD ["npm", "run", "dev"]
