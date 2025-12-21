@@ -79,6 +79,7 @@ bom/
 12. **Daily Verse** - Rotating inspirational verse (31 curated verses)
 13. **Study Plans** - Multiple reading plans (30-day to 1-year) with progress tracking
 14. **Cross-References** - Biblical cross-references for related verses
+15. **Enhanced Scripture Reader** - Shows highlight colors, bookmark/note indicators, and reading time estimates
 
 ## Mobile App Features
 
@@ -98,6 +99,8 @@ bom/
 - Study plans (5 options)
 - Mark chapters as complete
 - Cross-references to Bible
+- Reading time estimates
+- Visual indicators for annotations
 
 ## New Files Created
 

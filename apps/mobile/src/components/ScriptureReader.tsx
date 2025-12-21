@@ -4,7 +4,7 @@
  * Main component for reading scripture chapters with offline support
  */
 
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import {
   View,
   ScrollView,
@@ -17,6 +17,11 @@ import {
 import { useChapter } from '../hooks/useChapter';
 import { useSettings } from '../contexts/SettingsContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useHighlights } from '../hooks/useHighlights';
+import { useNotes } from '../hooks/useNotes';
+import { useBookmarks } from '../hooks/useBookmarks';
+import { useCrossReferences } from '../hooks/useCrossReferences';
+import { estimateVerseReadingTime } from '../hooks/useReadingProgress';
 
 interface ScriptureReaderProps {
   editionId: string;
@@ -42,7 +47,47 @@ export function ScriptureReader({
     chapter
   );
 
+  // Get annotations for this chapter
+  const { getHighlight } = useHighlights();
+  const { getNote } = useNotes();
+  const { isBookmarked } = useBookmarks();
+  const { hasCrossReferences } = useCrossReferences();
+
   const scrollViewRef = useRef<ScrollView>(null);
+
+  // Build annotations map for efficient lookup
+  const annotations = useMemo(() => {
+    const map = new Map<string, {
+      highlightColor?: string;
+      hasNote: boolean;
+      isBookmarked: boolean;
+      hasCrossRefs: boolean;
+    }>();
+
+    verses.forEach((verse) => {
+      const highlight = getHighlight(verse.id);
+      const note = getNote(verse.id);
+      const bookmarked = isBookmarked(verse.id);
+      const crossRefs = hasCrossReferences(verse.id);
+
+      if (highlight || note || bookmarked || crossRefs) {
+        map.set(verse.id, {
+          highlightColor: highlight?.color,
+          hasNote: !!note,
+          isBookmarked: bookmarked,
+          hasCrossRefs: crossRefs,
+        });
+      }
+    });
+
+    return map;
+  }, [verses, getHighlight, getNote, isBookmarked, hasCrossReferences]);
+
+  // Calculate reading time
+  const readingTime = useMemo(() => {
+    if (verses.length === 0) return null;
+    return estimateVerseReadingTime(verses);
+  }, [verses]);
 
   // Loading state
   if (loading && verses.length === 0) {
@@ -93,7 +138,14 @@ export function ScriptureReader({
         <Text style={[styles.chapterTitle, { color: colors.text }]}>
           {book} {chapter}
         </Text>
-        <Text style={[styles.verseCount, { color: colors.textSecondary }]}>{verses.length} verses</Text>
+        <View style={styles.headerStats}>
+          <Text style={[styles.verseCount, { color: colors.textSecondary }]}>{verses.length} verses</Text>
+          {readingTime && (
+            <Text style={[styles.readingTime, { color: colors.textSecondary }]}>
+              · {readingTime.formatted}
+            </Text>
+          )}
+        </View>
       </View>
 
       {/* Verses */}
@@ -109,19 +161,26 @@ export function ScriptureReader({
           />
         }
       >
-        {verses.map((verse, index) => (
-          <VerseItem
-            key={verse.id}
-            verse={verse}
-            fontSize={fontSize}
-            lineHeight={lineHeight}
-            showVerseNumbers={showVerseNumbers}
-            onPress={onVersePress}
-            onLongPress={onVerseLongPress}
-            isFirst={index === 0}
-            colors={colors}
-          />
-        ))}
+        {verses.map((verse, index) => {
+          const verseAnnotations = annotations.get(verse.id);
+          return (
+            <VerseItem
+              key={verse.id}
+              verse={verse}
+              fontSize={fontSize}
+              lineHeight={lineHeight}
+              showVerseNumbers={showVerseNumbers}
+              onPress={onVersePress}
+              onLongPress={onVerseLongPress}
+              isFirst={index === 0}
+              colors={colors}
+              highlightColor={verseAnnotations?.highlightColor}
+              hasNote={verseAnnotations?.hasNote}
+              isBookmarked={verseAnnotations?.isBookmarked}
+              hasCrossRefs={verseAnnotations?.hasCrossRefs}
+            />
+          );
+        })}
 
         {/* End of chapter spacer */}
         <View style={styles.endSpacer} />
@@ -145,6 +204,10 @@ interface VerseItemProps {
   onLongPress?: (verseId: string, verseNumber: number, text: string) => void;
   isFirst: boolean;
   colors: any;
+  highlightColor?: string;
+  hasNote?: boolean;
+  isBookmarked?: boolean;
+  hasCrossRefs?: boolean;
 }
 
 function VerseItem({
@@ -156,6 +219,10 @@ function VerseItem({
   onLongPress,
   isFirst,
   colors,
+  highlightColor,
+  hasNote,
+  isBookmarked,
+  hasCrossRefs,
 }: VerseItemProps) {
   const handlePress = () => {
     if (onPress) {
@@ -169,23 +236,46 @@ function VerseItem({
     }
   };
 
+  // Calculate background color based on highlight
+  const backgroundColor = highlightColor
+    ? highlightColor + '30' // 30% opacity
+    : colors.surface;
+
   return (
     <Pressable
       style={[
         styles.verseContainer,
         isFirst && styles.firstVerse,
-        { backgroundColor: colors.surface },
+        { backgroundColor },
+        highlightColor && styles.highlightedVerse,
       ]}
       onPress={handlePress}
       onLongPress={handleLongPress}
       delayLongPress={500}
       android_ripple={{ color: colors.primary + '20' }}
     >
-      {showVerseNumbers && (
-        <Text style={[styles.verseNumber, { color: colors.primary }]}>
-          {verse.verse}
-        </Text>
-      )}
+      {/* Verse number with indicators */}
+      <View style={styles.verseNumberContainer}>
+        {showVerseNumbers && (
+          <Text style={[styles.verseNumber, { color: colors.primary }]}>
+            {verse.verse}
+          </Text>
+        )}
+        {/* Annotation indicators */}
+        <View style={styles.indicators}>
+          {isBookmarked && (
+            <Text style={styles.indicator}>🔖</Text>
+          )}
+          {hasNote && (
+            <Text style={styles.indicator}>📝</Text>
+          )}
+          {hasCrossRefs && (
+            <Text style={styles.indicatorSmall}>↗</Text>
+          )}
+        </View>
+      </View>
+
+      {/* Verse text */}
       <Text
         style={[
           styles.verseText,
@@ -239,9 +329,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333333',
   },
+  headerStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   verseCount: {
     fontSize: 14,
     color: '#666666',
+  },
+  readingTime: {
+    fontSize: 14,
+    color: '#666666',
+    marginLeft: 4,
   },
   scrollView: {
     flex: 1,
@@ -256,16 +355,38 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     borderRadius: 4,
   },
+  highlightedVerse: {
+    borderRadius: 8,
+    marginHorizontal: -4,
+    paddingHorizontal: 8,
+  },
   firstVerse: {
     marginTop: 0,
+  },
+  verseNumberContainer: {
+    minWidth: 32,
+    marginRight: 8,
+    alignItems: 'flex-start',
   },
   verseNumber: {
     fontSize: 12,
     fontWeight: 'bold',
     color: '#0066cc',
-    marginRight: 12,
     marginTop: 4,
-    minWidth: 24,
+  },
+  indicators: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 2,
+    gap: 2,
+  },
+  indicator: {
+    fontSize: 10,
+  },
+  indicatorSmall: {
+    fontSize: 10,
+    color: '#9c27b0',
+    fontWeight: 'bold',
   },
   verseText: {
     flex: 1,

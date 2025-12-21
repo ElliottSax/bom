@@ -242,3 +242,39 @@ export function getProgressMessage(percentComplete: number): string {
   if (percentComplete < 100) return "Almost there! You can do it!";
   return "Congratulations! You've read the entire Book of Mormon!";
 }
+
+/**
+ * Estimate reading time based on word count
+ * Average reading speed: 200 words per minute for scripture (slower than normal)
+ */
+export function estimateReadingTime(wordCount: number): { minutes: number; formatted: string } {
+  const wordsPerMinute = 200;
+  const minutes = Math.ceil(wordCount / wordsPerMinute);
+
+  if (minutes < 1) {
+    return { minutes: 1, formatted: '< 1 min' };
+  }
+  if (minutes === 1) {
+    return { minutes: 1, formatted: '1 min' };
+  }
+  if (minutes < 60) {
+    return { minutes, formatted: `${minutes} min` };
+  }
+
+  const hours = Math.floor(minutes / 60);
+  const remainingMins = minutes % 60;
+  if (remainingMins === 0) {
+    return { minutes, formatted: `${hours} hr` };
+  }
+  return { minutes, formatted: `${hours} hr ${remainingMins} min` };
+}
+
+/**
+ * Estimate reading time from verse text
+ */
+export function estimateVerseReadingTime(verses: { text: string }[]): { minutes: number; formatted: string } {
+  const totalWords = verses.reduce((sum, verse) => {
+    return sum + verse.text.split(/\s+/).length;
+  }, 0);
+  return estimateReadingTime(totalWords);
+}
