@@ -93,10 +93,10 @@ bom/
 - Verse highlighting (5 colors)
 - Note-taking with editor modal
 - Persistent reading settings
-- Dark/Light/System theme
+- Dark/Light/System theme (full app support)
 - Daily verse with rotation
 - Reading progress tracking
-- Reading streaks
+- Reading streaks with fire emoji display
 - Study plans (5 options)
 - Mark chapters as complete
 - Cross-references to Bible
@@ -104,6 +104,8 @@ bom/
 - Visual indicators for annotations
 - Share progress with friends
 - Bulk offline downloads with pause/resume
+- Offline status indicators on book/chapter lists
+- Study Tools quick access grid on HomeScreen
 
 ## New Files Created
 
