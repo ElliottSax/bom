@@ -86,6 +86,7 @@ bom/
 19. **Data Backup/Restore** - Export/import all user data as JSON file
 20. **Reading Reminders** - Push notifications for daily study reminders
 21. **Cloud Sync** - Sync data across devices (bookmarks, notes, progress)
+22. **Word Study/Concordance** - Find all occurrences of a word across scriptures
 
 ## Mobile App Features
 
@@ -116,6 +117,7 @@ bom/
 - Data backup and restore (JSON export/import)
 - Reading reminder notifications (configurable schedule)
 - Cloud sync across devices
+- Word study / concordance
 
 ## New Files Created
 
@@ -137,7 +139,8 @@ apps/mobile/src/
 │   ├── useOfflineDownload.ts   # Bulk download management
 │   ├── useDataBackup.ts        # Export/import user data
 │   ├── useReadingReminders.ts  # Push notification reminders
-│   └── useCloudSync.ts         # Cloud sync management
+│   ├── useCloudSync.ts         # Cloud sync management
+│   └── useWordStudy.ts         # Word concordance/frequency
 ├── components/
 │   ├── VerseActionMenu.tsx     # Long-press menu
 │   ├── ChapterNavigation.tsx   # Prev/Next nav
@@ -150,7 +153,8 @@ apps/mobile/src/
     ├── OfflineDownloadScreen.tsx # Offline download manager
     ├── BackupRestoreScreen.tsx # Data backup/restore
     ├── RemindersScreen.tsx     # Reading reminder settings
-    └── CloudSyncScreen.tsx     # Cloud sync settings
+    ├── CloudSyncScreen.tsx     # Cloud sync settings
+    └── WordStudyScreen.tsx     # Concordance/word search
 ```
 
 ## TODO

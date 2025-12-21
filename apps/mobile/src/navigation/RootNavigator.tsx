@@ -26,6 +26,7 @@ import { OfflineDownloadScreen } from '../screens/OfflineDownloadScreen';
 import { BackupRestoreScreen } from '../screens/BackupRestoreScreen';
 import { RemindersScreen } from '../screens/RemindersScreen';
 import { CloudSyncScreen } from '../screens/CloudSyncScreen';
+import { WordStudyScreen } from '../screens/WordStudyScreen';
 
 // Type definitions for navigation
 export type RootStackParamList = {
@@ -55,6 +56,7 @@ export type HomeStackParamList = {
   BackupRestore: undefined;
   Reminders: undefined;
   CloudSync: undefined;
+  WordStudy: undefined;
 };
 
 export type ReadStackParamList = {
@@ -139,6 +141,11 @@ function HomeStackNavigator() {
         name="CloudSync"
         component={CloudSyncScreen}
         options={{ title: 'Cloud Sync' }}
+      />
+      <HomeStack.Screen
+        name="WordStudy"
+        component={WordStudyScreen}
+        options={{ title: 'Word Study' }}
       />
     </HomeStack.Navigator>
   );

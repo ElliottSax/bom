@@ -274,6 +274,24 @@ export function HomeScreen() {
               {offlinePercent}%
             </Text>
           </Pressable>
+
+          <Pressable
+            style={[styles.toolCard, { backgroundColor: colors.surface }]}
+            onPress={() => navigation.navigate('WordStudy')}
+          >
+            <Text style={styles.toolIcon}>📚</Text>
+            <Text style={[styles.toolLabel, { color: colors.text }]}>Word Study</Text>
+            <Text style={[styles.toolCount, { color: colors.primary }]}>→</Text>
+          </Pressable>
+
+          <Pressable
+            style={[styles.toolCard, { backgroundColor: colors.surface }]}
+            onPress={() => navigation.navigate('Progress')}
+          >
+            <Text style={styles.toolIcon}>📊</Text>
+            <Text style={[styles.toolLabel, { color: colors.text }]}>Progress</Text>
+            <Text style={[styles.toolCount, { color: colors.primary }]}>→</Text>
+          </Pressable>
         </View>
       </View>
 
