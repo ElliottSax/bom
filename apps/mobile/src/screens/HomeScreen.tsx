@@ -18,6 +18,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useStats, formatNumber } from '../hooks/useStats';
 import { useDailyVerse } from '../hooks/useDailyVerse';
 import { useReadingProgress, getProgressMessage } from '../hooks/useReadingProgress';
+import { useBookmarks } from '../hooks/useBookmarks';
+import { useNotes } from '../hooks/useNotes';
+import { useOfflineDownload } from '../hooks/useOfflineDownload';
 import { useTheme } from '../contexts/ThemeContext';
 
 const LAST_READ_KEY = '@bom_last_read';
@@ -35,8 +38,21 @@ export function HomeScreen() {
   const { totalVerses, totalBooks, totalChapters, loading: statsLoading } = useStats();
   const { verse: dailyVerse, loading: verseLoading, navigateToVerse } = useDailyVerse();
   const { stats: progressStats } = useReadingProgress();
+  const { bookmarks } = useBookmarks();
+  const { notes } = useNotes();
+  const { downloadStatus, getTotalDownloadSize } = useOfflineDownload();
   const [lastRead, setLastRead] = useState<LastReadPosition | null>(null);
   const [loadingLastRead, setLoadingLastRead] = useState(true);
+
+  // Calculate offline stats
+  const downloadSize = getTotalDownloadSize();
+  const downloadedChapters = Object.values(downloadStatus).reduce(
+    (sum, s) => sum + (s.downloadedChapters || 0),
+    0
+  );
+  const offlinePercent = downloadSize.chapters > 0
+    ? Math.round((downloadedChapters / downloadSize.chapters) * 100)
+    : 0;
 
   // Load last read position on mount
   useEffect(() => {
@@ -195,6 +211,51 @@ export function HomeScreen() {
           </View>
           <Text style={[styles.chevron, { color: colors.textSecondary }]}>›</Text>
         </Pressable>
+      </View>
+
+      {/* Study Tools Section */}
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Study Tools</Text>
+
+        <View style={styles.toolsGrid}>
+          <Pressable
+            style={[styles.toolCard, { backgroundColor: colors.surface }]}
+            onPress={() => navigation.navigate('Bookmarks')}
+          >
+            <Text style={styles.toolIcon}>🔖</Text>
+            <Text style={[styles.toolLabel, { color: colors.text }]}>Bookmarks</Text>
+            <Text style={[styles.toolCount, { color: colors.primary }]}>{bookmarks.length}</Text>
+          </Pressable>
+
+          <Pressable
+            style={[styles.toolCard, { backgroundColor: colors.surface }]}
+            onPress={() => navigation.navigate('Notes')}
+          >
+            <Text style={styles.toolIcon}>📝</Text>
+            <Text style={[styles.toolLabel, { color: colors.text }]}>Notes</Text>
+            <Text style={[styles.toolCount, { color: colors.primary }]}>{notes.length}</Text>
+          </Pressable>
+
+          <Pressable
+            style={[styles.toolCard, { backgroundColor: colors.surface }]}
+            onPress={() => navigation.navigate('StudyPlan')}
+          >
+            <Text style={styles.toolIcon}>📅</Text>
+            <Text style={[styles.toolLabel, { color: colors.text }]}>Study Plan</Text>
+            <Text style={[styles.toolCount, { color: colors.primary }]}>→</Text>
+          </Pressable>
+
+          <Pressable
+            style={[styles.toolCard, { backgroundColor: colors.surface }]}
+            onPress={() => navigation.navigate('OfflineDownload')}
+          >
+            <Text style={styles.toolIcon}>📥</Text>
+            <Text style={[styles.toolLabel, { color: colors.text }]}>Offline</Text>
+            <Text style={[styles.toolCount, { color: offlinePercent === 100 ? colors.success : colors.primary }]}>
+              {offlinePercent}%
+            </Text>
+          </Pressable>
+        </View>
       </View>
 
       {/* Stats */}
@@ -389,6 +450,35 @@ const styles = StyleSheet.create({
   },
   chevron: {
     fontSize: 24,
+  },
+  toolsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  toolCard: {
+    width: '47%',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  toolIcon: {
+    fontSize: 28,
+    marginBottom: 8,
+  },
+  toolLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  toolCount: {
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   statsSection: {
     flexDirection: 'row',
