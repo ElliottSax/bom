@@ -81,6 +81,8 @@ bom/
 14. **Cross-References** - Biblical cross-references for related verses
 15. **Enhanced Scripture Reader** - Shows highlight colors, bookmark/note indicators, and reading time estimates
 16. **Share Study Plans** - Share progress and invite friends to join reading plans
+17. **Recent Searches** - Search history with quick access and clear option
+18. **Jump to Verse** - Quick verse navigation modal with grid selection
 
 ## Mobile App Features
 
@@ -106,6 +108,8 @@ bom/
 - Bulk offline downloads with pause/resume
 - Offline status indicators on book/chapter lists
 - Study Tools quick access grid on HomeScreen
+- Jump to verse with grid selection modal
+- Recent searches history
 
 ## New Files Created
 
