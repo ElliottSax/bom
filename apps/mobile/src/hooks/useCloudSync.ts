@@ -121,7 +121,7 @@ export function useCloudSync() {
         setConfig(JSON.parse(savedConfig));
       } else {
         // Generate device ID on first run
-        const deviceId = `${Platform.OS}-${Platform.Version}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const deviceId = `${Platform.OS}-${Platform.Version}-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
         const newConfig = { ...DEFAULT_CONFIG, deviceId };
         await saveConfig(newConfig);
       }
@@ -176,7 +176,7 @@ export function useCloudSync() {
       if (!config.enabled) return;
 
       const change: SyncChange = {
-        id: `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        id: `${type}-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
         type,
         action,
         data,

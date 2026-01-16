@@ -15,7 +15,7 @@ import {
   Pressable,
 } from 'react-native';
 import { useChapter } from '../hooks/useChapter';
-import { useSettings } from '../contexts/SettingsContext';
+import { useSettings, FONT_FAMILIES } from '../contexts/SettingsContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useHighlights } from '../hooks/useHighlights';
 import { useNotes } from '../hooks/useNotes';
@@ -44,7 +44,8 @@ export function ScriptureReader({
 }: ScriptureReaderProps) {
   const { settings } = useSettings();
   const { colors } = useTheme();
-  const { fontSize, lineHeight, showVerseNumbers } = settings.reading;
+  const { fontSize, lineHeight, fontFamily, showVerseNumbers } = settings.reading;
+  const fontFamilyStyle = FONT_FAMILIES.find(f => f.id === fontFamily)?.fontFamily || 'System';
   const { verses, loading, error, isOffline, refetch } = useChapter(
     editionId,
     book,
@@ -191,6 +192,7 @@ export function ScriptureReader({
               verse={verse}
               fontSize={fontSize}
               lineHeight={lineHeight}
+              fontFamily={fontFamilyStyle}
               showVerseNumbers={showVerseNumbers}
               onPress={onVersePress}
               onLongPress={onVerseLongPress}
@@ -223,6 +225,7 @@ interface VerseItemProps {
   };
   fontSize: number;
   lineHeight: number;
+  fontFamily: string;
   showVerseNumbers: boolean;
   onPress?: (verseId: string, verseNumber: number) => void;
   onLongPress?: (verseId: string, verseNumber: number, text: string) => void;
@@ -240,6 +243,7 @@ function VerseItem({
   verse,
   fontSize,
   lineHeight,
+  fontFamily,
   showVerseNumbers,
   onPress,
   onLongPress,
@@ -320,6 +324,7 @@ function VerseItem({
           {
             fontSize,
             lineHeight: fontSize * lineHeight,
+            fontFamily,
             color: colors.text,
             marginLeft: showVerseNumbers ? 0 : 4,
           },

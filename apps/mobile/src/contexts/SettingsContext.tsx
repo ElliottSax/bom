@@ -9,9 +9,19 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SETTINGS_KEY = '@bom_app_settings';
 
+export type FontFamily = 'system' | 'serif' | 'sans-serif' | 'monospace';
+
+export const FONT_FAMILIES: { id: FontFamily; label: string; fontFamily: string }[] = [
+  { id: 'system', label: 'System Default', fontFamily: 'System' },
+  { id: 'serif', label: 'Serif', fontFamily: 'serif' },
+  { id: 'sans-serif', label: 'Sans-serif', fontFamily: 'sans-serif' },
+  { id: 'monospace', label: 'Monospace', fontFamily: 'monospace' },
+];
+
 export interface ReadingSettings {
   fontSize: number;
   lineHeight: number;
+  fontFamily: FontFamily;
   showVerseNumbers: boolean;
   paragraphView: boolean;
   redLetter: boolean;
@@ -39,6 +49,7 @@ const defaultSettings: AppSettings = {
   reading: {
     fontSize: 16,
     lineHeight: 1.6,
+    fontFamily: 'system',
     showVerseNumbers: true,
     paragraphView: false,
     redLetter: false,
@@ -61,6 +72,7 @@ interface SettingsContextType {
   // Reading settings
   updateFontSize: (size: number) => void;
   updateLineHeight: (height: number) => void;
+  updateFontFamily: (family: FontFamily) => void;
   toggleVerseNumbers: () => void;
   toggleParagraphView: () => void;
   toggleRedLetter: () => void;
@@ -134,6 +146,13 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     updateSettings((prev) => ({
       ...prev,
       reading: { ...prev.reading, lineHeight: Math.max(1.2, Math.min(2.0, height)) },
+    }));
+  }, [updateSettings]);
+
+  const updateFontFamily = useCallback((family: FontFamily) => {
+    updateSettings((prev) => ({
+      ...prev,
+      reading: { ...prev.reading, fontFamily: family },
     }));
   }, [updateSettings]);
 
@@ -214,6 +233,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         loading,
         updateFontSize,
         updateLineHeight,
+        updateFontFamily,
         toggleVerseNumbers,
         toggleParagraphView,
         toggleRedLetter,

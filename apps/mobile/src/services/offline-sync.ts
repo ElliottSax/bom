@@ -85,7 +85,7 @@ class OfflineSyncService {
   async queueOperation(operation: Omit<OfflineOperation, 'id' | 'timestamp' | 'retries'>) {
     const op: OfflineOperation = {
       ...operation,
-      id: `op_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: `op_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
       timestamp: new Date(),
       retries: 0,
     };

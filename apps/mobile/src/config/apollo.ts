@@ -10,6 +10,7 @@ import {
   HttpLink,
   ApolloLink,
   from,
+  NormalizedCacheObject,
 } from '@apollo/client';
 import { onError } from '@apollo/client/link/error';
 import { RetryLink } from '@apollo/client/link/retry';
@@ -21,16 +22,30 @@ const API_URL = __DEV__
   ? 'http://localhost:4000/graphql'
   : 'https://api.bomstudytools.org/graphql';
 
-// Initialize cache
+// Verse type for cache
+interface CachedVerse {
+  __ref: string;
+}
+
+// Initialize cache with proper merge strategy
 const cache = new InMemoryCache({
   typePolicies: {
     Query: {
       fields: {
         verses: {
-          // Merge strategy for verse queries
+          // Merge strategy for verse queries - replace instead of append to avoid duplicates
           keyArgs: ['editionId', 'book', 'chapter'],
-          merge(existing = [], incoming) {
-            return [...existing, ...incoming];
+          merge(existing: CachedVerse[] | undefined, incoming: CachedVerse[], { args }) {
+            // For pagination, we'd merge; for chapter loads, we replace
+            // Since verses are loaded by chapter, replace is the correct behavior
+            return incoming;
+          },
+        },
+        searchVerses: {
+          // Search results should always replace
+          keyArgs: ['query', 'editionId'],
+          merge(_existing: CachedVerse[] | undefined, incoming: CachedVerse[]) {
+            return incoming;
           },
         },
       },
@@ -91,12 +106,12 @@ const httpLink = new HttpLink({
 const link = from([errorLink, retryLink, httpLink]);
 
 // Create Apollo Client instance
-let client: ApolloClient<any>;
+let client: ApolloClient<NormalizedCacheObject>;
 
 /**
  * Initialize Apollo Client with persistent cache
  */
-export async function initializeApolloClient(): Promise<ApolloClient<any>> {
+export async function initializeApolloClient(): Promise<ApolloClient<NormalizedCacheObject>> {
   if (client) {
     return client;
   }
@@ -139,7 +154,7 @@ export async function initializeApolloClient(): Promise<ApolloClient<any>> {
 /**
  * Get the initialized Apollo Client instance
  */
-export function getApolloClient(): ApolloClient<any> {
+export function getApolloClient(): ApolloClient<NormalizedCacheObject> {
   if (!client) {
     throw new Error(
       'Apollo Client not initialized. Call initializeApolloClient() first.'

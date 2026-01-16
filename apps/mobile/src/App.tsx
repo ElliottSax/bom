@@ -6,7 +6,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import { ApolloProvider } from '@apollo/client';
+import { ApolloClient, ApolloProvider, NormalizedCacheObject } from '@apollo/client';
 import { initializeApolloClient } from './config/apollo';
 import { initDatabase } from './services/offlineStorage';
 import { RootNavigator } from './navigation/RootNavigator';
@@ -14,7 +14,7 @@ import { RootNavigator } from './navigation/RootNavigator';
 export default function App() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState<Error | null>(null);
-  const [apolloClient, setApolloClient] = useState<any>(null);
+  const [apolloClient, setApolloClient] = useState<ApolloClient<NormalizedCacheObject> | null>(null);
 
   useEffect(() => {
     async function initialize() {

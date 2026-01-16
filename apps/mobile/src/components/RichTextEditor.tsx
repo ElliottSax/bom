@@ -124,8 +124,8 @@ export function RichTextEditor({
     { icon: 'H3', label: 'Heading 3', action: () => applyFormat('### ') },
     { icon: '•', label: 'Bullet List', action: () => insertList(false) },
     { icon: '1.', label: 'Numbered List', action: () => insertList(true) },
-    { icon: '"', label: 'Quote', action: () => insertQuote },
-    { icon: '🔗', label: 'Link', action: () => insertLink },
+    { icon: '"', label: 'Quote', action: () => insertQuote() },
+    { icon: '🔗', label: 'Link', action: () => insertLink() },
     { icon: '👁', label: 'Preview', action: () => setShowPreview(!showPreview), active: showPreview },
   ];
 

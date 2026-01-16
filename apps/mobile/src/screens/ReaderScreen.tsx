@@ -18,6 +18,7 @@ import { useHighlights } from '../hooks/useHighlights';
 import { useNotes } from '../hooks/useNotes';
 import { useBookNavigation } from '../hooks/useBookInfo';
 import { useReadingProgress } from '../hooks/useReadingProgress';
+import { useMemorization } from '../hooks/useMemorization';
 import { useTheme } from '../contexts/ThemeContext';
 
 type Props = NativeStackScreenProps<ReadStackParamList, 'Reader'>;
@@ -29,6 +30,7 @@ export function ReaderScreen({ route, navigation }: Props) {
   const { addHighlight, removeHighlight, getHighlight } = useHighlights();
   const { addNote, updateNote, deleteNote, getNote } = useNotes();
   const { markChapterComplete, isChapterComplete } = useReadingProgress();
+  const { addVerse: addMemorizationVerse, removeVerse: removeMemorizationVerse, isMemorizing } = useMemorization();
   const bookNav = useBookNavigation(book, chapter);
 
   // Track if current chapter is complete
@@ -154,6 +156,23 @@ export function ReaderScreen({ route, navigation }: Props) {
     deleteNote(selectedVerse.verseId);
   }, [selectedVerse, deleteNote]);
 
+  const handleMemorize = useCallback(() => {
+    if (!selectedVerse) return;
+
+    if (isMemorizing(selectedVerse.verseId)) {
+      removeMemorizationVerse(selectedVerse.verseId);
+    } else {
+      addMemorizationVerse({
+        verseId: selectedVerse.verseId,
+        book: selectedVerse.book,
+        chapter: selectedVerse.chapter,
+        verse: selectedVerse.verseNumber,
+        text: selectedVerse.text,
+        editionId: selectedVerse.editionId,
+      });
+    }
+  }, [selectedVerse, isMemorizing, addMemorizationVerse, removeMemorizationVerse]);
+
   const handleCloseNoteEditor = useCallback(() => {
     setNoteEditorVisible(false);
     setEditingNote(null);
@@ -250,10 +269,12 @@ export function ReaderScreen({ route, navigation }: Props) {
         visible={menuVisible}
         verse={selectedVerse}
         isBookmarked={selectedVerse ? isBookmarked(selectedVerse.verseId) : false}
+        isMemorizing={selectedVerse ? isMemorizing(selectedVerse.verseId) : false}
         onClose={handleCloseMenu}
         onBookmark={handleBookmark}
         onHighlight={handleHighlight}
         onAddNote={handleAddNote}
+        onMemorize={handleMemorize}
       />
 
       <NoteEditor

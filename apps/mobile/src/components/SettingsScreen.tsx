@@ -18,7 +18,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Slider from '@react-native-community/slider';
 import { useTheme, ThemeMode } from '../contexts/ThemeContext';
-import { useSettings } from '../contexts/SettingsContext';
+import { useSettings, FONT_FAMILIES } from '../contexts/SettingsContext';
 import { HomeStackParamList } from '../navigation/RootNavigator';
 
 type SettingsNavigationProp = NativeStackNavigationProp<HomeStackParamList>;
@@ -30,6 +30,7 @@ export function SettingsScreen() {
     settings,
     updateFontSize,
     updateLineHeight,
+    updateFontFamily,
     toggleVerseNumbers,
     toggleParagraphView,
     toggleRedLetter,
@@ -151,6 +152,47 @@ export function SettingsScreen() {
       width: '100%',
       height: 40,
     },
+    fontFamilyContainer: {
+      paddingHorizontal: 20,
+      paddingVertical: 15,
+      backgroundColor: colors.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    fontOptions: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 10,
+      marginTop: 12,
+    },
+    fontOption: {
+      flex: 1,
+      minWidth: '45%',
+      alignItems: 'center',
+      paddingVertical: 16,
+      paddingHorizontal: 12,
+      backgroundColor: colors.background,
+      borderRadius: 12,
+      borderWidth: 2,
+      borderColor: 'transparent',
+    },
+    fontOptionSelected: {
+      borderColor: colors.primary,
+      backgroundColor: colors.primary + '15',
+    },
+    fontOptionText: {
+      fontSize: 24,
+      marginBottom: 6,
+      color: colors.text,
+    },
+    fontOptionLabel: {
+      fontSize: 11,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+    fontOptionTextSelected: {
+      color: colors.primary,
+    },
     previewSection: {
       margin: 20,
       padding: 20,
@@ -260,6 +302,41 @@ export function SettingsScreen() {
           />
         </View>
 
+        {/* Font Family */}
+        <View style={dynamicStyles.fontFamilyContainer}>
+          <Text style={dynamicStyles.settingLabel}>Font Style</Text>
+          <View style={dynamicStyles.fontOptions}>
+            {FONT_FAMILIES.map((font) => (
+              <Pressable
+                key={font.id}
+                style={[
+                  dynamicStyles.fontOption,
+                  settings.reading.fontFamily === font.id && dynamicStyles.fontOptionSelected,
+                ]}
+                onPress={() => updateFontFamily(font.id)}
+              >
+                <Text
+                  style={[
+                    dynamicStyles.fontOptionText,
+                    { fontFamily: font.fontFamily },
+                    settings.reading.fontFamily === font.id && dynamicStyles.fontOptionTextSelected,
+                  ]}
+                >
+                  Aa
+                </Text>
+                <Text
+                  style={[
+                    dynamicStyles.fontOptionLabel,
+                    settings.reading.fontFamily === font.id && dynamicStyles.fontOptionTextSelected,
+                  ]}
+                >
+                  {font.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
         <View style={dynamicStyles.settingItem}>
           <View style={{ flex: 1 }}>
             <Text style={dynamicStyles.settingLabel}>Show Verse Numbers</Text>
@@ -315,6 +392,7 @@ export function SettingsScreen() {
             {
               fontSize: settings.reading.fontSize,
               lineHeight: settings.reading.fontSize * settings.reading.lineHeight,
+              fontFamily: FONT_FAMILIES.find(f => f.id === settings.reading.fontFamily)?.fontFamily || 'System',
             },
           ]}
         >

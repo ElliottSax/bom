@@ -27,6 +27,11 @@ import { BackupRestoreScreen } from '../screens/BackupRestoreScreen';
 import { RemindersScreen } from '../screens/RemindersScreen';
 import { CloudSyncScreen } from '../screens/CloudSyncScreen';
 import { WordStudyScreen } from '../screens/WordStudyScreen';
+import { MemorizationScreen } from '../screens/MemorizationScreen';
+import { ReadingGoalsScreen } from '../screens/ReadingGoalsScreen';
+import { CoursesScreen } from '../screens/CoursesScreen';
+import { CourseDetailScreen } from '../screens/CourseDetailScreen';
+import { LessonScreen } from '../screens/LessonScreen';
 
 // Type definitions for navigation
 export type RootStackParamList = {
@@ -57,6 +62,11 @@ export type HomeStackParamList = {
   Reminders: undefined;
   CloudSync: undefined;
   WordStudy: undefined;
+  Memorization: undefined;
+  ReadingGoals: undefined;
+  Courses: undefined;
+  CourseDetail: { courseId: string };
+  Lesson: { courseId: string; lessonId: string };
 };
 
 export type ReadStackParamList = {
@@ -146,6 +156,31 @@ function HomeStackNavigator() {
         name="WordStudy"
         component={WordStudyScreen}
         options={{ title: 'Word Study' }}
+      />
+      <HomeStack.Screen
+        name="Memorization"
+        component={MemorizationScreen}
+        options={{ title: 'Memorization' }}
+      />
+      <HomeStack.Screen
+        name="ReadingGoals"
+        component={ReadingGoalsScreen}
+        options={{ title: 'Reading Goals' }}
+      />
+      <HomeStack.Screen
+        name="Courses"
+        component={CoursesScreen}
+        options={{ title: 'Courses' }}
+      />
+      <HomeStack.Screen
+        name="CourseDetail"
+        component={CourseDetailScreen}
+        options={{ title: 'Course' }}
+      />
+      <HomeStack.Screen
+        name="Lesson"
+        component={LessonScreen}
+        options={{ title: '' }}
       />
     </HomeStack.Navigator>
   );

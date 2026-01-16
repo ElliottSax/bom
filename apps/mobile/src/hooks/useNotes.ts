@@ -2,10 +2,12 @@
  * Notes Hook
  *
  * Manages verse notes with local storage
+ * Refactored to use generic usePersistedState hook
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCallback, useRef } from 'react';
+import { usePersistedList } from './usePersistedState';
+import { generateId } from '../utils/id';
 
 const NOTES_KEY = '@bom_notes';
 
@@ -24,9 +26,9 @@ export interface Note {
 interface UseNotesResult {
   notes: Note[];
   loading: boolean;
-  addNote: (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Note>;
-  updateNote: (verseId: string, content: string) => Promise<void>;
-  deleteNote: (verseId: string) => Promise<void>;
+  addNote: (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>) => Note;
+  updateNote: (verseId: string, content: string) => void;
+  deleteNote: (verseId: string) => void;
   getNote: (verseId: string) => Note | undefined;
   getNotesForChapter: (editionId: string, book: string, chapter: number) => Note[];
   searchNotes: (query: string) => Note[];
@@ -34,108 +36,79 @@ interface UseNotesResult {
 }
 
 export function useNotes(): UseNotesResult {
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    items: notes,
+    loading,
+    clear,
+    setItems,
+  } = usePersistedList<Note>({ key: NOTES_KEY });
 
-  // Load notes on mount
-  useEffect(() => {
-    loadNotes();
-  }, []);
-
-  const loadNotes = async () => {
-    try {
-      const stored = await AsyncStorage.getItem(NOTES_KEY);
-      if (stored) {
-        setNotes(JSON.parse(stored));
-      }
-    } catch (error) {
-      console.error('Failed to load notes:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const saveNotes = async (newNotes: Note[]) => {
-    try {
-      await AsyncStorage.setItem(NOTES_KEY, JSON.stringify(newNotes));
-    } catch (error) {
-      console.error('Failed to save notes:', error);
-    }
-  };
+  // Keep track of last added note for return value
+  const lastAddedNote = useRef<Note | null>(null);
 
   const addNote = useCallback(
-    async (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>): Promise<Note> => {
+    (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>): Note => {
       const now = Date.now();
       const newNote: Note = {
         ...note,
-        id: `note_${now}_${Math.random().toString(36).substr(2, 9)}`,
+        id: generateId('note'),
         createdAt: now,
         updatedAt: now,
       };
 
-      setNotes((prev) => {
-        // Remove existing note for same verse if exists
-        const filtered = prev.filter((n) => n.verseId !== note.verseId);
-        const updated = [newNote, ...filtered];
-        saveNotes(updated);
-        return updated;
-      });
+      lastAddedNote.current = newNote;
+
+      // Remove existing note for same verse, then add new one
+      setItems((prev) => [
+        newNote,
+        ...prev.filter((n) => n.verseId !== note.verseId),
+      ]);
 
       return newNote;
     },
-    []
+    [setItems]
   );
 
-  const updateNote = useCallback(async (verseId: string, content: string) => {
-    setNotes((prev) => {
-      const updated = prev.map((n) =>
-        n.verseId === verseId
-          ? { ...n, content, updatedAt: Date.now() }
-          : n
+  const updateNote = useCallback(
+    (verseId: string, content: string) => {
+      setItems((prev) =>
+        prev.map((n) =>
+          n.verseId === verseId
+            ? { ...n, content, updatedAt: Date.now() }
+            : n
+        )
       );
-      saveNotes(updated);
-      return updated;
-    });
-  }, []);
+    },
+    [setItems]
+  );
 
-  const deleteNote = useCallback(async (verseId: string) => {
-    setNotes((prev) => {
-      const updated = prev.filter((n) => n.verseId !== verseId);
-      saveNotes(updated);
-      return updated;
-    });
-  }, []);
+  const deleteNote = useCallback(
+    (verseId: string) => {
+      setItems((prev) => prev.filter((n) => n.verseId !== verseId));
+    },
+    [setItems]
+  );
 
   const getNote = useCallback(
-    (verseId: string) => {
-      return notes.find((n) => n.verseId === verseId);
-    },
+    (verseId: string) => notes.find((n) => n.verseId === verseId),
     [notes]
   );
 
   const getNotesForChapter = useCallback(
-    (editionId: string, book: string, chapter: number) => {
-      return notes.filter(
+    (editionId: string, book: string, chapter: number) =>
+      notes.filter(
         (n) => n.editionId === editionId && n.book === book && n.chapter === chapter
-      );
-    },
+      ),
     [notes]
   );
 
   const searchNotes = useCallback(
     (query: string) => {
       const lowerQuery = query.toLowerCase();
-      return notes.filter((n) =>
-        n.content.toLowerCase().includes(lowerQuery)
-      );
+      return notes.filter((n) => n.content.toLowerCase().includes(lowerQuery));
     },
     [notes]
   );
-
-  const clearAllNotes = useCallback(async () => {
-    setNotes([]);
-    await AsyncStorage.removeItem(NOTES_KEY);
-  }, []);
 
   return {
     notes,
@@ -146,7 +119,7 @@ export function useNotes(): UseNotesResult {
     getNote,
     getNotesForChapter,
     searchNotes,
-    clearAllNotes,
+    clearAllNotes: clear,
   };
 }
 

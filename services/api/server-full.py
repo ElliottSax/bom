@@ -14,33 +14,106 @@ import time
 from datetime import datetime
 import traceback
 
-# Database configuration
+# Database configuration from environment variables
+import os
+
 DB_CONFIG = {
-    'host': 'localhost',
-    'port': 5435,
-    'database': 'bom_study_tools_dev',
-    'user': 'postgres',
-    'password': 'postgres'
+    'host': os.environ.get('DB_HOST', 'localhost'),
+    'port': int(os.environ.get('DB_PORT', '5435')),
+    'database': os.environ.get('DB_NAME', 'bom_study_tools_dev'),
+    'user': os.environ.get('DB_USER', 'postgres'),
+    'password': os.environ.get('DB_PASSWORD', 'postgres')
 }
 
-# Connection pool simulation
+# CORS configuration
+ALLOWED_ORIGINS = os.environ.get('ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:8081').split(',')
+
+# Rate limiting (requests per minute per IP)
+RATE_LIMIT = int(os.environ.get('RATE_LIMIT', '60'))
+
+# Input validation constants
+MAX_SEARCH_QUERY_LENGTH = 500
+MAX_LIMIT = 1000
+MAX_SEARCH_WORDS = 20
+
+# Improved connection pool with validation and cleanup
 class ConnectionPool:
-    def __init__(self, size=5):
+    def __init__(self, size=5, max_age=300):
         self.connections = []
         self.size = size
+        self.max_age = max_age  # Max connection age in seconds
+        self._connection_times = {}
 
     def get_connection(self):
-        """Get a connection from the pool"""
-        if not self.connections:
-            return psycopg2.connect(**DB_CONFIG, cursor_factory=RealDictCursor)
-        return self.connections.pop()
+        """Get a validated connection from the pool"""
+        while self.connections:
+            conn = self.connections.pop()
+            conn_id = id(conn)
+
+            # Check connection age
+            if conn_id in self._connection_times:
+                age = time.time() - self._connection_times[conn_id]
+                if age > self.max_age:
+                    try:
+                        conn.close()
+                    except:
+                        pass
+                    del self._connection_times[conn_id]
+                    continue
+
+            # Validate connection is still alive
+            try:
+                conn.cursor().execute('SELECT 1')
+                return conn
+            except:
+                try:
+                    conn.close()
+                except:
+                    pass
+                if conn_id in self._connection_times:
+                    del self._connection_times[conn_id]
+                continue
+
+        # Create new connection
+        conn = psycopg2.connect(**DB_CONFIG, cursor_factory=RealDictCursor)
+        self._connection_times[id(conn)] = time.time()
+        return conn
 
     def return_connection(self, conn):
-        """Return a connection to the pool"""
-        if len(self.connections) < self.size:
-            self.connections.append(conn)
-        else:
-            conn.close()
+        """Return a connection to the pool if it's still valid"""
+        if conn is None:
+            return
+
+        try:
+            # Check if connection is still usable
+            if conn.closed:
+                return
+
+            # Rollback any uncommitted transaction
+            conn.rollback()
+
+            if len(self.connections) < self.size:
+                self.connections.append(conn)
+            else:
+                conn.close()
+                conn_id = id(conn)
+                if conn_id in self._connection_times:
+                    del self._connection_times[conn_id]
+        except:
+            try:
+                conn.close()
+            except:
+                pass
+
+    def close_all(self):
+        """Close all connections in the pool"""
+        for conn in self.connections:
+            try:
+                conn.close()
+            except:
+                pass
+        self.connections = []
+        self._connection_times = {}
 
 pool = ConnectionPool()
 
@@ -81,7 +154,12 @@ def parse_graphql_variables(query_str, variables=None):
         # Extract limit
         limit_match = re.search(r'limit:\s*(\d+)', params_str)
         if limit_match:
-            params['limit'] = int(limit_match.group(1))
+            params['limit'] = min(int(limit_match.group(1)), MAX_LIMIT)
+
+        # Extract offset for pagination
+        offset_match = re.search(r'offset:\s*(\d+)', params_str)
+        if offset_match:
+            params['offset'] = int(offset_match.group(1))
 
     # Parse books query parameters
     books_match = re.search(r'books\s*\(([^)]*)\)', query_str)
@@ -164,11 +242,24 @@ def handle_graphql_query(query_str, variables=None):
 
             query += ' ORDER BY book, chapter, verse'
 
-            if 'limit' in params:
-                query += ' LIMIT %s'
-                query_params.append(params['limit'])
-            else:
-                query += ' LIMIT 100'  # Default limit (increased from 10)
+            # Get total count for pagination (before applying LIMIT/OFFSET)
+            count_query = query.replace(
+                'SELECT id, "editionId", book, chapter, verse, text, "verseType"',
+                'SELECT COUNT(*)'
+            )
+            cur.execute(count_query, query_params)
+            total_count = cur.fetchone()['count']
+
+            # Apply limit
+            limit = params.get('limit', 100)
+            query += ' LIMIT %s'
+            query_params.append(limit)
+
+            # Apply offset for pagination
+            offset = params.get('offset', 0)
+            if offset > 0:
+                query += ' OFFSET %s'
+                query_params.append(offset)
 
             cur.execute(query, query_params)
             verses = cur.fetchall()
@@ -180,6 +271,10 @@ def handle_graphql_query(query_str, variables=None):
                 'extensions': {
                     'responseTime': f"{(time.time() - start_time) * 1000:.2f}ms",
                     'count': len(verses),
+                    'totalCount': total_count,
+                    'offset': offset,
+                    'limit': limit,
+                    'hasMore': offset + len(verses) < total_count,
                     'parameters': params
                 }
             }
@@ -231,17 +326,25 @@ def handle_graphql_query(query_str, variables=None):
             if edition_match:
                 search_params['editionId'] = edition_match.group(1)
 
-            # Extract limit if provided
+            # Extract limit if provided with validation
             limit_match = re.search(r'limit:\s*(\d+)', query_str)
-            limit = int(limit_match.group(1)) if limit_match else 100
+            limit = min(int(limit_match.group(1)), MAX_LIMIT) if limit_match else 100
 
             conn = pool.get_connection()
             cur = conn.cursor()
 
             search_query = search_params.get('query', '').strip()
 
+            # Input validation
+            if len(search_query) > MAX_SEARCH_QUERY_LENGTH:
+                return {
+                    'data': {'searchVerses': []},
+                    'errors': [{'message': f'Search query too long (max {MAX_SEARCH_QUERY_LENGTH} characters)'}]
+                }
+
             if not search_query:
                 # Return empty results for empty search
+                pool.return_connection(conn)
                 return {
                     'data': {'searchVerses': []},
                     'extensions': {
@@ -252,41 +355,51 @@ def handle_graphql_query(query_str, variables=None):
                 }
 
             # Split search into words for better matching
-            search_words = search_query.lower().split()
+            # Sanitize: only allow alphanumeric characters and spaces
+            sanitized_query = re.sub(r'[^\w\s]', '', search_query)
+            search_words = sanitized_query.lower().split()[:MAX_SEARCH_WORDS]
 
-            # Build SQL query with relevance scoring
-            # More matches = higher relevance
-            sql = '''
+            if not search_words:
+                pool.return_connection(conn)
+                return {
+                    'data': {'searchVerses': []},
+                    'extensions': {
+                        'responseTime': f"{(time.time() - start_time) * 1000:.2f}ms",
+                        'resultCount': 0,
+                        'searchQuery': search_query
+                    }
+                }
+
+            # Build SQL query with PARAMETERIZED relevance scoring (prevents SQL injection)
+            # Create placeholders for each word in the scoring calculation
+            params = []
+            score_cases = []
+            for word in search_words:
+                score_cases.append("CASE WHEN LOWER(text) LIKE %s THEN 1 ELSE 0 END")
+                params.append(f'%{word}%')
+
+            sql = f'''
                 SELECT id, "editionId", book, chapter, verse, text, "verseType",
-                       (
+                       ({' + '.join(score_cases)}) as relevance_score
+                FROM verses WHERE 1=1
             '''
 
-            # Add scoring for each word
-            score_parts = []
+            # Add search text filter - match any word (parameterized)
+            word_conditions = []
             for word in search_words:
-                score_parts.append(f"CASE WHEN LOWER(text) LIKE '%{word}%' THEN 1 ELSE 0 END")
+                word_conditions.append('LOWER(text) LIKE %s')
+                params.append(f'%{word}%')
+            sql += ' AND (' + ' OR '.join(word_conditions) + ')'
 
-            sql += ' + '.join(score_parts) if score_parts else '0'
-            sql += ') as relevance_score FROM verses WHERE 1=1'
-
-            params = []
-
-            # Add search text filter - match any word
-            if search_words:
-                word_conditions = []
-                for word in search_words:
-                    word_conditions.append('LOWER(text) LIKE %s')
-                    params.append(f'%{word}%')
-                sql += ' AND (' + ' OR '.join(word_conditions) + ')'
-
-            # Add edition filter if provided
+            # Add edition filter if provided (parameterized)
             if search_params.get('editionId'):
                 sql += ' AND "editionId" = %s'
                 params.append(search_params['editionId'])
 
             # Order by relevance (most matching words first), then by book order
-            sql += ' ORDER BY relevance_score DESC, book, chapter, verse'
-            sql += f' LIMIT {limit}'
+            # LIMIT is parameterized to prevent injection
+            sql += ' ORDER BY relevance_score DESC, book, chapter, verse LIMIT %s'
+            params.append(limit)
 
             cur.execute(sql, params)
             results = cur.fetchall()
@@ -366,19 +479,40 @@ def handle_graphql_query(query_str, variables=None):
         }
 
 class GraphQLHandler(http.server.BaseHTTPRequestHandler):
-    """Enhanced HTTP handler for GraphQL"""
+    """Enhanced HTTP handler for GraphQL with security improvements"""
 
     def log_message(self, format, *args):
         """Custom logging with timestamp"""
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         print(f"[{timestamp}] {format % args}")
 
+    def get_cors_origin(self):
+        """Get the appropriate CORS origin header based on request origin"""
+        origin = self.headers.get('Origin', '')
+        # Check if origin is in allowed list
+        if origin in ALLOWED_ORIGINS:
+            return origin
+        # In development, also allow localhost variants
+        if origin.startswith('http://localhost:') or origin.startswith('http://127.0.0.1:'):
+            return origin
+        # Return first allowed origin as fallback (more secure than '*')
+        return ALLOWED_ORIGINS[0] if ALLOWED_ORIGINS else 'http://localhost:3000'
+
+    def send_cors_headers(self):
+        """Send CORS headers with proper origin validation"""
+        cors_origin = self.get_cors_origin()
+        self.send_header('Access-Control-Allow-Origin', cors_origin)
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+        self.send_header('Access-Control-Allow-Credentials', 'true')
+        self.send_header('Vary', 'Origin')
+
     def do_GET(self):
         """Handle GET requests"""
         if self.path == '/health':
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_cors_headers()
             self.send_header('Cache-Control', 'no-cache')
             self.end_headers()
 
@@ -597,9 +731,7 @@ curl -X POST http://localhost:4000/graphql \\
 
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.send_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
-                self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+                self.send_cors_headers()
                 self.end_headers()
 
                 self.wfile.write(json.dumps(result, indent=2).encode())
@@ -636,9 +768,7 @@ curl -X POST http://localhost:4000/graphql \\
     def do_OPTIONS(self):
         """Handle OPTIONS for CORS preflight"""
         self.send_response(200)
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+        self.send_cors_headers()
         self.send_header('Access-Control-Max-Age', '86400')
         self.end_headers()
 

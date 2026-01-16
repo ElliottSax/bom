@@ -40,10 +40,12 @@ interface VerseActionMenuProps {
   visible: boolean;
   verse: VerseData | null;
   isBookmarked: boolean;
+  isMemorizing?: boolean;
   onClose: () => void;
   onBookmark: () => void;
   onHighlight: (color: string) => void;
   onAddNote: () => void;
+  onMemorize?: () => void;
   onCrossRefPress?: (ref: CrossReference) => void;
 }
 
@@ -59,10 +61,12 @@ export function VerseActionMenu({
   visible,
   verse,
   isBookmarked,
+  isMemorizing,
   onClose,
   onBookmark,
   onHighlight,
   onAddNote,
+  onMemorize,
   onCrossRefPress,
 }: VerseActionMenuProps) {
   const { colors, isDark } = useTheme();
@@ -156,6 +160,18 @@ export function VerseActionMenu({
             onPress={handleShare}
             colors={colors}
           />
+          {onMemorize && (
+            <ActionButton
+              icon={isMemorizing ? '🧠' : '💭'}
+              label={isMemorizing ? 'Memorizing' : 'Memorize'}
+              onPress={() => {
+                onMemorize();
+                onClose();
+              }}
+              colors={colors}
+              active={isMemorizing}
+            />
+          )}
         </View>
 
         {/* Highlight Colors */}
@@ -266,9 +282,10 @@ interface ActionButtonProps {
   onPress: () => void;
   colors: any;
   active?: boolean;
+  accessibilityHint?: string;
 }
 
-function ActionButton({ icon, label, onPress, colors, active }: ActionButtonProps) {
+function ActionButton({ icon, label, onPress, colors, active, accessibilityHint }: ActionButtonProps) {
   return (
     <Pressable
       style={[
@@ -277,14 +294,21 @@ function ActionButton({ icon, label, onPress, colors, active }: ActionButtonProp
         active && { backgroundColor: colors.primary + '20' },
       ]}
       onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityHint={accessibilityHint || `Tap to ${label.toLowerCase()}`}
+      accessibilityState={{ selected: active }}
     >
-      <Text style={styles.actionIcon}>{icon}</Text>
+      <Text style={styles.actionIcon} importantForAccessibility="no">
+        {icon}
+      </Text>
       <Text
         style={[
           styles.actionLabel,
           { color: colors.text },
           active && { color: colors.primary },
         ]}
+        importantForAccessibility="no"
       >
         {label}
       </Text>

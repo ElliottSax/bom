@@ -21,6 +21,9 @@ import { useReadingProgress, getProgressMessage } from '../hooks/useReadingProgr
 import { useBookmarks } from '../hooks/useBookmarks';
 import { useNotes } from '../hooks/useNotes';
 import { useOfflineDownload } from '../hooks/useOfflineDownload';
+import { useMemorization } from '../hooks/useMemorization';
+import { useReadingGoals } from '../hooks/useReadingGoals';
+import { useCourses } from '../hooks/useCourses';
 import { useTheme } from '../contexts/ThemeContext';
 
 const LAST_READ_KEY = '@bom_last_read';
@@ -41,6 +44,9 @@ export function HomeScreen() {
   const { bookmarks } = useBookmarks();
   const { notes } = useNotes();
   const { downloadStatus, getTotalDownloadSize } = useOfflineDownload();
+  const { verses: memorizationVerses, getStats: getMemorizationStats } = useMemorization();
+  const { activeGoals, getGoalStats } = useReadingGoals();
+  const { coursesInProgress } = useCourses();
   const [lastRead, setLastRead] = useState<LastReadPosition | null>(null);
   const [loadingLastRead, setLoadingLastRead] = useState(true);
 
@@ -286,11 +292,44 @@ export function HomeScreen() {
 
           <Pressable
             style={[styles.toolCard, { backgroundColor: colors.surface }]}
+            onPress={() => navigation.navigate('Memorization')}
+          >
+            <Text style={styles.toolIcon}>🧠</Text>
+            <Text style={[styles.toolLabel, { color: colors.text }]}>Memorize</Text>
+            <Text style={[styles.toolCount, { color: getMemorizationStats().dueForReview > 0 ? colors.warning : colors.primary }]}>
+              {memorizationVerses.length > 0 ? memorizationVerses.length : '→'}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            style={[styles.toolCard, { backgroundColor: colors.surface }]}
             onPress={() => navigation.navigate('Progress')}
           >
             <Text style={styles.toolIcon}>📊</Text>
             <Text style={[styles.toolLabel, { color: colors.text }]}>Progress</Text>
             <Text style={[styles.toolCount, { color: colors.primary }]}>→</Text>
+          </Pressable>
+
+          <Pressable
+            style={[styles.toolCard, { backgroundColor: colors.surface }]}
+            onPress={() => navigation.navigate('ReadingGoals')}
+          >
+            <Text style={styles.toolIcon}>🎯</Text>
+            <Text style={[styles.toolLabel, { color: colors.text }]}>Goals</Text>
+            <Text style={[styles.toolCount, { color: activeGoals.length > 0 ? colors.success : colors.primary }]}>
+              {activeGoals.length > 0 ? activeGoals.length : '→'}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            style={[styles.toolCard, { backgroundColor: colors.surface }]}
+            onPress={() => navigation.navigate('Courses')}
+          >
+            <Text style={styles.toolIcon}>🎓</Text>
+            <Text style={[styles.toolLabel, { color: colors.text }]}>Courses</Text>
+            <Text style={[styles.toolCount, { color: coursesInProgress.length > 0 ? colors.warning : colors.primary }]}>
+              {coursesInProgress.length > 0 ? coursesInProgress.length : '→'}
+            </Text>
           </Pressable>
         </View>
       </View>

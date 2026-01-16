@@ -2,10 +2,12 @@
  * Highlights Hook
  *
  * Manages verse highlights with local storage
+ * Refactored to use generic usePersistedState hook
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCallback } from 'react';
+import { usePersistedList } from './usePersistedState';
+import { generateId } from '../utils/id';
 
 const HIGHLIGHTS_KEY = '@bom_highlights';
 
@@ -23,102 +25,73 @@ export interface Highlight {
 interface UseHighlightsResult {
   highlights: Highlight[];
   loading: boolean;
-  addHighlight: (highlight: Omit<Highlight, 'id' | 'createdAt'>) => Promise<void>;
-  removeHighlight: (verseId: string) => Promise<void>;
-  updateHighlightColor: (verseId: string, color: string) => Promise<void>;
+  addHighlight: (highlight: Omit<Highlight, 'id' | 'createdAt'>) => void;
+  removeHighlight: (verseId: string) => void;
+  updateHighlightColor: (verseId: string, color: string) => void;
   getHighlight: (verseId: string) => Highlight | undefined;
   getHighlightsForChapter: (editionId: string, book: string, chapter: number) => Highlight[];
   clearAllHighlights: () => Promise<void>;
 }
 
 export function useHighlights(): UseHighlightsResult {
-  const [highlights, setHighlights] = useState<Highlight[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // Load highlights on mount
-  useEffect(() => {
-    loadHighlights();
-  }, []);
-
-  const loadHighlights = async () => {
-    try {
-      const stored = await AsyncStorage.getItem(HIGHLIGHTS_KEY);
-      if (stored) {
-        setHighlights(JSON.parse(stored));
-      }
-    } catch (error) {
-      console.error('Failed to load highlights:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const saveHighlights = async (newHighlights: Highlight[]) => {
-    try {
-      await AsyncStorage.setItem(HIGHLIGHTS_KEY, JSON.stringify(newHighlights));
-    } catch (error) {
-      console.error('Failed to save highlights:', error);
-    }
-  };
+  const {
+    items: highlights,
+    loading,
+    add,
+    remove,
+    update,
+    filter,
+    clear,
+    setItems,
+  } = usePersistedList<Highlight>({ key: HIGHLIGHTS_KEY });
 
   const addHighlight = useCallback(
-    async (highlight: Omit<Highlight, 'id' | 'createdAt'>) => {
-      setHighlights((prev) => {
-        // Remove existing highlight for same verse if exists
-        const filtered = prev.filter((h) => h.verseId !== highlight.verseId);
+    (highlight: Omit<Highlight, 'id' | 'createdAt'>) => {
+      const newHighlight: Highlight = {
+        ...highlight,
+        id: generateId('highlight'),
+        createdAt: Date.now(),
+      };
 
-        const newHighlight: Highlight = {
-          ...highlight,
-          id: `highlight_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          createdAt: Date.now(),
-        };
-
-        const updated = [newHighlight, ...filtered];
-        saveHighlights(updated);
-        return updated;
-      });
+      // Remove existing highlight for same verse, then add new one
+      setItems((prev) => [
+        newHighlight,
+        ...prev.filter((h) => h.verseId !== highlight.verseId),
+      ]);
     },
-    []
+    [setItems]
   );
 
-  const removeHighlight = useCallback(async (verseId: string) => {
-    setHighlights((prev) => {
-      const updated = prev.filter((h) => h.verseId !== verseId);
-      saveHighlights(updated);
-      return updated;
-    });
-  }, []);
+  const removeHighlight = useCallback(
+    (verseId: string) => {
+      setItems((prev) => prev.filter((h) => h.verseId !== verseId));
+    },
+    [setItems]
+  );
 
-  const updateHighlightColor = useCallback(async (verseId: string, color: string) => {
-    setHighlights((prev) => {
-      const updated = prev.map((h) =>
-        h.verseId === verseId ? { ...h, color, createdAt: Date.now() } : h
+  const updateHighlightColor = useCallback(
+    (verseId: string, color: string) => {
+      setItems((prev) =>
+        prev.map((h) =>
+          h.verseId === verseId ? { ...h, color, createdAt: Date.now() } : h
+        )
       );
-      saveHighlights(updated);
-      return updated;
-    });
-  }, []);
+    },
+    [setItems]
+  );
 
   const getHighlight = useCallback(
-    (verseId: string) => {
-      return highlights.find((h) => h.verseId === verseId);
-    },
+    (verseId: string) => highlights.find((h) => h.verseId === verseId),
     [highlights]
   );
 
   const getHighlightsForChapter = useCallback(
-    (editionId: string, book: string, chapter: number) => {
-      return highlights.filter(
+    (editionId: string, book: string, chapter: number) =>
+      highlights.filter(
         (h) => h.editionId === editionId && h.book === book && h.chapter === chapter
-      );
-    },
+      ),
     [highlights]
   );
-
-  const clearAllHighlights = useCallback(async () => {
-    setHighlights([]);
-    await AsyncStorage.removeItem(HIGHLIGHTS_KEY);
-  }, []);
 
   return {
     highlights,
@@ -128,7 +101,7 @@ export function useHighlights(): UseHighlightsResult {
     updateHighlightColor,
     getHighlight,
     getHighlightsForChapter,
-    clearAllHighlights,
+    clearAllHighlights: clear,
   };
 }
 

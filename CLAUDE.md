@@ -87,6 +87,10 @@ bom/
 20. **Reading Reminders** - Push notifications for daily study reminders
 21. **Cloud Sync** - Sync data across devices (bookmarks, notes, progress)
 22. **Word Study/Concordance** - Find all occurrences of a word across scriptures
+23. **Font Family Selection** - Choose from System, Serif, Sans-serif, or Monospace fonts
+24. **Verse Memorization** - Spaced repetition system for memorizing verses with hints
+25. **Reading Goals** - Set and track daily/weekly reading goals with streaks
+26. **Seminary-Style Courses** - Structured courses with lessons, quizzes, and progress tracking
 
 ## Mobile App Features
 
@@ -118,6 +122,10 @@ bom/
 - Reading reminder notifications (configurable schedule)
 - Cloud sync across devices
 - Word study / concordance
+- Font family selection (4 options)
+- Verse memorization with spaced repetition
+- Reading goals with daily/weekly tracking
+- Seminary-style courses with lessons and quizzes
 
 ## New Files Created
 
@@ -140,7 +148,10 @@ apps/mobile/src/
 │   ├── useDataBackup.ts        # Export/import user data
 │   ├── useReadingReminders.ts  # Push notification reminders
 │   ├── useCloudSync.ts         # Cloud sync management
-│   └── useWordStudy.ts         # Word concordance/frequency
+│   ├── useWordStudy.ts         # Word concordance/frequency
+│   ├── useMemorization.ts      # Verse memorization with spaced repetition
+│   ├── useReadingGoals.ts      # Daily/weekly reading goals
+│   └── useCourses.ts           # Seminary-style course system
 ├── components/
 │   ├── VerseActionMenu.tsx     # Long-press menu
 │   ├── ChapterNavigation.tsx   # Prev/Next nav
@@ -154,7 +165,12 @@ apps/mobile/src/
     ├── BackupRestoreScreen.tsx # Data backup/restore
     ├── RemindersScreen.tsx     # Reading reminder settings
     ├── CloudSyncScreen.tsx     # Cloud sync settings
-    └── WordStudyScreen.tsx     # Concordance/word search
+    ├── WordStudyScreen.tsx     # Concordance/word search
+    ├── MemorizationScreen.tsx  # Verse memorization practice
+    ├── ReadingGoalsScreen.tsx  # Reading goals management
+    ├── CoursesScreen.tsx       # Course catalog
+    ├── CourseDetailScreen.tsx  # Course overview and lessons
+    └── LessonScreen.tsx        # Lesson content with quizzes
 ```
 
 ## TODO

@@ -2,10 +2,12 @@
  * Bookmarks Hook
  *
  * Manages verse bookmarks with local storage
+ * Refactored to use generic usePersistedState hook
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCallback } from 'react';
+import { usePersistedList } from './usePersistedState';
+import { generateId } from '../utils/id';
 
 const BOOKMARKS_KEY = '@bom_bookmarks';
 
@@ -24,93 +26,61 @@ export interface Bookmark {
 interface UseBookmarksResult {
   bookmarks: Bookmark[];
   loading: boolean;
-  addBookmark: (bookmark: Omit<Bookmark, 'id' | 'createdAt'>) => Promise<void>;
-  removeBookmark: (verseId: string) => Promise<void>;
+  addBookmark: (bookmark: Omit<Bookmark, 'id' | 'createdAt'>) => void;
+  removeBookmark: (verseId: string) => void;
   isBookmarked: (verseId: string) => boolean;
-  updateBookmarkLabel: (verseId: string, label: string) => Promise<void>;
+  updateBookmarkLabel: (verseId: string, label: string) => void;
   clearAllBookmarks: () => Promise<void>;
 }
 
 export function useBookmarks(): UseBookmarksResult {
-  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // Load bookmarks on mount
-  useEffect(() => {
-    loadBookmarks();
-  }, []);
-
-  const loadBookmarks = async () => {
-    try {
-      const stored = await AsyncStorage.getItem(BOOKMARKS_KEY);
-      if (stored) {
-        setBookmarks(JSON.parse(stored));
-      }
-    } catch (error) {
-      console.error('Failed to load bookmarks:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const saveBookmarks = async (newBookmarks: Bookmark[]) => {
-    try {
-      await AsyncStorage.setItem(BOOKMARKS_KEY, JSON.stringify(newBookmarks));
-    } catch (error) {
-      console.error('Failed to save bookmarks:', error);
-    }
-  };
+  const {
+    items: bookmarks,
+    loading,
+    clear,
+    setItems,
+  } = usePersistedList<Bookmark>({ key: BOOKMARKS_KEY });
 
   const addBookmark = useCallback(
-    async (bookmark: Omit<Bookmark, 'id' | 'createdAt'>) => {
-      const newBookmark: Bookmark = {
-        ...bookmark,
-        id: `bookmark_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        createdAt: Date.now(),
-      };
-
-      setBookmarks((prev) => {
+    (bookmark: Omit<Bookmark, 'id' | 'createdAt'>) => {
+      setItems((prev) => {
         // Check if already bookmarked
-        const exists = prev.some((b) => b.verseId === bookmark.verseId);
-        if (exists) return prev;
+        if (prev.some((b) => b.verseId === bookmark.verseId)) {
+          return prev;
+        }
 
-        const updated = [newBookmark, ...prev];
-        saveBookmarks(updated);
-        return updated;
+        const newBookmark: Bookmark = {
+          ...bookmark,
+          id: generateId('bookmark'),
+          createdAt: Date.now(),
+        };
+
+        return [newBookmark, ...prev];
       });
     },
-    []
+    [setItems]
   );
 
-  const removeBookmark = useCallback(async (verseId: string) => {
-    setBookmarks((prev) => {
-      const updated = prev.filter((b) => b.verseId !== verseId);
-      saveBookmarks(updated);
-      return updated;
-    });
-  }, []);
+  const removeBookmark = useCallback(
+    (verseId: string) => {
+      setItems((prev) => prev.filter((b) => b.verseId !== verseId));
+    },
+    [setItems]
+  );
 
   const isBookmarked = useCallback(
-    (verseId: string) => {
-      return bookmarks.some((b) => b.verseId === verseId);
-    },
+    (verseId: string) => bookmarks.some((b) => b.verseId === verseId),
     [bookmarks]
   );
 
-  const updateBookmarkLabel = useCallback(async (verseId: string, label: string) => {
-    setBookmarks((prev) => {
-      const updated = prev.map((b) =>
-        b.verseId === verseId ? { ...b, label } : b
+  const updateBookmarkLabel = useCallback(
+    (verseId: string, label: string) => {
+      setItems((prev) =>
+        prev.map((b) => (b.verseId === verseId ? { ...b, label } : b))
       );
-      saveBookmarks(updated);
-      return updated;
-    });
-  }, []);
-
-  const clearAllBookmarks = useCallback(async () => {
-    setBookmarks([]);
-    await AsyncStorage.removeItem(BOOKMARKS_KEY);
-  }, []);
+    },
+    [setItems]
+  );
 
   return {
     bookmarks,
@@ -119,7 +89,7 @@ export function useBookmarks(): UseBookmarksResult {
     removeBookmark,
     isBookmarked,
     updateBookmarkLabel,
-    clearAllBookmarks,
+    clearAllBookmarks: clear,
   };
 }
 
