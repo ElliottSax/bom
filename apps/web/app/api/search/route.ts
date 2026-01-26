@@ -60,6 +60,19 @@ const COC_DC_SECTIONS = [
 
 type VolumeId = 'bom' | 'ot' | 'nt' | 'dc';
 
+interface SearchVerse {
+  volumeId: VolumeId;
+  book: string;
+  chapter: number;
+  verse: number;
+  text: string;
+  reference: string;
+}
+
+interface SearchResult extends SearchVerse {
+  score: number;
+}
+
 function getBooksForVolume(volumeId: VolumeId) {
   switch (volumeId) {
     case 'bom': return RLDS_BOM_BOOKS;
@@ -71,11 +84,11 @@ function getBooksForVolume(volumeId: VolumeId) {
 }
 
 // Cache for all scripture data per volume
-const cachedScriptures: Map<VolumeId, { data: any[]; time: number }> = new Map();
+const cachedScriptures: Map<VolumeId, { data: SearchVerse[]; time: number }> = new Map();
 const CACHE_DURATION = 3600000; // 1 hour
 
-function parseScriptureHTML(html: string, bookName: string, volumeId: VolumeId): any[] {
-  const results: any[] = [];
+function parseScriptureHTML(html: string, bookName: string, volumeId: VolumeId): SearchVerse[] {
+  const results: SearchVerse[] = [];
 
   // Clean HTML
   const text = html
@@ -150,13 +163,13 @@ function parseScriptureHTML(html: string, bookName: string, volumeId: VolumeId):
   return results;
 }
 
-async function getAllScripturesForVolume(volumeId: VolumeId): Promise<any[]> {
+async function getAllScripturesForVolume(volumeId: VolumeId): Promise<SearchVerse[]> {
   const cached = cachedScriptures.get(volumeId);
   if (cached && Date.now() - cached.time < CACHE_DURATION) {
     return cached.data;
   }
 
-  const allVerses: any[] = [];
+  const allVerses: SearchVerse[] = [];
   const books = getBooksForVolume(volumeId);
   const baseUrl = CENTERPLACE_URLS[volumeId];
 
@@ -208,7 +221,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const allVerses = await getAllScripturesForVolume(volumeId);
-    const results: any[] = [];
+    const results: SearchResult[] = [];
 
     // Search with simple relevance scoring
     const queryWords = query.split(/\s+/).filter(w => w.length >= 2);
@@ -231,7 +244,7 @@ export async function GET(request: NextRequest) {
 
     // Sort by score and limit
     results.sort((a, b) => b.score - a.score);
-    const finalResults = results.slice(0, limit).map(({ score, ...rest }) => rest);
+    const finalResults = results.slice(0, limit).map(({ score: _score, ...rest }) => rest);
 
     return NextResponse.json({
       results: finalResults,

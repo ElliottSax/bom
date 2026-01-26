@@ -50,7 +50,7 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
     setContent(newContent);
   };
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     if (validationError) return;
     if (content.trim().length === 0) {
       setValidationError('Note cannot be empty');
@@ -58,7 +58,7 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
     }
     onSave();
     onClose();
-  };
+  }, [validationError, content, onSave, onClose]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

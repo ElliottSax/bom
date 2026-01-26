@@ -8,12 +8,10 @@ import {
   type StudyPlanProgress,
   type Verse,
   type VolumeId,
-  type Book,
   type UserData,
   type Theme,
   type FontFamily,
 } from '../lib/types';
-import { getBooksForVolume, VOLUMES, STUDY_PLANS } from '../lib/scriptures';
 
 interface UserDataContextType {
   bookmarks: Bookmark[];

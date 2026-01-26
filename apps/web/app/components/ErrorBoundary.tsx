@@ -65,7 +65,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </h2>
 
             <p className="text-[var(--color-text-secondary)] mb-6">
-              We're sorry for the inconvenience. The application encountered an unexpected error.
+              We&apos;re sorry for the inconvenience. The application encountered an unexpected error.
             </p>
 
             {process.env.NODE_ENV === 'development' && this.state.error && (

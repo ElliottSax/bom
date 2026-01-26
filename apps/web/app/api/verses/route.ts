@@ -114,6 +114,21 @@ const COC_DC_SECTIONS = Array.from({ length: 165 }, (_, i) => ({
 
 type VolumeId = 'bom' | 'ot' | 'nt' | 'dc';
 
+interface Verse {
+  num: number;
+  text: string;
+  reference: string;
+}
+
+interface ChapterData {
+  chapter: number;
+  verses: Verse[];
+}
+
+interface BookData {
+  chapters: ChapterData[];
+}
+
 function getBooksForVolume(volumeId: VolumeId) {
   switch (volumeId) {
     case 'bom': return RLDS_BOM_BOOKS;
@@ -125,11 +140,11 @@ function getBooksForVolume(volumeId: VolumeId) {
 }
 
 // Cache for parsed scripture data
-const bookCache: Map<string, { data: any; time: number }> = new Map();
+const bookCache: Map<string, { data: BookData; time: number }> = new Map();
 const CACHE_DURATION = 3600000; // 1 hour
 
-function parseScriptureHTML(html: string, bookName: string, volumeId: VolumeId): { chapters: any[] } {
-  const chapters: any[] = [];
+function parseScriptureHTML(html: string, bookName: string, volumeId: VolumeId): BookData {
+  const chapters: ChapterData[] = [];
 
   // Clean HTML - basic parsing
   let text = html
@@ -146,7 +161,7 @@ function parseScriptureHTML(html: string, bookName: string, volumeId: VolumeId):
 
   // D&C sections don't have chapter markers - treat whole section as chapter 1
   if (volumeId === 'dc') {
-    const verses: any[] = [];
+    const verses: Verse[] = [];
     // Match verse patterns like "1a And..." or "1 And..."
     const verseMatches = text.matchAll(/(?:^|\s)(\d+[a-z]?)\s+([A-Z][^]*?)(?=\s+\d+[a-z]?\s+[A-Z]|$)/gi);
     let verseNum = 0;
@@ -196,7 +211,7 @@ function parseScriptureHTML(html: string, bookName: string, volumeId: VolumeId):
     const chapterText = text.slice(startPos, endPos);
     const chapterNum = chapterMarkers[i].num;
 
-    const verses: any[] = [];
+    const verses: Verse[] = [];
     const verseMatches = chapterText.matchAll(/(\d+):(\d+)\s+([^]*?)(?=\d+:\d+|$)/gi);
 
     for (const verseMatch of verseMatches) {
@@ -224,7 +239,7 @@ function parseScriptureHTML(html: string, bookName: string, volumeId: VolumeId):
   return { chapters };
 }
 
-async function fetchBookData(volumeId: VolumeId, bookSlug: string, bookName: string): Promise<any> {
+async function fetchBookData(volumeId: VolumeId, bookSlug: string, bookName: string): Promise<BookData> {
   const cacheKey = `${volumeId}:${bookSlug}`;
   const cached = bookCache.get(cacheKey);
 
@@ -320,7 +335,7 @@ export async function GET(request: NextRequest) {
 
     // If no chapter, return chapter list
     if (!chapterParam) {
-      const chapters = bookData.chapters.map((c: any) => ({
+      const chapters = bookData.chapters.map((c) => ({
         number: c.chapter,
         verseCount: c.verses.length,
       }));
@@ -333,7 +348,7 @@ export async function GET(request: NextRequest) {
 
     // Get specific chapter
     const chapterNum = parseInt(chapterParam, 10);
-    const chapterData = bookData.chapters.find((c: any) => c.chapter === chapterNum);
+    const chapterData = bookData.chapters.find((c) => c.chapter === chapterNum);
 
     if (!chapterData) {
       // For volumes with data issues, return placeholder

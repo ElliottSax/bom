@@ -1,5 +1,5 @@
 import React from 'react';
-import { type Volume, type StudyPlan } from '../lib/types';
+import { type StudyPlan } from '../lib/types';
 import { CalendarIcon, CheckIcon } from './Icons';
 import { VOLUMES, STUDY_PLANS } from '../lib/scriptures'; // Assuming these are exported from scriptures.ts
 import { useUserData } from '../../contexts/UserDataContext';

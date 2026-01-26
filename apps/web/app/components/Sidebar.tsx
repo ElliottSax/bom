@@ -3,10 +3,8 @@ import {
   type Volume,
   type Book,
   type Verse,
-  type VolumeId,
 } from '../lib/types';
-import { getBooksForVolume } from '../lib/scriptures';
-import { CheckIcon, CloseIcon, FireIcon } from './Icons';
+import { CloseIcon, FireIcon } from './Icons';
 import { useUserData } from '../../contexts/UserDataContext';
 
 interface SidebarProps {

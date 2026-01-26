@@ -1,5 +1,5 @@
 import React from 'react';
-import { type Volume, type Book } from '../lib/types';
+import { type Volume } from '../lib/types';
 import { FireIcon } from './Icons';
 
 interface VolumeHomeScreenProps {

@@ -11,7 +11,7 @@ interface SearchModalProps {
   currentVolume: Volume;
   searching: boolean;
   searchResults: SearchResult[];
-  volumeId: VolumeId;
+  volumeId?: VolumeId; // Optional - not currently used
 }
 
 const SearchModal: React.FC<SearchModalProps> = ({
@@ -22,7 +22,6 @@ const SearchModal: React.FC<SearchModalProps> = ({
   currentVolume,
   searching,
   searchResults,
-  volumeId,
 }) => {
   const { navigateToReference } = useUserData();
   if (!showSearch) return null;
