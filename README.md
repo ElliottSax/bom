@@ -1,6 +1,14 @@
-# Book of Mormon Study Tools - Community of Christ
+# Book of Mormon Study Tools - Community of Christ Edition
 
-Digital scripture study platform for **Community of Christ** scripture texts, featuring the Book of Mormon, Doctrine and Covenants (167 sections), and Inspired Version Bible with proper versification support.
+🌟 **Authentic Community of Christ study platform** featuring:
+- 📖 **Book of Mormon** (1908 CoC Authorized Edition - original 1830 chapter divisions)
+- 📜 **Doctrine & Covenants** with all **167 sections** (114-167 are CoC-specific revelations)
+- ✨ **Inspired Version Bible** (Joseph Smith Translation)
+- 📚 **Historical RLDS materials** from archive.org (Saints' Herald 1860-1928, Joseph Smith III history)
+- 🎓 **Authentic CoC courses** using RLDS study materials and modern CoC resources
+- 🏛️ **CoC theology and perspective** throughout
+
+**Not affiliated with LDS Church.** This platform is built exclusively for Community of Christ scriptures, theology, and historical tradition.
 
 ## Project Focus
 
@@ -16,6 +24,12 @@ The `LDS_STUDY_TOOLS_*.md` files contain **competitive analysis** of LDS Church'
 
 ## 📋 Quick Links
 
+### CoC Integration Resources
+- **[COC_RLDS_STUDY_MATERIALS_CATALOG.md](./COC_RLDS_STUDY_MATERIALS_CATALOG.md)** - Comprehensive catalog of CoC/RLDS study materials
+- **[COC_INTEGRATION_PLAN.md](./COC_INTEGRATION_PLAN.md)** - 7-phase implementation roadmap
+- **[QUICK_COC_IMPLEMENTATION_GUIDE.md](./QUICK_COC_IMPLEMENTATION_GUIDE.md)** - Quick start guide with code examples
+
+### Project Documentation
 - **[PROJECT_SUMMARY.md](./PROJECT_SUMMARY.md)** - Complete project overview with all deliverables
 - **[COMMUNITY_OF_CHRIST_VERSIFICATION.md](./docs/COMMUNITY_OF_CHRIST_VERSIFICATION.md)** - CoC scripture versification guide
 - **[DEVELOPER_ONBOARDING.md](./DEVELOPER_ONBOARDING.md)** - Get started in <30 minutes
