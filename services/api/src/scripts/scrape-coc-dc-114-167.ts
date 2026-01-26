@@ -54,7 +54,7 @@ const SECTION_CONTEXTS: Record<number, {
 };
 
 async function scrapeCoCSection(sectionNum: number): Promise<Section | null> {
-  const url = `http://www.centerplace.org/dc/dc${sectionNum}.htm`;
+  const url = `https://www.centerplace.org/hs/dc/section${sectionNum}.htm`;
 
   try {
     console.log(`Scraping section ${sectionNum}...`);
@@ -198,13 +198,13 @@ async function main() {
 
   // Save as JSON
   const jsonOutput = await generateJSON(sections);
-  const jsonPath = path.join(__dirname, '../../../prisma/seeds/coc-dc-sections-114-167.json');
+  const jsonPath = path.join(__dirname, '../../prisma/seeds/coc-dc-sections-114-167.json');
   await fs.writeFile(jsonPath, jsonOutput);
   console.log(`\n✓ Saved JSON: ${jsonPath}`);
 
   // Generate SQL
   const sqlOutput = await generateSQL(sections);
-  const sqlPath = path.join(__dirname, '../../../prisma/seeds/import-coc-dc-sections.sql');
+  const sqlPath = path.join(__dirname, '../../prisma/seeds/import-coc-dc-sections.sql');
   await fs.writeFile(sqlPath, sqlOutput);
   console.log(`✓ Saved SQL: ${sqlPath}`);
 
