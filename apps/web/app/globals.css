@@ -1,0 +1,277 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Premium Scripture Reading Typography */
+:root {
+  /* Colors - Light Mode */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f8f9fa;
+  --color-bg-tertiary: #f1f3f4;
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #5f6368;
+  --color-text-tertiary: #80868b;
+  --color-accent: #1a5276;
+  --color-accent-light: #2874a6;
+  --color-gold: #b8860b;
+  --color-gold-light: #daa520;
+  --color-border: #dadce0;
+  --color-border-light: #e8eaed;
+
+  /* Highlight Colors */
+  --highlight-yellow: #fff9c4;
+  --highlight-green: #c8e6c9;
+  --highlight-blue: #bbdefb;
+  --highlight-purple: #e1bee7;
+  --highlight-orange: #ffe0b2;
+
+  /* Typography */
+  --font-serif: 'Noto Serif', Georgia, 'Times New Roman', serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+
+  /* Spacing Scale */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+
+  /* Reading Settings */
+  --reading-font-size: 18px;
+  --reading-line-height: 1.7;
+  --reading-max-width: 680px;
+}
+
+/* Dark Mode */
+.dark {
+  --color-bg-primary: #121212;
+  --color-bg-secondary: #1e1e1e;
+  --color-bg-tertiary: #2d2d2d;
+  --color-text-primary: rgba(255, 255, 255, 0.87);
+  --color-text-secondary: rgba(255, 255, 255, 0.6);
+  --color-text-tertiary: rgba(255, 255, 255, 0.38);
+  --color-accent: #5dade2;
+  --color-accent-light: #85c1e9;
+  --color-gold: #f4d03f;
+  --color-gold-light: #f7dc6f;
+  --color-border: #3d3d3d;
+  --color-border-light: #2d2d2d;
+
+  /* Dark mode highlights - more muted */
+  --highlight-yellow: rgba(255, 249, 196, 0.2);
+  --highlight-green: rgba(200, 230, 201, 0.2);
+  --highlight-blue: rgba(187, 222, 251, 0.2);
+  --highlight-purple: rgba(225, 190, 231, 0.2);
+  --highlight-orange: rgba(255, 224, 178, 0.2);
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+}
+
+/* Scripture Text Styling */
+.scripture-text {
+  font-family: var(--font-serif);
+  font-size: var(--reading-font-size);
+  line-height: var(--reading-line-height);
+  color: var(--color-text-primary);
+  letter-spacing: 0.01em;
+  font-feature-settings: 'kern' 1, 'liga' 1;
+}
+
+.scripture-text--sans {
+  font-family: var(--font-sans);
+}
+
+/* Verse Number Styling */
+.verse-number {
+  font-family: var(--font-sans);
+  font-size: 0.75em;
+  font-weight: 600;
+  color: var(--color-accent);
+  vertical-align: super;
+  margin-right: 0.25em;
+  user-select: none;
+}
+
+/* Chapter Heading */
+.chapter-heading {
+  font-family: var(--font-serif);
+  font-size: 1.75rem;
+  font-weight: 400;
+  color: var(--color-text-primary);
+  letter-spacing: -0.01em;
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+/* Book Title */
+.book-title {
+  font-family: var(--font-serif);
+  font-size: 2.5rem;
+  font-weight: 400;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+
+/* Reading Container */
+.reading-container {
+  max-width: var(--reading-max-width);
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-lg);
+}
+
+/* Sidebar Styles */
+.sidebar {
+  background-color: var(--color-bg-secondary);
+  border-right: 1px solid var(--color-border-light);
+}
+
+.sidebar-item {
+  padding: var(--space-sm) var(--space-md);
+  color: var(--color-text-secondary);
+  transition: all 0.15s ease;
+  border-radius: 4px;
+  margin: 2px var(--space-sm);
+}
+
+.sidebar-item:hover {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+.sidebar-item--active {
+  background-color: var(--color-accent);
+  color: white;
+}
+
+.sidebar-item--active:hover {
+  background-color: var(--color-accent-light);
+  color: white;
+}
+
+/* Header Styles */
+.app-header {
+  background-color: var(--color-bg-primary);
+  border-bottom: 1px solid var(--color-border-light);
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-lg);
+}
+
+/* Highlight Colors */
+.highlight-yellow { background-color: var(--highlight-yellow); }
+.highlight-green { background-color: var(--highlight-green); }
+.highlight-blue { background-color: var(--highlight-blue); }
+.highlight-purple { background-color: var(--highlight-purple); }
+.highlight-orange { background-color: var(--highlight-orange); }
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
+
+/* Selection */
+::selection {
+  background-color: var(--color-accent);
+  color: white;
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+
+  .scripture-text {
+    font-size: 11pt;
+    line-height: 1.5;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s ease-out;
+}
