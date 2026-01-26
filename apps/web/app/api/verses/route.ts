@@ -147,7 +147,7 @@ function parseScriptureHTML(html: string, bookName: string, volumeId: VolumeId):
   const chapters: ChapterData[] = [];
 
   // Clean HTML - basic parsing
-  let text = html
+  const text = html
     .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
     .replace(/<[^>]+>/g, ' ')

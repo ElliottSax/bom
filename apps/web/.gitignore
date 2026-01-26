@@ -1,0 +1,9 @@
+# Vercel
+.vercel
+
+# Backup files
+*-backup-*.tsx
+*-backup-*.ts
+*-refactored*.tsx
+*-refactored*.ts
+*.backup.*
