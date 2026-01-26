@@ -30,6 +30,8 @@ const NoteEditorModal = lazy(() => import('./components/modals/NoteEditorModal')
 const StudyPlanModal = lazy(() => import('./components/modals/StudyPlanModal').then(m => ({ default: m.StudyPlanModal })));
 const BackupModal = lazy(() => import('./components/modals/BackupModal').then(m => ({ default: m.BackupModal })));
 const ResourcesModal = lazy(() => import('./components/modals/ResourcesModal').then(m => ({ default: m.ResourcesModal })));
+const CoCResourcesModal = lazy(() => import('./components/modals/CoCResourcesModal').then(m => ({ default: m.CoCResourcesModal })));
+const AboutCoCModal = lazy(() => import('./components/modals/AboutCoCModal').then(m => ({ default: m.AboutCoCModal })));
 
 function HomeContent() {
   // ==================== CONTEXTS ====================
@@ -87,6 +89,8 @@ function HomeContent() {
   const [showStudyPlanModal, setShowStudyPlanModal] = useState(false);
   const [showResourcesModal, setShowResourcesModal] = useState(false);
   const [showBackupModal, setShowBackupModal] = useState(false);
+  const [showCoCResources, setShowCoCResources] = useState(false);
+  const [showAboutCoC, setShowAboutCoC] = useState(false);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -201,6 +205,8 @@ function HomeContent() {
         setShowSettings={setShowSettings}
         showSettings={showSettings}
         setShowSearch={setShowSearch}
+        setShowCoCResources={setShowCoCResources}
+        setShowAboutCoC={setShowAboutCoC}
       />
 
       <VolumeTabs volumeId={volumeId} onVolumeChange={handleVolumeChange} />
@@ -281,6 +287,14 @@ function HomeContent() {
 
         {showResourcesModal && (
           <ResourcesModal show={showResourcesModal} onClose={() => setShowResourcesModal(false)} />
+        )}
+
+        {showCoCResources && (
+          <CoCResourcesModal onClose={() => setShowCoCResources(false)} />
+        )}
+
+        {showAboutCoC && (
+          <AboutCoCModal onClose={() => setShowAboutCoC(false)} />
         )}
       </Suspense>
 
