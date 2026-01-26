@@ -111,6 +111,17 @@ async function createTables(db: SQLiteDatabase): Promise<void> {
       progress REAL DEFAULT 0,
       createdAt INTEGER NOT NULL
     )`,
+
+    // Indexes for userId lookups (improves query performance)
+    `CREATE INDEX IF NOT EXISTS idx_notes_userId ON notes (userId)`,
+    `CREATE INDEX IF NOT EXISTS idx_highlights_userId ON highlights (userId)`,
+    `CREATE INDEX IF NOT EXISTS idx_bookmarks_userId ON bookmarks (userId)`,
+    `CREATE INDEX IF NOT EXISTS idx_reading_history_userId ON reading_history (userId)`,
+
+    // Composite indexes for common query patterns
+    `CREATE INDEX IF NOT EXISTS idx_notes_userId_verseId ON notes (userId, verseId)`,
+    `CREATE INDEX IF NOT EXISTS idx_highlights_userId_verseId ON highlights (userId, verseId)`,
+    `CREATE INDEX IF NOT EXISTS idx_bookmarks_userId_verseId ON bookmarks (userId, verseId)`,
   ];
 
   for (const sql of tables) {

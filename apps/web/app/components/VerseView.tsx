@@ -1,8 +1,8 @@
 import React from 'react';
 import { type Book, type Volume, type Verse, HIGHLIGHT_COLORS } from '../lib/types';
 import { CheckIcon, ChevronLeftIcon, ChevronRightIcon, BookmarkIcon, NoteIcon } from './Icons';
-import { useSettings } from '../../contexts/SettingsContext';
-import { useUserData } from '../../contexts/UserDataContext';
+import { useSettings } from '../contexts/SettingsContext';
+import { useUserData } from '../contexts/UserDataContext';
 
 interface VerseViewProps {
   currentBook: Book | undefined;

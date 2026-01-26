@@ -183,6 +183,72 @@ export const rateLimitSchema = z.object({
   message: z.string().max(200).default('Too many requests'),
 });
 
+// Valid book names for Community of Christ scriptures
+export const VALID_BOOK_NAMES = new Set([
+  // Book of Mormon books (CoC naming)
+  'I Nephi', 'II Nephi', 'Jacob', 'Enos', 'Jarom', 'Omni',
+  'Words of Mormon', 'Mosiah', 'Alma', 'Helaman',
+  'III Nephi', 'IV Nephi', 'Mormon', 'Ether', 'Moroni',
+  // LDS naming alternatives (for cross-edition support)
+  '1 Nephi', '2 Nephi', '3 Nephi', '4 Nephi',
+  // Doctrine and Covenants
+  'Doctrine and Covenants',
+  // Bible books (for Inspired Version)
+  'Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy',
+  'Joshua', 'Judges', 'Ruth', '1 Samuel', '2 Samuel',
+  '1 Kings', '2 Kings', '1 Chronicles', '2 Chronicles',
+  'Ezra', 'Nehemiah', 'Esther', 'Job', 'Psalms', 'Proverbs',
+  'Ecclesiastes', 'Song of Solomon', 'Isaiah', 'Jeremiah',
+  'Lamentations', 'Ezekiel', 'Daniel', 'Hosea', 'Joel',
+  'Amos', 'Obadiah', 'Jonah', 'Micah', 'Nahum', 'Habakkuk',
+  'Zephaniah', 'Haggai', 'Zechariah', 'Malachi',
+  'Matthew', 'Mark', 'Luke', 'John', 'Acts', 'Romans',
+  '1 Corinthians', '2 Corinthians', 'Galatians', 'Ephesians',
+  'Philippians', 'Colossians', '1 Thessalonians', '2 Thessalonians',
+  '1 Timothy', '2 Timothy', 'Titus', 'Philemon', 'Hebrews',
+  'James', '1 Peter', '2 Peter', '1 John', '2 John', '3 John',
+  'Jude', 'Revelation',
+]);
+
+/**
+ * Validate a book name against known scripture books
+ * Returns sanitized book name or throws error
+ */
+export function validateBookName(book: string): string {
+  const sanitized = sanitizeString(book);
+  if (!VALID_BOOK_NAMES.has(sanitized)) {
+    // Check case-insensitive match
+    const lowerBook = sanitized.toLowerCase();
+    for (const validBook of VALID_BOOK_NAMES) {
+      if (validBook.toLowerCase() === lowerBook) {
+        return validBook; // Return the correctly-cased version
+      }
+    }
+    throw new Error(`Invalid book name: "${sanitized}"`);
+  }
+  return sanitized;
+}
+
+/**
+ * Validate chapter number is within reasonable bounds
+ */
+export function validateChapter(chapter: number): number {
+  if (!Number.isInteger(chapter) || chapter < 1 || chapter > 150) {
+    throw new Error(`Invalid chapter number: ${chapter}`);
+  }
+  return chapter;
+}
+
+/**
+ * Validate verse number is within reasonable bounds
+ */
+export function validateVerse(verse: number): number {
+  if (!Number.isInteger(verse) || verse < 1 || verse > 176) {
+    throw new Error(`Invalid verse number: ${verse}`);
+  }
+  return verse;
+}
+
 export type UserRegistration = z.infer<typeof userRegistrationSchema>;
 export type UserLogin = z.infer<typeof userLoginSchema>;
 export type UserUpdate = z.infer<typeof userUpdateSchema>;

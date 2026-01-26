@@ -20,7 +20,7 @@ interface HealthCheckResponse {
 
 export async function healthRoutes(fastify: FastifyInstance) {
   // Basic health check endpoint (fast, for load balancers)
-  fastify.get('/health', async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.get('/health', async (_request: FastifyRequest, reply: FastifyReply) => {
     return reply.status(200).send({
       status: 'healthy',
       timestamp: new Date().toISOString(),
@@ -28,7 +28,7 @@ export async function healthRoutes(fastify: FastifyInstance) {
   });
 
   // Detailed health check with service dependencies
-  fastify.get('/health/detailed', async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.get('/health/detailed', async (_request: FastifyRequest, reply: FastifyReply) => {
     const memoryUsage = process.memoryUsage();
     const memoryLimit = 1024 * 1024 * 1024; // 1GB default
 
@@ -72,7 +72,7 @@ export async function healthRoutes(fastify: FastifyInstance) {
   });
 
   // Readiness check (for Kubernetes)
-  fastify.get('/health/ready', async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.get('/health/ready', async (_request: FastifyRequest, reply: FastifyReply) => {
     try {
       // Check if application is ready to accept traffic
       await prisma.$queryRaw`SELECT 1`;
@@ -91,7 +91,7 @@ export async function healthRoutes(fastify: FastifyInstance) {
   });
 
   // Liveness check (for Kubernetes)
-  fastify.get('/health/live', async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.get('/health/live', async (_request: FastifyRequest, reply: FastifyReply) => {
     // Simple liveness check - process is running
     return reply.status(200).send({
       status: 'alive',

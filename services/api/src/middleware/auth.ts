@@ -65,7 +65,7 @@ export async function requireAuth(
  */
 export async function optionalAuth(
   request: FastifyRequest,
-  reply: FastifyReply
+  _reply: FastifyReply
 ): Promise<void> {
   try {
     const authHeader = request.headers.authorization;

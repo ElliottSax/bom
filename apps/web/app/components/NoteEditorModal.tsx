@@ -1,7 +1,7 @@
 import React from 'react';
 import { type Book } from '../lib/types';
 import { CloseIcon } from './Icons';
-import { useUserData } from '../../contexts/UserDataContext';
+import { useUserData } from '../contexts/UserDataContext';
 
 interface NoteEditorModalProps {
   currentBook: Book | undefined;

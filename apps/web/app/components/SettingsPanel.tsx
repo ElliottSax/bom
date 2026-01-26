@@ -1,6 +1,6 @@
 import React from 'react';
 import { CloseIcon } from './Icons';
-import { useSettings } from '../../contexts/SettingsContext';
+import { useSettings } from '../contexts/SettingsContext';
 
 interface SettingsPanelProps {
   showSettings: boolean;

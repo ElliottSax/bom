@@ -102,7 +102,11 @@
       "Bash(PGPASSWORD=bomstudytools_dev_password psql -h localhost -p 5435 -U bomstudytools_dev -d bomstudytools_dev -c \"SELECT book, chapter, verse, SUBSTRING(text, 1, 100) as text_snippet FROM verses WHERE LOWER(text) LIKE LOWER(''%faith%'') LIMIT 5;\")",
       "Bash(yes)",
       "Bash(./scripts/copy-to-native-linux.sh:*)",
-      "Bash(npm search:*)"
+      "Bash(npm search:*)",
+      "Bash(./node_modules/.bin/next:*)",
+      "Bash(node ./node_modules/next/dist/bin/next:*)",
+      "WebFetch(domain:cofchrist.org)",
+      "Bash(sort:*)"
     ],
     "deny": [],
     "ask": []

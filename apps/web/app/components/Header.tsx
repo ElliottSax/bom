@@ -11,8 +11,8 @@ import {
   FireIcon,
 } from './Icons';
 import { type Volume } from '../lib/types';
-import { useSettings } from '../../contexts/SettingsContext';
-import { useUserData } from '../../contexts/UserDataContext';
+import { useSettings } from '../contexts/SettingsContext';
+import { useUserData } from '../contexts/UserDataContext';
 
 interface HeaderProps {
   sidebarOpen: boolean;

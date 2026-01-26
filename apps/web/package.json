@@ -23,9 +23,7 @@
     "@radix-ui/react-dropdown-menu": "^2.0.6",
     "tailwindcss": "^3.4.1",
     "clsx": "^2.1.0",
-    "class-variance-authority": "^0.7.0",
-    "@bom/shared": "file:../../packages/shared",
-    "@bom/graphql": "file:../../packages/graphql"
+    "class-variance-authority": "^0.7.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

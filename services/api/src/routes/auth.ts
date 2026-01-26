@@ -25,6 +25,14 @@ const passwordResetSchema = z.object({
   newPassword: z.string().min(8).max(128),
 });
 
+// Type inference from schemas
+type UserRegistrationBody = z.infer<typeof userRegistrationSchema>;
+type UserLoginBody = z.infer<typeof userLoginSchema>;
+type RefreshTokenBody = z.infer<typeof refreshTokenSchema>;
+type ChangePasswordBody = z.infer<typeof changePasswordSchema>;
+type PasswordResetRequestBody = z.infer<typeof passwordResetRequestSchema>;
+type PasswordResetBody = z.infer<typeof passwordResetSchema>;
+
 export async function authRoutes(fastify: FastifyInstance) {
   /**
    * POST /auth/register
@@ -40,7 +48,7 @@ export async function authRoutes(fastify: FastifyInstance) {
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const { email, password, firstName, lastName } = request.body as any;
+        const { email, password, firstName, lastName } = request.body as UserRegistrationBody;
 
         const result = await authService.register({
           email,
@@ -90,7 +98,7 @@ export async function authRoutes(fastify: FastifyInstance) {
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const { email, password, rememberMe } = request.body as any;
+        const { email, password, rememberMe } = request.body as UserLoginBody;
 
         const result = await authService.login({
           email,
@@ -134,9 +142,9 @@ export async function authRoutes(fastify: FastifyInstance) {
     {
       preHandler: [validateBody(refreshTokenSchema)],
     },
-    async (request: FastifyRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest<{ Body: RefreshTokenBody }>, reply: FastifyReply) => {
       try {
-        const { refreshToken } = request.body as any;
+        const { refreshToken } = request.body;
 
         const result = await authService.refreshAccessToken(refreshToken);
 
@@ -166,9 +174,9 @@ export async function authRoutes(fastify: FastifyInstance) {
     {
       preHandler: [validateBody(refreshTokenSchema)],
     },
-    async (request: FastifyRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest<{ Body: RefreshTokenBody }>, reply: FastifyReply) => {
       try {
-        const { refreshToken } = request.body as any;
+        const { refreshToken } = request.body;
 
         await authService.logout(refreshToken);
 
@@ -200,9 +208,9 @@ export async function authRoutes(fastify: FastifyInstance) {
         validateBody(changePasswordSchema),
       ],
     },
-    async (request: FastifyRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest<{ Body: ChangePasswordBody }>, reply: FastifyReply) => {
       try {
-        const { oldPassword, newPassword } = request.body as any;
+        const { oldPassword, newPassword } = request.body;
         const userId = request.user!.userId;
 
         await authService.changePassword(userId, oldPassword, newPassword);
@@ -245,18 +253,20 @@ export async function authRoutes(fastify: FastifyInstance) {
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const { email } = request.body as any;
+        const { email } = request.body as PasswordResetRequestBody;
 
-        const resetToken = await authService.requestPasswordReset(email);
+        // Request password reset (sends email in production)
+        await authService.requestPasswordReset(email);
 
-        // In production, send this via email
-        // For now, return it in response (NOT SECURE - for development only)
-        const isDevelopment = process.env.NODE_ENV === 'development';
+        // Never return the reset token in the response - it should only be sent via email
+        // Log token to console in development for testing purposes only
+        if (process.env.NODE_ENV === 'development') {
+          fastify.log.info({ email }, 'Password reset requested - check server logs for token in dev mode');
+        }
 
         return reply.status(200).send({
           success: true,
-          message: 'Password reset instructions sent to email',
-          ...(isDevelopment && { resetToken }), // Only in development
+          message: 'If an account exists with this email, password reset instructions have been sent',
         });
       } catch (error) {
         fastify.log.error({ err: error }, 'Password reset request failed');
@@ -283,7 +293,7 @@ export async function authRoutes(fastify: FastifyInstance) {
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const { resetToken, newPassword } = request.body as any;
+        const { resetToken, newPassword } = request.body as PasswordResetBody;
 
         await authService.resetPassword(resetToken, newPassword);
 

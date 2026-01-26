@@ -2,6 +2,7 @@ import { GraphQLError } from 'graphql';
 import { GraphQLDateTime, GraphQLJSON } from 'graphql-scalars';
 import type { GraphQLContext } from './context';
 import { requireUser } from './context';
+import { validateBookName, validateChapter, validateVerse } from '../validation/schemas';
 
 /**
  * GraphQL Resolvers
@@ -120,11 +121,23 @@ export const resolvers = {
       args: { book: string; chapter: number; editionId: string },
       context: GraphQLContext
     ) => {
+      // Validate inputs
+      let validatedBook: string;
+      let validatedChapter: number;
+      try {
+        validatedBook = validateBookName(args.book);
+        validatedChapter = validateChapter(args.chapter);
+      } catch (error: any) {
+        throw new GraphQLError(error.message, {
+          extensions: { code: 'BAD_USER_INPUT' },
+        });
+      }
+
       return context.prisma.verse.findMany({
         where: {
           editionId: args.editionId,
-          book: args.book,
-          chapter: args.chapter,
+          book: validatedBook,
+          chapter: validatedChapter,
         },
         orderBy: {
           verse: 'asc',
@@ -143,12 +156,26 @@ export const resolvers = {
       args: { book: string; chapter: number; verse: number; editionId: string },
       context: GraphQLContext
     ) => {
+      // Validate inputs
+      let validatedBook: string;
+      let validatedChapter: number;
+      let validatedVerse: number;
+      try {
+        validatedBook = validateBookName(args.book);
+        validatedChapter = validateChapter(args.chapter);
+        validatedVerse = validateVerse(args.verse);
+      } catch (error: any) {
+        throw new GraphQLError(error.message, {
+          extensions: { code: 'BAD_USER_INPUT' },
+        });
+      }
+
       const verse = await context.prisma.verse.findFirst({
         where: {
           editionId: args.editionId,
-          book: args.book,
-          chapter: args.chapter,
-          verse: args.verse,
+          book: validatedBook,
+          chapter: validatedChapter,
+          verse: validatedVerse,
         },
         include: {
           edition: true,
@@ -405,6 +432,66 @@ export const resolvers = {
 
       return group;
     },
+
+    /**
+     * Search verses (stub - requires search infrastructure)
+     */
+    searchVerses: async (_parent: any, _args: any, _context: GraphQLContext) => {
+      throw new GraphQLError('Search functionality not yet implemented', {
+        extensions: { code: 'NOT_IMPLEMENTED' },
+      });
+    },
+
+    /**
+     * Get group discussions
+     */
+    groupDiscussions: async (
+      _parent: any,
+      args: { groupId: string },
+      context: GraphQLContext
+    ) => {
+      const { userId } = requireUser(context);
+
+      // Verify user is member of group
+      const membership = await context.prisma.groupMember.findUnique({
+        where: {
+          groupId_userId: {
+            groupId: args.groupId,
+            userId,
+          },
+        },
+      });
+
+      if (!membership) {
+        throw new GraphQLError('Not a member of this group', {
+          extensions: { code: 'FORBIDDEN' },
+        });
+      }
+
+      return context.prisma.discussion.findMany({
+        where: { groupId: args.groupId },
+        orderBy: { createdAt: 'desc' },
+        include: { comments: true },
+      });
+    },
+
+    /**
+     * AI question (stub - requires AI infrastructure)
+     */
+    askQuestion: async (_parent: any, _args: any, _context: GraphQLContext) => {
+      throw new GraphQLError('AI functionality not yet implemented', {
+        extensions: { code: 'NOT_IMPLEMENTED' },
+      });
+    },
+
+    /**
+     * Get AI interaction history (stub)
+     */
+    myAIHistory: async (_parent: any, _args: any, _context: GraphQLContext) => {
+      throw new GraphQLError('AI functionality not yet implemented', {
+        extensions: { code: 'NOT_IMPLEMENTED' },
+      });
+    },
   },
 
   // ============================================================================
@@ -600,6 +687,349 @@ export const resolvers = {
         },
       });
     },
+
+    /**
+     * Create a memory card for verse memorization
+     */
+    createCard: async (
+      _parent: any,
+      args: { verseId: string },
+      context: GraphQLContext
+    ) => {
+      const { userId } = requireUser(context);
+
+      // Check if card already exists
+      const existing = await context.prisma.memoryCard.findUnique({
+        where: {
+          userId_verseId: {
+            userId,
+            verseId: args.verseId,
+          },
+        },
+      });
+
+      if (existing) {
+        throw new GraphQLError('Memory card already exists for this verse', {
+          extensions: { code: 'ALREADY_EXISTS' },
+        });
+      }
+
+      return context.prisma.memoryCard.create({
+        data: {
+          userId,
+          verseId: args.verseId,
+        },
+        include: { verse: true },
+      });
+    },
+
+    /**
+     * Review a memory card (SM-2 algorithm)
+     */
+    reviewCard: async (
+      _parent: any,
+      args: { input: { cardId: string; quality: number } },
+      context: GraphQLContext
+    ) => {
+      const { userId } = requireUser(context);
+
+      const card = await context.prisma.memoryCard.findUnique({
+        where: { id: args.input.cardId },
+      });
+
+      if (!card || card.userId !== userId) {
+        throw new GraphQLError('Card not found or access denied', {
+          extensions: { code: 'NOT_FOUND' },
+        });
+      }
+
+      // Validate quality (0-5 for SM-2)
+      const quality = Math.max(0, Math.min(5, args.input.quality));
+
+      // SM-2 algorithm implementation
+      let { easeFactor, interval, repetition } = card;
+
+      if (quality < 3) {
+        // Failed review - reset
+        repetition = 0;
+        interval = 1;
+      } else {
+        // Successful review
+        if (repetition === 0) {
+          interval = 1;
+        } else if (repetition === 1) {
+          interval = 6;
+        } else {
+          interval = Math.round(interval * easeFactor);
+        }
+        repetition++;
+      }
+
+      // Update ease factor
+      easeFactor = Math.max(
+        1.3,
+        easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02))
+      );
+
+      const nextReview = new Date();
+      nextReview.setDate(nextReview.getDate() + interval);
+
+      const updatedCard = await context.prisma.memoryCard.update({
+        where: { id: args.input.cardId },
+        data: {
+          easeFactor,
+          interval,
+          repetition,
+          nextReview,
+          lastReviewed: new Date(),
+          totalReviews: { increment: 1 },
+          correctReviews: quality >= 3 ? { increment: 1 } : undefined,
+        },
+        include: { verse: true },
+      });
+
+      return {
+        card: updatedCard,
+        quality,
+        nextReview,
+      };
+    },
+
+    /**
+     * Delete a memory card
+     */
+    deleteCard: async (
+      _parent: any,
+      args: { id: string },
+      context: GraphQLContext
+    ) => {
+      const { userId } = requireUser(context);
+
+      const card = await context.prisma.memoryCard.findUnique({
+        where: { id: args.id },
+      });
+
+      if (!card || card.userId !== userId) {
+        throw new GraphQLError('Card not found or access denied', {
+          extensions: { code: 'NOT_FOUND' },
+        });
+      }
+
+      await context.prisma.memoryCard.delete({
+        where: { id: args.id },
+      });
+
+      return true;
+    },
+
+    /**
+     * Create a study group
+     */
+    createGroup: async (
+      _parent: any,
+      args: { input: { name: string; description?: string; isPrivate?: boolean } },
+      context: GraphQLContext
+    ) => {
+      const { userId } = requireUser(context);
+
+      // Generate invite code for private groups
+      const inviteCode = args.input.isPrivate
+        ? Math.random().toString(36).substring(2, 10).toUpperCase()
+        : null;
+
+      const group = await context.prisma.group.create({
+        data: {
+          name: args.input.name,
+          description: args.input.description,
+          isPrivate: args.input.isPrivate || false,
+          inviteCode,
+          members: {
+            create: {
+              userId,
+              role: 'admin',
+            },
+          },
+        },
+        include: { members: true },
+      });
+
+      return group;
+    },
+
+    /**
+     * Join a group using invite code
+     */
+    joinGroup: async (
+      _parent: any,
+      args: { inviteCode: string },
+      context: GraphQLContext
+    ) => {
+      const { userId } = requireUser(context);
+
+      const group = await context.prisma.group.findUnique({
+        where: { inviteCode: args.inviteCode },
+      });
+
+      if (!group) {
+        throw new GraphQLError('Invalid invite code', {
+          extensions: { code: 'NOT_FOUND' },
+        });
+      }
+
+      // Check if already a member
+      const existing = await context.prisma.groupMember.findUnique({
+        where: {
+          groupId_userId: {
+            groupId: group.id,
+            userId,
+          },
+        },
+      });
+
+      if (existing) {
+        throw new GraphQLError('Already a member of this group', {
+          extensions: { code: 'ALREADY_EXISTS' },
+        });
+      }
+
+      await context.prisma.groupMember.create({
+        data: {
+          groupId: group.id,
+          userId,
+          role: 'member',
+        },
+      });
+
+      return context.prisma.group.findUnique({
+        where: { id: group.id },
+        include: { members: true },
+      });
+    },
+
+    /**
+     * Leave a group
+     */
+    leaveGroup: async (
+      _parent: any,
+      args: { groupId: string },
+      context: GraphQLContext
+    ) => {
+      const { userId } = requireUser(context);
+
+      const membership = await context.prisma.groupMember.findUnique({
+        where: {
+          groupId_userId: {
+            groupId: args.groupId,
+            userId,
+          },
+        },
+      });
+
+      if (!membership) {
+        throw new GraphQLError('Not a member of this group', {
+          extensions: { code: 'NOT_FOUND' },
+        });
+      }
+
+      await context.prisma.groupMember.delete({
+        where: { id: membership.id },
+      });
+
+      return true;
+    },
+
+    /**
+     * Create a discussion in a group
+     */
+    createDiscussion: async (
+      _parent: any,
+      args: { input: { groupId: string; title: string; content: string; verseId: string } },
+      context: GraphQLContext
+    ) => {
+      const { userId } = requireUser(context);
+
+      // Verify membership
+      const membership = await context.prisma.groupMember.findUnique({
+        where: {
+          groupId_userId: {
+            groupId: args.input.groupId,
+            userId,
+          },
+        },
+      });
+
+      if (!membership) {
+        throw new GraphQLError('Not a member of this group', {
+          extensions: { code: 'FORBIDDEN' },
+        });
+      }
+
+      return context.prisma.discussion.create({
+        data: {
+          groupId: args.input.groupId,
+          title: args.input.title,
+          content: args.input.content,
+          verseId: args.input.verseId,
+          authorId: userId,
+        },
+        include: { comments: true },
+      });
+    },
+
+    /**
+     * Add a comment to a discussion
+     */
+    addComment: async (
+      _parent: any,
+      args: { discussionId: string; content: string },
+      context: GraphQLContext
+    ) => {
+      const { userId } = requireUser(context);
+
+      // Get discussion and verify membership
+      const discussion = await context.prisma.discussion.findUnique({
+        where: { id: args.discussionId },
+        include: { group: true },
+      });
+
+      if (!discussion) {
+        throw new GraphQLError('Discussion not found', {
+          extensions: { code: 'NOT_FOUND' },
+        });
+      }
+
+      const membership = await context.prisma.groupMember.findUnique({
+        where: {
+          groupId_userId: {
+            groupId: discussion.groupId,
+            userId,
+          },
+        },
+      });
+
+      if (!membership) {
+        throw new GraphQLError('Not a member of this group', {
+          extensions: { code: 'FORBIDDEN' },
+        });
+      }
+
+      return context.prisma.comment.create({
+        data: {
+          discussionId: args.discussionId,
+          authorId: userId,
+          content: args.content,
+        },
+      });
+    },
+
+    /**
+     * Provide feedback on AI interaction (stub)
+     */
+    provideFeedback: async (_parent: any, _args: any, _context: GraphQLContext) => {
+      throw new GraphQLError('AI functionality not yet implemented', {
+        extensions: { code: 'NOT_IMPLEMENTED' },
+      });
+    },
   },
 
   // ============================================================================
@@ -608,18 +1038,15 @@ export const resolvers = {
 
   ScriptureWork: {
     editions: async (parent: any, _args: any, context: GraphQLContext) => {
-      return context.prisma.edition.findMany({
-        where: { workId: parent.id },
-        orderBy: { displayOrder: 'asc' },
-      });
+      // Use DataLoader to batch edition queries
+      return context.loaders.editionsByWorkId.load(parent.id);
     },
   },
 
   Edition: {
     work: async (parent: any, _args: any, context: GraphQLContext) => {
-      return context.prisma.scriptureWork.findUnique({
-        where: { id: parent.workId },
-      });
+      // Use DataLoader to batch scripture work queries
+      return context.loaders.scriptureWorkById.load(parent.workId);
     },
   },
 
@@ -644,41 +1071,27 @@ export const resolvers = {
       // Return if already loaded
       if (parent.edition) return parent.edition;
 
-      return context.prisma.edition.findUnique({
-        where: { id: parent.editionId },
-      });
+      // Use DataLoader to batch edition queries
+      return context.loaders.editionById.load(parent.editionId);
     },
 
     highlights: async (parent: any, _args: any, context: GraphQLContext) => {
       if (!context.user) return [];
 
-      return context.prisma.highlight.findMany({
-        where: {
-          verseId: parent.id,
-          userId: context.user.userId,
-        },
-      });
+      // Use DataLoader to batch highlight queries
+      return context.loaders.highlightsByVerseId.load(parent.id);
     },
 
     notes: async (parent: any, _args: any, context: GraphQLContext) => {
       if (!context.user) return [];
 
-      return context.prisma.note.findMany({
-        where: {
-          verseId: parent.id,
-          userId: context.user.userId,
-        },
-        orderBy: { createdAt: 'desc' },
-      });
+      // Use DataLoader to batch note queries
+      return context.loaders.notesByVerseId.load(parent.id);
     },
 
     crossReferences: async (parent: any, _args: any, context: GraphQLContext) => {
-      return context.prisma.crossReference.findMany({
-        where: { fromVerseId: parent.id },
-        include: {
-          toVerse: true,
-        },
-      });
+      // Use DataLoader to batch cross reference queries
+      return context.loaders.crossReferencesByVerseId.load(parent.id);
     },
 
     equivalentVerses: async (parent: any, _args: any, context: GraphQLContext) => {

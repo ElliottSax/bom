@@ -81,6 +81,18 @@ const inMemoryStore = new Map<string, { count: number; resetTime: number }>();
 
 // Clean up expired entries every minute
 let cleanupInterval: NodeJS.Timeout | null = null;
+let cleanupRegistered = false;
+
+/**
+ * Stop the cleanup interval (call during shutdown)
+ */
+export function stopRateLimitCleanup(): void {
+  if (cleanupInterval) {
+    clearInterval(cleanupInterval);
+    cleanupInterval = null;
+    logger.info('Rate limit cleanup interval stopped');
+  }
+}
 
 export function memoryRateLimit(config: RateLimitConfig) {
   // Initialize cleanup interval if not already running
@@ -94,13 +106,22 @@ export function memoryRateLimit(config: RateLimitConfig) {
       }
     }, 60000);
 
-    // Ensure cleanup on shutdown
-    process.on('beforeExit', () => {
-      if (cleanupInterval) {
-        clearInterval(cleanupInterval);
-        cleanupInterval = null;
-      }
-    });
+    // Prevent interval from keeping process alive
+    cleanupInterval.unref();
+
+    // Register cleanup handlers only once
+    if (!cleanupRegistered) {
+      cleanupRegistered = true;
+
+      const cleanup = () => {
+        stopRateLimitCleanup();
+      };
+
+      // Handle various shutdown signals
+      process.on('SIGTERM', cleanup);
+      process.on('SIGINT', cleanup);
+      process.on('exit', cleanup);
+    }
   }
 
   return async (request: FastifyRequest, reply: FastifyReply) => {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { DownloadIcon, UploadIcon } from './Icons';
-import { useUserData } from '../../contexts/UserDataContext';
-import { useSettings } from '../../contexts/SettingsContext';
+import { useUserData } from '../contexts/UserDataContext';
+import { useSettings } from '../contexts/SettingsContext';
 import { type VolumeId } from '../lib/types';
 
 interface BackupModalProps {

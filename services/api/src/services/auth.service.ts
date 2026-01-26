@@ -10,9 +10,22 @@ const logger = pino({
 });
 
 const SALT_ROUNDS = 12;
-const JWT_SECRET = process.env.JWT_SECRET || 'REPLACE_WITH_SECURE_SECRET';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
-const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || '30d';
+
+// Token expiration constants
+const ACCESS_TOKEN_EXPIRY_DAYS = 7;
+const REFRESH_TOKEN_EXPIRY_DAYS = 30;
+const REMEMBER_ME_EXPIRY_DAYS = 90;
+
+// Validate required environment variables
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required');
+}
+// Type assertion: we've validated JWT_SECRET is defined above
+const JWT_SECRET_VALIDATED: string = JWT_SECRET;
+
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || `${ACCESS_TOKEN_EXPIRY_DAYS}d`;
+const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || `${REFRESH_TOKEN_EXPIRY_DAYS}d`;
 
 export interface RegisterInput {
   email: string;
@@ -149,7 +162,7 @@ export class AuthService {
    */
   async refreshAccessToken(refreshToken: string): Promise<AuthTokens> {
     try {
-      // Verify refresh token
+      // Verify refresh token signature
       const payload = await this.verifyToken(refreshToken);
 
       // Check if refresh token exists in database
@@ -162,6 +175,22 @@ export class AuthService {
           {
             field: 'refreshToken',
             message: 'Invalid or expired refresh token',
+            code: 'invalid_token',
+          },
+        ]);
+      }
+
+      // Verify the token's userId matches the stored token's userId
+      // This prevents token confusion attacks
+      if (storedToken.userId !== payload.userId) {
+        logger.warn(
+          { tokenUserId: storedToken.userId, payloadUserId: payload.userId },
+          'Refresh token userId mismatch - possible attack'
+        );
+        throw new ValidationException([
+          {
+            field: 'refreshToken',
+            message: 'Invalid refresh token',
             code: 'invalid_token',
           },
         ]);
@@ -184,6 +213,11 @@ export class AuthService {
           },
         ]);
       }
+
+      // Delete the old refresh token (token rotation for security)
+      await prisma.refreshToken.delete({
+        where: { id: storedToken.id },
+      });
 
       // Generate new tokens
       return this.generateTokens(user);
@@ -214,7 +248,7 @@ export class AuthService {
    */
   async verifyToken(token: string): Promise<JWTPayload> {
     try {
-      const payload = jwt.verify(token, JWT_SECRET) as JWTPayload;
+      const payload = jwt.verify(token, JWT_SECRET_VALIDATED) as JWTPayload;
       return payload;
     } catch (error) {
       throw new ValidationException([
@@ -240,20 +274,20 @@ export class AuthService {
     };
 
     // Generate access token
-    const accessToken = jwt.sign(payload, JWT_SECRET, {
+    const accessToken = jwt.sign(payload, JWT_SECRET_VALIDATED, {
       expiresIn: JWT_EXPIRES_IN,
     });
 
     // Generate refresh token
     const refreshTokenExpiry = rememberMe ? '90d' : REFRESH_TOKEN_EXPIRES_IN;
-    const refreshToken = jwt.sign(payload, JWT_SECRET, {
+    const refreshToken = jwt.sign(payload, JWT_SECRET_VALIDATED, {
       expiresIn: refreshTokenExpiry,
     });
 
     // Store refresh token in database
     const expiresAt = new Date();
     expiresAt.setDate(
-      expiresAt.getDate() + (rememberMe ? 90 : 30)
+      expiresAt.getDate() + (rememberMe ? REMEMBER_ME_EXPIRY_DAYS : REFRESH_TOKEN_EXPIRY_DAYS)
     );
 
     await prisma.refreshToken.create({
@@ -365,11 +399,19 @@ export class AuthService {
       // Generate reset token (valid for 1 hour)
       const resetToken = jwt.sign(
         { userId: user.id, purpose: 'password_reset' },
-        JWT_SECRET,
+        JWT_SECRET_VALIDATED,
         { expiresIn: '1h' }
       );
 
       logger.info({ userId: user.id }, 'Password reset requested');
+
+      // In development, log the token for testing (NEVER log in production)
+      if (process.env.NODE_ENV === 'development') {
+        logger.info({ resetToken }, 'DEV ONLY - Password reset token (send via email in production)');
+      }
+
+      // TODO: In production, send resetToken via email service
+      // await emailService.sendPasswordResetEmail(user.email, resetToken);
 
       return resetToken;
     } catch (error) {
@@ -383,7 +425,7 @@ export class AuthService {
    */
   async resetPassword(resetToken: string, newPassword: string): Promise<void> {
     try {
-      const payload = jwt.verify(resetToken, JWT_SECRET) as JWTPayload & {
+      const payload = jwt.verify(resetToken, JWT_SECRET_VALIDATED) as JWTPayload & {
         purpose: string;
       };
 

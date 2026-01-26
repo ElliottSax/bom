@@ -1,7 +1,7 @@
 import React from 'react';
 import { type Book, type Volume, type VolumeId } from '../lib/types';
 import { ChevronLeftIcon, CheckIcon } from './Icons';
-import { useUserData } from '../../contexts/UserDataContext';
+import { useUserData } from '../contexts/UserDataContext';
 
 interface ChapterGridProps {
   currentBook: Book | undefined;

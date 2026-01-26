@@ -1,7 +1,7 @@
 import React from 'react';
 import { type Volume, type SearchResult, type VolumeId } from '../lib/types';
 import { SearchIcon } from './Icons';
-import { useUserData } from '../../contexts/UserDataContext';
+import { useUserData } from '../contexts/UserDataContext';
 
 interface SearchModalProps {
   showSearch: boolean;

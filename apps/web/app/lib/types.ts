@@ -1,4 +1,5 @@
-import { type VolumeId } from './scriptures';
+// Volume ID type
+export type VolumeId = 'bom' | 'ot' | 'nt' | 'dc';
 
 export interface Volume {
   id: VolumeId;

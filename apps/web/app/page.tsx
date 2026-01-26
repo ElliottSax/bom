@@ -5,7 +5,7 @@ import useLocalStorage from './hooks/useLocalStorage';
 import { useVerses } from './hooks/useVerses';
 import { useSearch } from './hooks/useSearch';
 import { VOLUMES, getBooksForVolume, getTotalChapters } from './lib/scriptures';
-import { type Volume, type VolumeId } from './lib/types';
+import { type VolumeId } from './lib/types';
 
 // Contexts
 import { useSettings } from './contexts/SettingsContext';

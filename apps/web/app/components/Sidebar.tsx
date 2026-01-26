@@ -5,7 +5,7 @@ import {
   type Verse,
 } from '../lib/types';
 import { CloseIcon, FireIcon } from './Icons';
-import { useUserData } from '../../contexts/UserDataContext';
+import { useUserData } from '../contexts/UserDataContext';
 
 interface SidebarProps {
   sidebarOpen: boolean;
