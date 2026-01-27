@@ -61,14 +61,21 @@ export function Quiz({ quiz, onClose, onComplete }: QuizProps) {
   };
 
   const handleSubmit = () => {
+    // Check if all questions are answered
+    const unansweredCount = selectedAnswers.filter(a => a === null).length;
+
+    if (unansweredCount > 0) {
+      const confirmed = window.confirm(
+        `You have ${unansweredCount} unanswered question${unansweredCount > 1 ? 's' : ''}. Submit anyway? Unanswered questions will be marked as incorrect.`
+      );
+      if (!confirmed) return;
+    }
+
     setSubmitted(true);
     setShowResults(true);
 
-    // Calculate score
-    const correctCount = selectedAnswers.filter(
-      (answer, index) => answer === quiz.questions[index].correctAnswer
-    ).length;
-    const score = Math.round((correctCount / quiz.questions.length) * 100);
+    // Calculate score using helper function
+    const score = calculateScore();
     const passed = score >= quiz.passingScore;
 
     if (onComplete) {
@@ -90,12 +97,16 @@ export function Quiz({ quiz, onClose, onComplete }: QuizProps) {
     return Math.round((correctCount / quiz.questions.length) * 100);
   };
 
+  // Calculate these values once at component level if showing results
+  const score = showResults ? calculateScore() : 0;
+  const passed = showResults ? score >= quiz.passingScore : false;
+  const correctCount = showResults
+    ? selectedAnswers.filter(
+        (answer, index) => answer === quiz.questions[index].correctAnswer
+      ).length
+    : 0;
+
   if (showResults) {
-    const score = calculateScore();
-    const passed = score >= quiz.passingScore;
-    const correctCount = selectedAnswers.filter(
-      (answer, index) => answer === quiz.questions[index].correctAnswer
-    ).length;
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -120,10 +131,10 @@ export function Quiz({ quiz, onClose, onComplete }: QuizProps) {
             <div className={`rounded-lg p-6 mb-6 text-center ${
               passed ? 'bg-green-500/10' : 'bg-red-500/10'
             }`}>
-              <div className="text-6xl font-bold mb-2" style={{ color: passed ? '#10b981' : '#ef4444' }}>
+              <div className={`text-6xl font-bold mb-2 ${passed ? 'text-green-500' : 'text-red-500'}`}>
                 {score}%
               </div>
-              <p className="text-lg font-semibold mb-1" style={{ color: passed ? '#10b981' : '#ef4444' }}>
+              <p className={`text-lg font-semibold mb-1 ${passed ? 'text-green-500' : 'text-red-500'}`}>
                 {passed ? '✓ Passed!' : '✗ Not Passed'}
               </p>
               <p className="text-[var(--color-text-secondary)]">
@@ -162,7 +173,7 @@ export function Quiz({ quiz, onClose, onComplete }: QuizProps) {
                         </p>
                         <p className="text-sm text-[var(--color-text-secondary)] mb-1">
                           Your answer: <span className={isCorrect ? 'text-green-500' : 'text-red-500'}>
-                            {question.options[userAnswer!]}
+                            {userAnswer !== null ? question.options[userAnswer] : 'Not answered'}
                           </span>
                         </p>
                         {!isCorrect && (

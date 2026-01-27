@@ -2,22 +2,16 @@
 
 import React from 'react';
 import { useCoCCourses, type Course } from '../hooks/useCoCCourses';
-import { useRouter } from 'next/navigation';
 
 interface CourseCatalogProps {
-  onCourseSelect?: (courseId: string) => void;
+  onCourseSelect: (courseId: string) => void;  // Required, not optional
 }
 
 export function CourseCatalog({ onCourseSelect }: CourseCatalogProps) {
   const { courses, loading } = useCoCCourses();
-  const router = useRouter();
 
   const handleCourseClick = (courseId: string) => {
-    if (onCourseSelect) {
-      onCourseSelect(courseId);
-    } else {
-      router.push(`/courses/${courseId}`);
-    }
+    onCourseSelect(courseId);
   };
 
   if (loading) {

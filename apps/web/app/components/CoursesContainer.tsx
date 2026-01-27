@@ -100,6 +100,12 @@ export function CoursesContainer() {
     const existingQuizData = progress.quizScores[lessonId];
     const attempts = existingQuizData ? existingQuizData.attempts + 1 : 1;
 
+    // Keep the best score across all attempts
+    const bestScore = existingQuizData
+      ? Math.max(existingQuizData.score, score)
+      : score;
+    const everPassed = existingQuizData?.passed || passed;
+
     setCourseProgress({
       ...courseProgress,
       [selectedCourseId]: {
@@ -107,8 +113,8 @@ export function CoursesContainer() {
         quizScores: {
           ...progress.quizScores,
           [lessonId]: {
-            score,
-            passed,
+            score: bestScore,  // Store best score
+            passed: everPassed,  // True if ever passed
             attempts,
             lastAttempt: new Date().toISOString(),
           },
