@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { type Lesson } from '../hooks/useCoCCourses';
 import ReactMarkdown from 'react-markdown';
 import { CloseIcon, ChevronLeftIcon, ChevronRightIcon } from './Icons';
+import { Quiz, type QuizData } from './Quiz';
+import { COC_QUIZZES } from '../data/cocQuizzes';
 
 interface LessonViewerProps {
   lesson: Lesson;
@@ -15,6 +17,8 @@ interface LessonViewerProps {
   hasNext?: boolean;
   onComplete?: () => void;
   isCompleted?: boolean;
+  onQuizComplete?: (score: number, passed: boolean) => void;
+  quizScore?: { score: number; passed: boolean } | null;
 }
 
 export function LessonViewer({
@@ -27,10 +31,23 @@ export function LessonViewer({
   hasNext,
   onComplete,
   isCompleted,
+  onQuizComplete,
+  quizScore,
 }: LessonViewerProps) {
   const [showObjectives, setShowObjectives] = useState(true);
   const [showKeyTerms, setShowKeyTerms] = useState(false);
   const [showDiscussion, setShowDiscussion] = useState(false);
+  const [showQuiz, setShowQuiz] = useState(false);
+
+  // Find quiz for this lesson
+  const quiz = COC_QUIZZES.find(q => q.lessonId === lesson.id);
+
+  const handleQuizComplete = (score: number, passed: boolean) => {
+    if (onQuizComplete) {
+      onQuizComplete(score, passed);
+    }
+    setShowQuiz(false);
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -239,13 +256,58 @@ export function LessonViewer({
 
           {/* Application Challenge */}
           {lesson.applicationChallenge && (
-            <div className="bg-blue-500/10 border-l-4 border-blue-500 p-4 rounded-r-lg">
+            <div className="bg-blue-500/10 border-l-4 border-blue-500 p-4 rounded-r-lg mb-6">
               <h3 className="text-lg font-semibold text-blue-500 mb-2">
                 Application Challenge
               </h3>
               <p className="text-[var(--color-text-secondary)]">
                 {lesson.applicationChallenge}
               </p>
+            </div>
+          )}
+
+          {/* Quiz Section */}
+          {quiz && (
+            <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-2 border-purple-500/20 rounded-lg p-6 mb-6">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <svg className="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <h3 className="text-xl font-bold text-[var(--color-text-primary)]">
+                      Test Your Knowledge
+                    </h3>
+                  </div>
+                  <p className="text-[var(--color-text-secondary)] mb-1">
+                    {quiz.description}
+                  </p>
+                  <p className="text-sm text-[var(--color-text-tertiary)]">
+                    {quiz.questions.length} questions • {quiz.passingScore}% to pass
+                  </p>
+
+                  {quizScore && (
+                    <div className={`mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg ${
+                      quizScore.passed
+                        ? 'bg-green-500/10 text-green-500'
+                        : 'bg-red-500/10 text-red-500'
+                    }`}>
+                      <span className="font-semibold">
+                        {quizScore.passed ? '✓ Passed' : '✗ Not Passed'}
+                      </span>
+                      <span className="text-sm">
+                        ({quizScore.score}%)
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={() => setShowQuiz(true)}
+                  className="px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-lg transition-colors"
+                >
+                  {quizScore ? 'Retake Quiz' : 'Take Quiz'}
+                </button>
+              </div>
             </div>
           )}
 
@@ -320,6 +382,15 @@ export function LessonViewer({
           </button>
         </div>
       </div>
+
+      {/* Quiz Modal */}
+      {showQuiz && quiz && (
+        <Quiz
+          quiz={quiz}
+          onClose={() => setShowQuiz(false)}
+          onComplete={handleQuizComplete}
+        />
+      )}
     </div>
   );
 }

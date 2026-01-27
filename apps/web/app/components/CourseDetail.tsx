@@ -5,11 +5,20 @@ import { type Course, type Lesson } from '../hooks/useCoCCourses';
 import { ChevronLeftIcon, CheckIcon } from './Icons';
 import { LessonViewer } from './LessonViewer';
 
+interface QuizScore {
+  score: number;
+  passed: boolean;
+  attempts: number;
+  lastAttempt: string;
+}
+
 interface CourseDetailProps {
   course: Course;
   onBack: () => void;
   completedLessons?: string[];
   onLessonComplete?: (lessonId: string) => void;
+  quizScores?: { [lessonId: string]: QuizScore };
+  onQuizComplete?: (lessonId: string, score: number, passed: boolean) => void;
 }
 
 export function CourseDetail({
@@ -17,6 +26,8 @@ export function CourseDetail({
   onBack,
   completedLessons = [],
   onLessonComplete,
+  quizScores = {},
+  onQuizComplete,
 }: CourseDetailProps) {
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [currentLessonIndex, setCurrentLessonIndex] = useState<number>(0);
@@ -45,6 +56,12 @@ export function CourseDetail({
   const handleComplete = () => {
     if (selectedLesson && onLessonComplete) {
       onLessonComplete(selectedLesson.id);
+    }
+  };
+
+  const handleQuizComplete = (score: number, passed: boolean) => {
+    if (selectedLesson && onQuizComplete) {
+      onQuizComplete(selectedLesson.id, score, passed);
     }
   };
 
@@ -160,6 +177,7 @@ export function CourseDetail({
         <div className="space-y-2">
           {course.lessons.map((lesson, index) => {
             const isCompleted = completedLessons.includes(lesson.id);
+            const quizScore = quizScores[lesson.id];
             return (
               <button
                 key={lesson.id}
@@ -198,6 +216,18 @@ export function CourseDetail({
                       <span className="px-2 py-0.5 bg-blue-500/10 text-blue-500 rounded">
                         {lesson.type}
                       </span>
+                      {quizScore && (
+                        <span className={`px-2 py-0.5 rounded flex items-center gap-1 ${
+                          quizScore.passed
+                            ? 'bg-green-500/10 text-green-500'
+                            : 'bg-orange-500/10 text-orange-500'
+                        }`}>
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          Quiz: {quizScore.score}%
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -226,6 +256,8 @@ export function CourseDetail({
           hasNext={currentLessonIndex < course.lessons.length - 1}
           onComplete={handleComplete}
           isCompleted={completedLessons.includes(selectedLesson.id)}
+          onQuizComplete={handleQuizComplete}
+          quizScore={quizScores[selectedLesson.id] || null}
         />
       )}
     </div>

@@ -12,6 +12,14 @@ interface CourseProgress {
     lessonsCompleted: string[];
     completed: boolean;
     completedDate: string | null;
+    quizScores: {
+      [lessonId: string]: {
+        score: number;
+        passed: boolean;
+        attempts: number;
+        lastAttempt: string;
+      };
+    };
   };
 }
 
@@ -37,6 +45,7 @@ export function CoursesContainer() {
           lessonsCompleted: [],
           completed: false,
           completedDate: null,
+          quizScores: {},
         },
       });
     }
@@ -54,6 +63,7 @@ export function CoursesContainer() {
       lessonsCompleted: [],
       completed: false,
       completedDate: null,
+      quizScores: {},
     };
 
     // Toggle completion
@@ -76,8 +86,43 @@ export function CoursesContainer() {
     });
   };
 
+  const handleQuizComplete = (lessonId: string, score: number, passed: boolean) => {
+    if (!selectedCourseId) return;
+
+    const progress = courseProgress[selectedCourseId] || {
+      started: new Date().toISOString(),
+      lessonsCompleted: [],
+      completed: false,
+      completedDate: null,
+      quizScores: {},
+    };
+
+    const existingQuizData = progress.quizScores[lessonId];
+    const attempts = existingQuizData ? existingQuizData.attempts + 1 : 1;
+
+    setCourseProgress({
+      ...courseProgress,
+      [selectedCourseId]: {
+        ...progress,
+        quizScores: {
+          ...progress.quizScores,
+          [lessonId]: {
+            score,
+            passed,
+            attempts,
+            lastAttempt: new Date().toISOString(),
+          },
+        },
+      },
+    });
+  };
+
   const getCompletedLessons = (courseId: string): string[] => {
     return courseProgress[courseId]?.lessonsCompleted || [];
+  };
+
+  const getQuizScores = (courseId: string) => {
+    return courseProgress[courseId]?.quizScores || {};
   };
 
   if (selectedCourse) {
@@ -87,6 +132,8 @@ export function CoursesContainer() {
         onBack={handleBack}
         completedLessons={getCompletedLessons(selectedCourseId!)}
         onLessonComplete={handleLessonComplete}
+        quizScores={getQuizScores(selectedCourseId!)}
+        onQuizComplete={handleQuizComplete}
       />
     );
   }
