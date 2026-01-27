@@ -11,6 +11,7 @@ import {
   FireIcon,
   InfoIcon,
   LibraryIcon,
+  AcademicCapIcon,
 } from './Icons';
 import { type Volume } from '../lib/types';
 import { useSettings } from '../contexts/SettingsContext';
@@ -27,6 +28,7 @@ interface HeaderProps {
   setShowSearch: React.Dispatch<React.SetStateAction<boolean>>;
   setShowCoCResources: React.Dispatch<React.SetStateAction<boolean>>;
   setShowAboutCoC: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowCourses: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -40,6 +42,7 @@ const Header: React.FC<HeaderProps> = ({
   setShowSearch,
   setShowCoCResources,
   setShowAboutCoC,
+  setShowCourses,
 }) => {
   const { theme, cycleTheme } = useSettings();
   const { readingProgress } = useUserData();
@@ -60,6 +63,7 @@ const Header: React.FC<HeaderProps> = ({
         </div>
         <div className="flex items-center gap-1">
           {readingProgress.currentStreak > 0 && <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-orange-500/10 rounded-lg text-orange-500 mr-2"><FireIcon /><span className="text-sm font-medium">{readingProgress.currentStreak}</span></div>}
+          <button onClick={() => setShowCourses(true)} className="p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)]" title="CoC Courses"><AcademicCapIcon /></button>
           <button onClick={() => setShowAboutCoC(true)} className="p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)]" title="About Community of Christ"><InfoIcon /></button>
           <button onClick={() => setShowCoCResources(true)} className="p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)]" title="CoC Resources"><LibraryIcon /></button>
           <button onClick={() => setShowStudyPlanModal(true)} className="p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)]" title="Study Plans"><CalendarIcon /></button>

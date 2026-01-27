@@ -32,6 +32,7 @@ const BackupModal = lazy(() => import('./components/modals/BackupModal').then(m 
 const ResourcesModal = lazy(() => import('./components/modals/ResourcesModal').then(m => ({ default: m.ResourcesModal })));
 const CoCResourcesModal = lazy(() => import('./components/modals/CoCResourcesModal').then(m => ({ default: m.CoCResourcesModal })));
 const AboutCoCModal = lazy(() => import('./components/modals/AboutCoCModal').then(m => ({ default: m.AboutCoCModal })));
+const CoursesModal = lazy(() => import('./components/modals/CoursesModal').then(m => ({ default: m.CoursesModal })));
 
 function HomeContent() {
   // ==================== CONTEXTS ====================
@@ -91,6 +92,7 @@ function HomeContent() {
   const [showBackupModal, setShowBackupModal] = useState(false);
   const [showCoCResources, setShowCoCResources] = useState(false);
   const [showAboutCoC, setShowAboutCoC] = useState(false);
+  const [showCourses, setShowCourses] = useState(false);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -207,6 +209,7 @@ function HomeContent() {
         setShowSearch={setShowSearch}
         setShowCoCResources={setShowCoCResources}
         setShowAboutCoC={setShowAboutCoC}
+        setShowCourses={setShowCourses}
       />
 
       <VolumeTabs volumeId={volumeId} onVolumeChange={handleVolumeChange} />
@@ -295,6 +298,10 @@ function HomeContent() {
 
         {showAboutCoC && (
           <AboutCoCModal onClose={() => setShowAboutCoC(false)} />
+        )}
+
+        {showCourses && (
+          <CoursesModal show={showCourses} onClose={() => setShowCourses(false)} />
         )}
       </Suspense>
 
