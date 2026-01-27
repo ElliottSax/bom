@@ -1,5 +1,4 @@
-import { Verse, SearchResult } from '../lib/types';
-import { VolumeId } from '../lib/scriptures';
+import { Verse, SearchResult, VolumeId } from '../lib/types';
 
 export class ScriptureService {
   private static async fetchJson<T>(url: string): Promise<T> {
