@@ -73,16 +73,26 @@ function shouldLog(level: LogLevel): boolean {
 
 /**
  * Send error to remote service (placeholder for Sentry/LogRocket)
+ *
+ * To implement:
+ * 1. Install Sentry: npm install @sentry/react-native
+ * 2. Initialize in App.tsx: Sentry.init({ dsn: 'YOUR_DSN' })
+ * 3. Uncomment the code below
  */
-function sendToRemote(level: LogLevel, message: string, error?: Error, extra?: Record<string, unknown>): void {
+function sendToRemote(
+  _level: LogLevel,
+  _message: string,
+  _error?: Error,
+  _extra?: Record<string, unknown>
+): void {
   if (!config.remoteEnabled) return;
 
-  // TODO: Implement remote error reporting
-  // Example with Sentry:
-  // if (level === 'error' && error) {
-  //   Sentry.captureException(error, { extra: { message, ...extra } });
-  // } else if (level === 'error') {
-  //   Sentry.captureMessage(message, { level: 'error', extra });
+  // Uncomment when Sentry is configured:
+  // import * as Sentry from '@sentry/react-native';
+  // if (_level === 'error' && _error) {
+  //   Sentry.captureException(_error, { extra: { message: _message, ..._extra } });
+  // } else if (_level === 'error') {
+  //   Sentry.captureMessage(_message, { level: 'error', extra: _extra });
   // }
 }
 

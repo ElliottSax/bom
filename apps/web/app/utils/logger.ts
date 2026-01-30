@@ -49,11 +49,17 @@ function formatMessage(level: LogLevel, message: string, context?: string): stri
   return parts.join(' ');
 }
 
-function sendToRemote(level: LogLevel, message: string, error?: Error, extra?: Record<string, unknown>): void {
+function sendToRemote(
+  _level: LogLevel,
+  _message: string,
+  _error?: Error,
+  _extra?: Record<string, unknown>
+): void {
   if (!config.remoteEnabled) return;
   // Placeholder for Sentry/LogRocket integration
-  // if (level === 'error' && error) {
-  //   Sentry.captureException(error, { extra: { message, ...extra } });
+  // import * as Sentry from '@sentry/nextjs';
+  // if (_level === 'error' && _error) {
+  //   Sentry.captureException(_error, { extra: { message: _message, ..._extra } });
   // }
 }
 

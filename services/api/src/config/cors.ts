@@ -6,6 +6,25 @@ interface CorsConfig {
   test: FastifyCorsOptions;
 }
 
+// Default production origins - MUST be overridden via CORS_ORIGIN env var
+const DEFAULT_PRODUCTION_ORIGINS = [
+  'https://bomstudytools.org',
+  'https://www.bomstudytools.org',
+  'https://app.bomstudytools.org',
+];
+
+// Check if CORS is properly configured for production
+export function validateCorsConfig(): { valid: boolean; message: string } {
+  const env = process.env.NODE_ENV || 'development';
+  if (env === 'production' && !process.env.CORS_ORIGIN) {
+    return {
+      valid: false,
+      message: 'WARNING: CORS_ORIGIN not set in production. Using default origins. Set CORS_ORIGIN environment variable for security.',
+    };
+  }
+  return { valid: true, message: 'CORS configuration valid' };
+}
+
 const corsConfig: CorsConfig = {
   development: {
     origin: (origin, callback) => {
@@ -43,15 +62,18 @@ const corsConfig: CorsConfig = {
 
   production: {
     origin: (origin, callback) => {
-      // Strict origin checking for production
+      // Allow requests with no origin for mobile apps (React Native doesn't send Origin)
+      // This is safe because we validate via Authorization header for authenticated routes
       if (!origin) {
-        // Reject requests with no origin in production for security
-        callback(new Error('Origin required in production'), false);
+        callback(null, true);
         return;
       }
 
-      const allowedOrigins = process.env.CORS_ORIGIN?.split(',').map(o => o.trim()) || [];
-      
+      // Use configured origins or fall back to defaults
+      const allowedOrigins = process.env.CORS_ORIGIN
+        ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+        : DEFAULT_PRODUCTION_ORIGINS;
+
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {

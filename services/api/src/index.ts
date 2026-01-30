@@ -5,13 +5,76 @@ import { config } from 'dotenv';
 import pino from 'pino';
 import { healthRoutes } from './routes/health';
 import { authRoutes } from './routes/auth';
-import { getCorsConfig } from './config/cors';
+import { getCorsConfig, validateCorsConfig } from './config/cors';
 import { createRateLimiter, rateLimitPresets } from './middleware/rateLimit';
 import { setupGraphQL } from './graphql/server';
 import { prisma } from './lib/prisma';
 
 // Load environment variables
 config();
+
+// Environment variable validation
+interface EnvValidation {
+  name: string;
+  required: boolean;
+  defaultValue?: string;
+}
+
+const requiredEnvVars: EnvValidation[] = [
+  { name: 'JWT_SECRET', required: true },
+  { name: 'DATABASE_URL', required: true },
+  { name: 'NODE_ENV', required: false, defaultValue: 'development' },
+  { name: 'PORT', required: false, defaultValue: '4000' },
+  { name: 'REDIS_URL', required: false },
+  { name: 'CORS_ORIGIN', required: false },
+  { name: 'EMAIL_PROVIDER', required: false, defaultValue: 'console' },
+];
+
+function validateEnvironment(): void {
+  const missing: string[] = [];
+  const warnings: string[] = [];
+
+  for (const envVar of requiredEnvVars) {
+    if (!process.env[envVar.name]) {
+      if (envVar.required) {
+        missing.push(envVar.name);
+      } else if (envVar.defaultValue) {
+        process.env[envVar.name] = envVar.defaultValue;
+      }
+    }
+  }
+
+  // Check CORS configuration
+  const corsValidation = validateCorsConfig();
+  if (!corsValidation.valid) {
+    warnings.push(corsValidation.message);
+  }
+
+  // Check for production-specific requirements
+  if (process.env.NODE_ENV === 'production') {
+    if (!process.env.REDIS_URL) {
+      warnings.push('REDIS_URL not set - rate limiting will use in-memory storage');
+    }
+    if (process.env.EMAIL_PROVIDER === 'console') {
+      warnings.push('EMAIL_PROVIDER is "console" - emails will only be logged, not sent');
+    }
+  }
+
+  // Report missing required variables
+  if (missing.length > 0) {
+    console.error('\x1b[31m%s\x1b[0m', `ERROR: Missing required environment variables: ${missing.join(', ')}`);
+    console.error('Please set these variables before starting the server.');
+    process.exit(1);
+  }
+
+  // Report warnings
+  for (const warning of warnings) {
+    console.warn('\x1b[33m%s\x1b[0m', `WARNING: ${warning}`);
+  }
+}
+
+// Validate environment before proceeding
+validateEnvironment();
 
 // Initialize logger
 const logger = pino({

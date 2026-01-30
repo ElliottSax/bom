@@ -20,10 +20,23 @@ import { logger } from '../utils/logger';
 
 const log = logger.scope('Apollo');
 
-// API endpoint - should be configurable via environment
-const API_URL = __DEV__
-  ? 'http://localhost:4000/graphql'
-  : 'https://api.bomstudytools.org/graphql';
+// API endpoint configuration
+// In development: Use EXPO_PUBLIC_API_URL env var or default to localhost
+// In production: Use EXPO_PUBLIC_API_URL env var or default to production API
+const getApiUrl = (): string => {
+  // Environment variable takes precedence (set in app.config.js or .env)
+  const envUrl = process.env.EXPO_PUBLIC_API_URL;
+  if (envUrl) {
+    return envUrl;
+  }
+
+  // Fallback based on environment
+  return __DEV__
+    ? 'http://localhost:4000/graphql'
+    : 'https://api.bomstudytools.org/graphql';
+};
+
+const API_URL = getApiUrl();
 
 // Verse type for cache
 interface CachedVerse {

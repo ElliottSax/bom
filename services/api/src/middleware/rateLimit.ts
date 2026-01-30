@@ -66,9 +66,10 @@ export function redisRateLimit(config: RateLimitConfig) {
         });
       }
     } catch (error) {
-      logger.error({ err: error }, 'Rate limit middleware error');
-      // Fail open - allow request if rate limiting fails
-      // This prevents Redis issues from bringing down the API
+      logger.error({ err: error }, 'Rate limit middleware error - falling back to in-memory');
+      // Fall back to in-memory rate limiting instead of failing open
+      // This maintains rate limiting protection even if Redis is down
+      return memoryRateLimit(config)(request, reply);
     }
   };
 }
