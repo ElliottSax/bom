@@ -6,6 +6,9 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('DailyVerse');
 
 const DAILY_VERSE_CACHE_KEY = '@bom_daily_verse_cache';
 
@@ -308,7 +311,7 @@ export function useDailyVerse(): UseDailyVerseResult {
       };
       await AsyncStorage.setItem(DAILY_VERSE_CACHE_KEY, JSON.stringify(cacheData));
     } catch (error) {
-      console.error('Failed to load daily verse:', error);
+      log.error('Failed to load daily verse', error);
       // Fallback to first verse
       setVerse({
         ...CURATED_VERSES[0],

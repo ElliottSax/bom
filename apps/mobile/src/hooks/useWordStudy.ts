@@ -6,6 +6,9 @@
 
 import { useState, useCallback } from 'react';
 import { useApolloClient, gql } from '@apollo/client';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('WordStudy');
 
 const SEARCH_VERSES = gql`
   query SearchVerses($query: String!, $editionId: String, $limit: Int) {
@@ -104,7 +107,7 @@ export function useWordStudy() {
         setLoading(false);
         return studyResult;
       } catch (err) {
-        console.error('Word study failed:', err);
+        log.error('Word study failed', err);
         setError('Failed to search for word');
         setLoading(false);
         return null;

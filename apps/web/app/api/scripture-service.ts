@@ -1,4 +1,7 @@
 import { Verse, SearchResult, VolumeId } from '../lib/types';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('ScriptureService');
 
 export class ScriptureService {
   private static async fetchJson<T>(url: string): Promise<T> {
@@ -21,7 +24,7 @@ export class ScriptureService {
 
       return data.verses || [];
     } catch (error) {
-      console.error('Error fetching verses:', error);
+      log.error('Error fetching verses', error);
       return [];
     }
   }
@@ -42,7 +45,7 @@ export class ScriptureService {
 
       return data.results || [];
     } catch (error) {
-      console.error('Error searching verses:', error);
+      log.error('Error searching verses', error);
       return [];
     }
   }

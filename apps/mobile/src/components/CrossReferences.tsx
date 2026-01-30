@@ -9,7 +9,6 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   Pressable,
   Modal,
   TextInput,
@@ -17,9 +16,12 @@ import {
   ScrollView,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useMutation, useQuery, gql } from '@apollo/client';
+import { gql } from '@apollo/client';
 import { useTheme } from '../contexts/ThemeContext';
 import type { ThemeColors } from '../types';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('CrossReferences');
 
 const CROSS_REFS_KEY = '@bom_cross_references';
 
@@ -63,10 +65,10 @@ interface CrossReferencesProps {
 export function CrossReferences({
   verseId,
   verseInfo,
-  userId = 'demo-user',
+  userId: _userId = 'demo-user',
   onNavigate,
 }: CrossReferencesProps) {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const [references, setReferences] = useState<CrossReference[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -88,7 +90,7 @@ export function CrossReferences({
         setReferences(verseRefs);
       }
     } catch (error) {
-      console.error('Error loading cross references:', error);
+      log.error('Error loading cross references:', error);
     }
   };
 
@@ -109,7 +111,7 @@ export function CrossReferences({
       setReferences([...references, reference]);
       return reference;
     } catch (error) {
-      console.error('Error saving cross reference:', error);
+      log.error('Error saving cross reference:', error);
       throw error;
     }
   };
@@ -132,7 +134,7 @@ export function CrossReferences({
               await AsyncStorage.setItem(CROSS_REFS_KEY, JSON.stringify(filtered));
               setReferences(references.filter(ref => ref.id !== refId));
             } catch (error) {
-              console.error('Error deleting reference:', error);
+              log.error('Error deleting reference:', error);
             }
           },
         },
@@ -335,8 +337,8 @@ function AddReferenceModal({
   const [note, setNote] = useState('');
   const [targetVerse, setTargetVerse] = useState<VerseInfo | null>(null);
 
-  // Search for verses
-  const SEARCH_VERSES = gql`
+  // GraphQL query for searching verses (for future implementation)
+  const _SEARCH_VERSES = gql`
     query SearchForReference($query: String!) {
       search(query: $query, limit: 10) {
         results {

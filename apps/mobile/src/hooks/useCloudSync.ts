@@ -8,6 +8,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('CloudSync');
 
 // Storage keys
 const SYNC_CONFIG_KEY = '@bom_sync_config';
@@ -142,7 +145,7 @@ export function useCloudSync() {
         }));
       }
     } catch (err) {
-      console.error('Failed to initialize sync:', err);
+      log.error('Failed to initialize sync', err);
     } finally {
       setLoading(false);
     }
@@ -280,7 +283,7 @@ export function useCloudSync() {
 
       return true;
     } catch (err) {
-      console.error('Sync failed:', err);
+      log.error('Sync failed', err);
       setStatus((prev) => ({
         ...prev,
         isSyncing: false,
@@ -349,7 +352,7 @@ export function useCloudSync() {
         // Perform initial sync
         return await performSync();
       } catch (err) {
-        console.error('Failed to enable sync:', err);
+        log.error('Failed to enable sync', err);
         return false;
       }
     },

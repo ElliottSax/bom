@@ -16,6 +16,9 @@ import { onError } from '@apollo/client/link/error';
 import { RetryLink } from '@apollo/client/link/retry';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { persistCache, AsyncStorageWrapper } from 'apollo3-cache-persist';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('Apollo');
 
 // API endpoint - should be configurable via environment
 const API_URL = __DEV__
@@ -66,14 +69,16 @@ const cache = new InMemoryCache({
 const errorLink = onError(({ graphQLErrors, networkError, operation }) => {
   if (graphQLErrors) {
     graphQLErrors.forEach(({ message, locations, path }) => {
-      console.error(
-        `[GraphQL error]: Message: ${message}, Location: ${JSON.stringify(locations)}, Path: ${path}`
-      );
+      log.error('GraphQL error', undefined, {
+        message,
+        locations: JSON.stringify(locations),
+        path: path?.join('.'),
+      });
     });
   }
 
   if (networkError) {
-    console.error(`[Network error]: ${networkError}`);
+    log.error('Network error', networkError);
     // Could trigger offline mode here
   }
 });
@@ -125,9 +130,9 @@ export async function initializeApolloClient(): Promise<ApolloClient<NormalizedC
       debug: __DEV__,
     });
 
-    console.log('Apollo cache restored from AsyncStorage');
+    log.info('Apollo cache restored from AsyncStorage');
   } catch (error) {
-    console.error('Error restoring Apollo cache:', error);
+    log.error('Error restoring Apollo cache', error);
   }
 
   client = new ApolloClient({
@@ -170,6 +175,6 @@ export async function clearApolloCache(): Promise<void> {
   if (client) {
     await client.clearStore();
     await AsyncStorage.removeItem('apollo-cache-persist');
-    console.log('Apollo cache cleared');
+    log.info('Apollo cache cleared');
   }
 }

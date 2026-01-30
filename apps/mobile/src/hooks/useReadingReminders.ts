@@ -8,6 +8,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { Platform, PermissionsAndroid } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PushNotification from 'react-native-push-notification';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('ReadingReminders');
 
 const REMINDERS_KEY = '@bom_reading_reminders';
 
@@ -33,7 +36,7 @@ const CHANNEL_ID = 'bom-reading-reminders';
 // Configure push notifications
 PushNotification.configure({
   onNotification: function (notification) {
-    console.log('NOTIFICATION:', notification);
+    log.debug('Notification received', { notification });
   },
   requestPermissions: Platform.OS === 'ios',
 });
@@ -47,7 +50,7 @@ PushNotification.createChannel(
     importance: 4, // IMPORTANCE_HIGH
     vibrate: true,
   },
-  (created) => console.log(`Channel created: ${created}`)
+  (created) => log.debug(`Notification channel created: ${created}`)
 );
 
 export function useReadingReminders() {
@@ -68,7 +71,7 @@ export function useReadingReminders() {
         setSettings(JSON.parse(saved));
       }
     } catch (err) {
-      console.error('Failed to load reminder settings:', err);
+      log.error('Failed to load reminder settings', err);
     } finally {
       setLoading(false);
     }
@@ -79,7 +82,7 @@ export function useReadingReminders() {
       await AsyncStorage.setItem(REMINDERS_KEY, JSON.stringify(newSettings));
       setSettings(newSettings);
     } catch (err) {
-      console.error('Failed to save reminder settings:', err);
+      log.error('Failed to save reminder settings', err);
     }
   };
 

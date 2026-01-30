@@ -18,6 +18,9 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../contexts/ThemeContext';
 import type { StudyTabData } from '../types';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('TabsNavigator');
 
 const TABS_KEY = '@bom_study_tabs';
 const MAX_TABS = 10;
@@ -74,7 +77,7 @@ export function TabsNavigator({ onTabChange, currentContent }: TabsNavigatorProp
         setActiveTabId(parsed.activeId);
       }
     } catch (error) {
-      console.error('Error loading tabs:', error);
+      log.error('Error loading tabs:', error);
     }
   };
 
@@ -85,7 +88,7 @@ export function TabsNavigator({ onTabChange, currentContent }: TabsNavigatorProp
         JSON.stringify({ tabs: newTabs, activeId })
       );
     } catch (error) {
-      console.error('Error saving tabs:', error);
+      log.error('Error saving tabs:', error);
     }
   };
 
@@ -459,7 +462,7 @@ export function useTabs() {
 
   const openInNewTab = useCallback((type: StudyTab['type'], data: StudyTabData) => {
     // This would be connected to the TabsNavigator
-    console.log('Opening in new tab:', type, data);
+    log.debug('Opening in new tab:', { type, data });
   }, []);
 
   const updateCurrentTab = useCallback((updates: Partial<StudyTab>) => {

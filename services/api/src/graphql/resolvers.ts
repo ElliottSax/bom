@@ -664,6 +664,23 @@ export const resolvers = {
         });
       }
 
+      // Calculate percentage based on verse position in chapter
+      // Get the total verses in this chapter
+      const totalVerses = await context.prisma.verse.count({
+        where: {
+          editionId: verse.editionId,
+          book: verse.book,
+          chapter: verse.chapter,
+          verseType: 'standard', // Only count standard verses, not headings/footnotes
+        },
+      });
+
+      // Calculate percentage (verse number / total verses * 100)
+      // Use verse.verse as position indicator, capped at 100%
+      const percentage = totalVerses > 0
+        ? Math.min(100, Math.round((verse.verse / totalVerses) * 100))
+        : 100;
+
       // Update or create progress
       return context.prisma.readingProgress.upsert({
         where: {
@@ -675,7 +692,7 @@ export const resolvers = {
         },
         update: {
           verse: verse.verse,
-          percentage: 100, // TODO: Calculate actual percentage
+          percentage,
           lastReadAt: new Date(),
         },
         create: {
@@ -683,7 +700,7 @@ export const resolvers = {
           book: verse.book,
           chapter: verse.chapter,
           verse: verse.verse,
-          percentage: 100,
+          percentage,
         },
       });
     },

@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getModernSection, isModernSection } from '../../lib/dc-modern-sections';
+import { logger } from '../../utils/logger';
+
+const log = logger.scope('VersesAPI');
 
 // Base URLs for scripture sources from centerplace.org
 const CENTERPLACE_URLS = {
@@ -292,7 +295,7 @@ async function fetchBookData(volumeId: VolumeId, bookSlug: string, bookName: str
     bookCache.set(cacheKey, { data, time: Date.now() });
     return data;
   } catch (error) {
-    console.error(`Error fetching ${bookName} from ${url}:`, error);
+    log.error(`Error fetching ${bookName} from ${url}`, error);
     throw error;
   }
 }
@@ -372,7 +375,7 @@ export async function GET(request: NextRequest) {
       volume: volumeId,
     });
   } catch (error) {
-    console.error('Error fetching scripture data:', error);
+    log.error('Error fetching scripture data', error);
     return NextResponse.json({
       error: 'Failed to fetch scripture data',
       details: error instanceof Error ? error.message : 'Unknown error',

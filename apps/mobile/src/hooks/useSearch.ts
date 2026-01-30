@@ -4,6 +4,9 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { gql, useLazyQuery } from '@apollo/client';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('Search');
 
 // GraphQL query for searching verses
 const SEARCH_VERSES = gql`
@@ -59,7 +62,7 @@ export function useSearch(defaultLimit: number = 50): UseSearchResult {
       }
     },
     onError: (err) => {
-      console.error('Search error:', err);
+      log.error('Search error', err);
       setResults([]);
     },
   });

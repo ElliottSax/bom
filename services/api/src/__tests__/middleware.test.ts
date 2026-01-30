@@ -18,6 +18,7 @@ const createMockReply = (): FastifyReply => {
   const reply = {
     status: jest.fn().mockReturnThis(),
     send: jest.fn().mockReturnThis(),
+    header: jest.fn().mockReturnThis(),
   };
   return reply as unknown as FastifyReply;
 };
@@ -210,7 +211,7 @@ describe('Error Handling', () => {
     await middleware(request, reply);
 
     // Should either succeed or return proper error response
-    if (reply.status.mock.calls.length > 0) {
+    if ((reply.status as jest.Mock).mock.calls.length > 0) {
       expect(reply.status).toHaveBeenCalledWith(expect.any(Number));
       expect(reply.send).toHaveBeenCalledWith(
         expect.objectContaining({

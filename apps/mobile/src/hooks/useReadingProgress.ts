@@ -7,6 +7,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getAllBooks, getChapterCount } from './useBookInfo';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('ReadingProgress');
 
 const PROGRESS_KEY = '@bom_reading_progress';
 const READING_HISTORY_KEY = '@bom_reading_history';
@@ -71,7 +74,7 @@ export function useReadingProgress(): UseReadingProgressResult {
         setProgress(JSON.parse(stored));
       }
     } catch (error) {
-      console.error('Failed to load reading progress:', error);
+      log.error('Failed to load reading progress', error);
     } finally {
       setLoading(false);
     }
@@ -81,7 +84,7 @@ export function useReadingProgress(): UseReadingProgressResult {
     try {
       await AsyncStorage.setItem(PROGRESS_KEY, JSON.stringify(newProgress));
     } catch (error) {
-      console.error('Failed to save reading progress:', error);
+      log.error('Failed to save reading progress', error);
     }
   };
 

@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('LocalStorage');
 
 function useLocalStorage<T>(key: string, initialValue: T) {
   // Get from local storage or return initial value
@@ -10,7 +13,7 @@ function useLocalStorage<T>(key: string, initialValue: T) {
       const item = window.localStorage.getItem(key);
       return item ? JSON.parse(item) : initialValue;
     } catch (error) {
-      console.log(error);
+      log.error('Error reading from localStorage', error);
       return initialValue;
     }
   });
@@ -22,7 +25,7 @@ function useLocalStorage<T>(key: string, initialValue: T) {
         window.localStorage.setItem(key, JSON.stringify(storedValue));
       }
     } catch (error) {
-      console.log(error);
+      log.error('Error writing to localStorage', error);
     }
   }, [key, storedValue]);
 

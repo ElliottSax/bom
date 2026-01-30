@@ -6,6 +6,9 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('Settings');
 
 const SETTINGS_KEY = '@bom_app_settings';
 
@@ -112,7 +115,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         });
       }
     } catch (error) {
-      console.error('Failed to load settings:', error);
+      log.error('Failed to load settings', error);
     } finally {
       setLoading(false);
     }
@@ -122,7 +125,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     try {
       await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(newSettings));
     } catch (error) {
-      console.error('Failed to save settings:', error);
+      log.error('Failed to save settings', error);
     }
   };
 

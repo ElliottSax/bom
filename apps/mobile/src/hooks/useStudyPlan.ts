@@ -7,6 +7,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getAllBooks, getChapterCount } from './useBookInfo';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('StudyPlan');
 
 const STUDY_PLAN_KEY = '@bom_study_plan';
 const PLAN_PROGRESS_KEY = '@bom_plan_progress';
@@ -213,7 +216,7 @@ export function useStudyPlan(): UseStudyPlanResult {
         setCompletedDays(JSON.parse(progressData));
       }
     } catch (error) {
-      console.error('Failed to load study plan:', error);
+      log.error('Failed to load study plan', error);
     } finally {
       setLoading(false);
     }
@@ -235,7 +238,7 @@ export function useStudyPlan(): UseStudyPlanResult {
       setActivePlan(newPlan);
       setCompletedDays([]);
     } catch (error) {
-      console.error('Failed to start study plan:', error);
+      log.error('Failed to start study plan', error);
     }
   }, []);
 
@@ -248,7 +251,7 @@ export function useStudyPlan(): UseStudyPlanResult {
         await AsyncStorage.setItem(PLAN_PROGRESS_KEY, JSON.stringify(updated));
         setCompletedDays(updated);
       } catch (error) {
-        console.error('Failed to mark day complete:', error);
+        log.error('Failed to mark day complete', error);
       }
     },
     [completedDays]
@@ -261,7 +264,7 @@ export function useStudyPlan(): UseStudyPlanResult {
         await AsyncStorage.setItem(PLAN_PROGRESS_KEY, JSON.stringify(updated));
         setCompletedDays(updated);
       } catch (error) {
-        console.error('Failed to mark day incomplete:', error);
+        log.error('Failed to mark day incomplete', error);
       }
     },
     [completedDays]
@@ -281,7 +284,7 @@ export function useStudyPlan(): UseStudyPlanResult {
       setActivePlan(null);
       setCompletedDays([]);
     } catch (error) {
-      console.error('Failed to abandon study plan:', error);
+      log.error('Failed to abandon study plan', error);
     }
   }, []);
 

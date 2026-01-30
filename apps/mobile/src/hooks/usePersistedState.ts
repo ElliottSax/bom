@@ -7,6 +7,9 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('PersistedState');
 
 interface UsePersistedStateOptions<T> {
   /** Storage key for AsyncStorage */
@@ -74,7 +77,7 @@ export function usePersistedState<T>({
         clearTimeout(debounceTimer.current);
         // Save any pending value before unmount
         if (pendingValue.current !== null) {
-          saveToStorage(pendingValue.current).catch(console.error);
+          saveToStorage(pendingValue.current).catch((err) => log.error('Failed to save pending value', err));
         }
       }
     };
@@ -93,7 +96,7 @@ export function usePersistedState<T>({
         setLoading(false);
       }
     } catch (err) {
-      console.error(`Failed to load ${key} from storage:`, err);
+      log.error(`Failed to load ${key} from storage`, err);
       if (isMounted.current) {
         setError(err instanceof Error ? err : new Error(String(err)));
         setLoading(false);
@@ -105,7 +108,7 @@ export function usePersistedState<T>({
     try {
       await AsyncStorage.setItem(key, serialize(valueToSave));
     } catch (err) {
-      console.error(`Failed to save ${key} to storage:`, err);
+      log.error(`Failed to save ${key} to storage`, err);
       if (isMounted.current) {
         setError(err instanceof Error ? err : new Error(String(err)));
       }
@@ -150,7 +153,7 @@ export function usePersistedState<T>({
         setValueInternal(initialValue);
       }
     } catch (err) {
-      console.error(`Failed to clear ${key}:`, err);
+      log.error(`Failed to clear ${key}`, err);
       if (isMounted.current) {
         setError(err instanceof Error ? err : new Error(String(err)));
       }

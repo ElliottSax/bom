@@ -13,6 +13,9 @@ import Animated, {
   withTiming,
   interpolateColor,
 } from 'react-native-reanimated';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('EnhancedTheme');
 
 const THEME_KEY = '@bom_theme_preference';
 const CUSTOM_THEMES_KEY = '@bom_custom_themes';
@@ -338,7 +341,7 @@ export function EnhancedThemeProvider({ children }: { children: React.ReactNode 
         setCustomThemes([...predefinedThemes, ...themes]);
       }
     } catch (error) {
-      console.error('Error loading theme preferences:', error);
+      log.error('Error loading theme preferences', error);
     }
   };
 
@@ -350,7 +353,7 @@ export function EnhancedThemeProvider({ children }: { children: React.ReactNode 
         await AsyncStorage.setItem(CUSTOM_THEMES_KEY, JSON.stringify(userThemes));
       }
     } catch (error) {
-      console.error('Error saving theme preferences:', error);
+      log.error('Error saving theme preferences', error);
     }
   };
 

@@ -10,6 +10,9 @@ import { ApolloClient, ApolloProvider, NormalizedCacheObject } from '@apollo/cli
 import { initializeApolloClient } from './config/apollo';
 import { initDatabase } from './services/offlineStorage';
 import { RootNavigator } from './navigation/RootNavigator';
+import { logger } from './utils/logger';
+
+const log = logger.scope('App');
 
 export default function App() {
   const [isInitializing, setIsInitializing] = useState(true);
@@ -19,21 +22,21 @@ export default function App() {
   useEffect(() => {
     async function initialize() {
       try {
-        console.log('Initializing app...');
+        log.info('Initializing app...');
 
         // Initialize Apollo Client
-        console.log('Initializing Apollo Client...');
+        log.info('Initializing Apollo Client...');
         const client = await initializeApolloClient();
         setApolloClient(client);
 
         // Initialize SQLite database
-        console.log('Initializing SQLite database...');
+        log.info('Initializing SQLite database...');
         await initDatabase();
 
-        console.log('App initialized successfully');
+        log.info('App initialized successfully');
         setIsInitializing(false);
       } catch (error) {
-        console.error('Initialization error:', error);
+        log.error('Initialization error:', error);
         setInitError(error as Error);
         setIsInitializing(false);
       }

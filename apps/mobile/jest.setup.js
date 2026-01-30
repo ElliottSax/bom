@@ -1,89 +1,67 @@
 // Jest setup file for React Native testing
-import 'react-native-gesture-handler/jestSetup';
 
-// Mock react-native modules
-jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
-jest.mock('react-native/Libraries/EventEmitter/NativeEventEmitter');
+// Mock AsyncStorage
+jest.mock('@react-native-async-storage/async-storage', () =>
+  require('@react-native-async-storage/async-storage/jest/async-storage-mock')
+);
 
-// Mock Platform
-jest.mock('react-native/Libraries/Utilities/Platform', () => ({
-  OS: 'ios',
-  Version: 123,
-  isTesting: true,
-  select: jest.fn((obj) => obj.ios || obj.default),
+// Mock NetInfo
+jest.mock('@react-native-community/netinfo', () => ({
+  addEventListener: jest.fn(() => jest.fn()),
+  fetch: jest.fn(() => Promise.resolve({ isConnected: true, type: 'wifi' })),
 }));
 
-// Mock Dimensions
-jest.mock('react-native/Libraries/Utilities/Dimensions', () => ({
-  get: jest.fn(() => ({ width: 375, height: 812 })),
-  addEventListener: jest.fn(),
-  removeEventListener: jest.fn(),
-}));
-
-// Mock Alert
-jest.mock('react-native/Libraries/Alert/Alert', () => ({
-  alert: jest.fn(),
-}));
-
-// Mock Linking
-jest.mock('react-native/Libraries/Linking/Linking', () => ({
-  openURL: jest.fn(() => Promise.resolve()),
-  canOpenURL: jest.fn(() => Promise.resolve(true)),
-  getInitialURL: jest.fn(() => Promise.resolve(null)),
-  addEventListener: jest.fn(),
-  removeEventListener: jest.fn(),
-}));
-
-// Silence the warning: Animated: `useNativeDriver` is not supported
-jest.mock('react-native/Libraries/Animated/AnimatedImplementation', () => {
-  const ActualAnimated = jest.requireActual(
-    'react-native/Libraries/Animated/AnimatedImplementation'
-  );
-  return {
-    ...ActualAnimated,
-    timing: (value, config) => ({
-      ...ActualAnimated.timing(value, config),
-      start: (callback) => {
-        value.setValue(config.toValue);
-        callback && callback({ finished: true });
-      },
-    }),
-  };
+// Mock react-native-reanimated
+jest.mock('react-native-reanimated', () => {
+  const Reanimated = require('react-native-reanimated/mock');
+  Reanimated.default.call = () => {};
+  return Reanimated;
 });
 
-// Mock console methods to reduce noise in tests
-const originalConsoleError = console.error;
-const originalConsoleWarn = console.warn;
+// Mock Share
+jest.mock('react-native-share', () => ({
+  open: jest.fn(() => Promise.resolve()),
+}));
 
-console.error = (...args) => {
-  if (
-    typeof args[0] === 'string' &&
-    (args[0].includes('Warning: ReactTestRenderer') ||
-      args[0].includes('Warning: An update to') ||
-      args[0].includes('Warning: Failed prop type') ||
-      args[0].includes('Warning: React.createElement'))
-  ) {
-    return;
-  }
-  originalConsoleError.call(console, ...args);
+// Mock DocumentPicker
+jest.mock('react-native-document-picker', () => ({
+  pick: jest.fn(() => Promise.resolve([{ uri: 'file://test.json' }])),
+  types: { json: 'application/json', allFiles: '*/*' },
+}));
+
+// Mock RNFS
+jest.mock('react-native-fs', () => ({
+  DocumentDirectoryPath: '/mock/documents',
+  writeFile: jest.fn(() => Promise.resolve()),
+  readFile: jest.fn(() => Promise.resolve('{}')),
+}));
+
+// Mock PushNotification
+jest.mock('react-native-push-notification', () => ({
+  configure: jest.fn(),
+  createChannel: jest.fn(),
+  localNotificationSchedule: jest.fn(),
+  cancelAllLocalNotifications: jest.fn(),
+}));
+
+// Mock SQLite
+jest.mock('react-native-sqlite-storage', () => ({
+  openDatabase: jest.fn(() => ({
+    transaction: jest.fn(),
+    executeSql: jest.fn(),
+  })),
+  enablePromise: jest.fn(),
+}));
+
+// Silence console logs during tests
+global.console = {
+  ...console,
+  log: jest.fn(),
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
 };
 
-console.warn = (...args) => {
-  if (
-    typeof args[0] === 'string' &&
-    (args[0].includes('Animated:') ||
-      args[0].includes('Setting a timer'))
-  ) {
-    return;
-  }
-  originalConsoleWarn.call(console, ...args);
-};
-
-// Set up global test utilities
-global.requestAnimationFrame = (callback) => {
-  setTimeout(callback, 0);
-};
-
-global.cancelAnimationFrame = (id) => {
-  clearTimeout(id);
-};
+// Mock __DEV__
+global.__DEV__ = true;

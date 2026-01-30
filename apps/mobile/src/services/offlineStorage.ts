@@ -5,6 +5,9 @@
  */
 
 import SQLite, { SQLiteDatabase } from 'react-native-sqlite-storage';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('OfflineStorage');
 
 // Enable promise API
 SQLite.enablePromise(true);
@@ -25,14 +28,14 @@ export async function initDatabase(): Promise<SQLiteDatabase> {
       location: 'default',
     });
 
-    console.log('SQLite database opened successfully');
+    log.info('SQLite database opened successfully');
 
     // Create tables
     await createTables(database);
 
     return database;
   } catch (error) {
-    console.error('Error opening database:', error);
+    log.error('Error opening database', error);
     throw error;
   }
 }
@@ -128,7 +131,7 @@ async function createTables(db: SQLiteDatabase): Promise<void> {
     await db.executeSql(sql);
   }
 
-  console.log('Database tables created successfully');
+  log.info('Database tables created successfully');
 }
 
 /**
@@ -155,9 +158,9 @@ export async function cacheChapter(
       }
     });
 
-    console.log(`Cached ${verses.length} verses for ${book} ${chapter}`);
+    log.debug(`Cached ${verses.length} verses for ${book} ${chapter}`);
   } catch (error) {
-    console.error('Error caching chapter:', error);
+    log.error('Error caching chapter', error);
     throw error;
   }
 }
@@ -188,7 +191,7 @@ export async function getCachedChapter(
 
     return verses;
   } catch (error) {
-    console.error('Error getting cached chapter:', error);
+    log.error('Error getting cached chapter', error);
     return [];
   }
 }
@@ -213,7 +216,7 @@ export async function isChapterCached(
 
     return result.rows.item(0).count > 0;
   } catch (error) {
-    console.error('Error checking cached chapter:', error);
+    log.error('Error checking cached chapter', error);
     return false;
   }
 }
@@ -233,7 +236,7 @@ export async function getCacheSize(): Promise<number> {
     const sizeInBytes = result.rows.item(0).size;
     return sizeInBytes / (1024 * 1024); // Convert to MB
   } catch (error) {
-    console.error('Error getting cache size:', error);
+    log.error('Error getting cache size', error);
     return 0;
   }
 }
@@ -246,9 +249,9 @@ export async function clearCache(): Promise<void> {
 
   try {
     await db.executeSql('DELETE FROM cached_verses');
-    console.log('Cache cleared successfully');
+    log.info('Cache cleared successfully');
   } catch (error) {
-    console.error('Error clearing cache:', error);
+    log.error('Error clearing cache', error);
     throw error;
   }
 }
@@ -265,9 +268,9 @@ export async function clearOldCache(): Promise<void> {
       'DELETE FROM cached_verses WHERE cachedAt < ?',
       [thirtyDaysAgo]
     );
-    console.log('Old cache entries cleared');
+    log.info('Old cache entries cleared');
   } catch (error) {
-    console.error('Error clearing old cache:', error);
+    log.error('Error clearing old cache', error);
     throw error;
   }
 }
@@ -305,7 +308,7 @@ export async function getCacheStats(): Promise<{
       newestEntry: stats.newestEntry,
     };
   } catch (error) {
-    console.error('Error getting cache stats:', error);
+    log.error('Error getting cache stats', error);
     throw error;
   }
 }
@@ -317,6 +320,6 @@ export async function closeDatabase(): Promise<void> {
   if (database) {
     await database.close();
     database = null;
-    console.log('Database closed');
+    log.info('Database closed');
   }
 }

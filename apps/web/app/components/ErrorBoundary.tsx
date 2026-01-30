@@ -1,4 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('ErrorBoundary');
 
 interface Props {
   children: ReactNode;
@@ -21,14 +24,12 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Uncaught error:', error, errorInfo);
+    log.error('Uncaught error', error, { componentStack: errorInfo.componentStack });
 
     // Call optional error handler
     this.props.onError?.(error, errorInfo);
 
-    // TODO: Send to error reporting service (Sentry, LogRocket, etc.)
-    // Example:
-    // Sentry.captureException(error, { contexts: { react: { componentStack: errorInfo.componentStack } } });
+    // Remote error reporting is handled by the logger when remoteEnabled is true
   }
 
   private handleReset = () => {

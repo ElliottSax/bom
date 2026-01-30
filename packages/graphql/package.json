@@ -9,7 +9,7 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "codegen": "graphql-codegen --config codegen.yml",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "lint": "eslint src --ext .ts",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist node_modules"

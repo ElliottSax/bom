@@ -7,6 +7,9 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('Courses');
 
 const COURSE_PROGRESS_KEY = '@bom_course_progress';
 const QUIZ_RESULTS_KEY = '@bom_quiz_results';
@@ -798,7 +801,7 @@ export function useCourses() {
         setQuizResults(JSON.parse(quizJson));
       }
     } catch (err) {
-      console.error('Failed to load course progress:', err);
+      log.error('Failed to load course progress', err);
     } finally {
       setLoading(false);
     }
@@ -819,7 +822,7 @@ export function useCourses() {
       setProgress(newProgress);
       setLessonProgress(newLessonProgress);
     } catch (err) {
-      console.error('Failed to save progress:', err);
+      log.error('Failed to save progress', err);
     }
   };
 
@@ -828,7 +831,7 @@ export function useCourses() {
       await AsyncStorage.setItem(QUIZ_RESULTS_KEY, JSON.stringify(results));
       setQuizResults(results);
     } catch (err) {
-      console.error('Failed to save quiz results:', err);
+      log.error('Failed to save quiz results', err);
     }
   };
 

@@ -1,5 +1,28 @@
 import { jest } from '@jest/globals';
 
+// Extend global type for test utilities
+declare global {
+  // eslint-disable-next-line no-var
+  var testUser: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+  // eslint-disable-next-line no-var
+  var testScripture: {
+    id: string;
+    book: string;
+    chapter: number;
+    verse: number;
+    text: string;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+}
+
 // Mock environment variables for testing
 process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET = 'test-jwt-secret-for-testing-only-not-production';
@@ -10,10 +33,12 @@ process.env.LOG_LEVEL = 'silent';
 // Mock external services
 jest.mock('ioredis', () => {
   return jest.fn().mockImplementation(() => ({
-    get: jest.fn().mockResolvedValue(null),
-    set: jest.fn().mockResolvedValue('OK'),
-    del: jest.fn().mockResolvedValue(1),
-    quit: jest.fn().mockResolvedValue('OK'),
+    get: jest.fn<() => Promise<string | null>>().mockResolvedValue(null),
+    set: jest.fn<() => Promise<string>>().mockResolvedValue('OK'),
+    del: jest.fn<() => Promise<number>>().mockResolvedValue(1),
+    quit: jest.fn<() => Promise<string>>().mockResolvedValue('OK'),
+    on: jest.fn(), // Event handler method
+    connect: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
   }));
 });
 

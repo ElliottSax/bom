@@ -10,6 +10,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
 import DocumentPicker from 'react-native-document-picker';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('DataBackup');
 
 // Storage keys for user data
 const STORAGE_KEYS = {
@@ -72,7 +75,7 @@ export function useDataBackup() {
         chaptersRead: progress.completedChapters?.length || 0,
       };
     } catch (err) {
-      console.error('Failed to get backup stats:', err);
+      log.error('Failed to get backup stats', err);
       return { bookmarks: 0, highlights: 0, notes: 0, chaptersRead: 0 };
     }
   }, []);
@@ -142,7 +145,7 @@ export function useDataBackup() {
         setExporting(false);
         return true;
       }
-      console.error('Export failed:', err);
+      log.error('Export failed', err);
       setError('Failed to export data. Please try again.');
       setExporting(false);
       return false;
@@ -188,7 +191,7 @@ export function useDataBackup() {
       setImporting(false);
       return true;
     } catch (err) {
-      console.error('Import failed:', err);
+      log.error('Import failed', err);
       setError('Failed to import data. Make sure you selected a valid backup file.');
       setImporting(false);
       return false;
@@ -302,7 +305,7 @@ export function useDataBackup() {
       await AsyncStorage.multiRemove(Object.values(STORAGE_KEYS));
       return true;
     } catch (err) {
-      console.error('Failed to clear data:', err);
+      log.error('Failed to clear data', err);
       setError('Failed to clear data.');
       return false;
     }

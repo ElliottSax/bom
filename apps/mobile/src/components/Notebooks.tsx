@@ -18,6 +18,9 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMutation, useQuery, gql } from '@apollo/client';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('Notebooks');
 
 const NOTEBOOKS_KEY = '@bom_notebooks';
 
@@ -104,7 +107,7 @@ export function NotebooksManager({ userId = 'demo-user' }: { userId?: string }) 
         await saveNotebooks(defaultNotebooks);
       }
     } catch (error) {
-      console.error('Error loading notebooks:', error);
+      log.error('Error loading notebooks:', error);
     }
   };
 
@@ -113,7 +116,7 @@ export function NotebooksManager({ userId = 'demo-user' }: { userId?: string }) 
       await AsyncStorage.setItem(NOTEBOOKS_KEY, JSON.stringify(newNotebooks));
       setNotebooks(newNotebooks);
     } catch (error) {
-      console.error('Error saving notebooks:', error);
+      log.error('Error saving notebooks:', error);
     }
   };
 

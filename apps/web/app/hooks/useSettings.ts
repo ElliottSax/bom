@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Theme, FontFamily } from '../lib/types';
 import { VolumeId } from '../lib/scriptures';
+import { logger } from '../utils/logger';
 
+const log = logger.scope('Settings');
 const STORAGE_PREFIX = 'coc-';
 
 export const useSettings = () => {
@@ -24,7 +26,7 @@ export const useSettings = () => {
       if (load('fontFamily')) setFontFamily(load('fontFamily') as FontFamily);
       if (load('showVerseNumbers')) setShowVerseNumbers(load('showVerseNumbers') === 'true');
     } catch (error) {
-      console.error('Error loading settings:', error);
+      log.error('Error loading settings', error);
     }
   }, []);
 

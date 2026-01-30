@@ -6,6 +6,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('Memorization');
 
 const MEMORIZATION_KEY = '@bom_memorization';
 
@@ -52,7 +55,7 @@ export function useMemorization() {
         setVerses(JSON.parse(saved));
       }
     } catch (err) {
-      console.error('Failed to load memorization verses:', err);
+      log.error('Failed to load memorization verses', err);
     } finally {
       setLoading(false);
     }
@@ -63,7 +66,7 @@ export function useMemorization() {
       await AsyncStorage.setItem(MEMORIZATION_KEY, JSON.stringify(newVerses));
       setVerses(newVerses);
     } catch (err) {
-      console.error('Failed to save memorization verses:', err);
+      log.error('Failed to save memorization verses', err);
     }
   };
 

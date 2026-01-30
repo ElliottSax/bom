@@ -9,16 +9,11 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   Pressable,
   Animated,
-  PanResponder,
-  Dimensions,
   Alert,
-  TextInput,
   Modal,
   FlatList,
-  Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEnhancedTheme } from '../contexts/EnhancedThemeContext';
@@ -28,12 +23,14 @@ import {
   Swipeable,
   RectButton,
 } from 'react-native-gesture-handler';
-import type { StudyTab, NavigationEntry } from '../types';
+import type { StudyTab } from '../types';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('EnhancedTabsNavigator');
 
 const TABS_KEY = '@bom_study_tabs';
 const MAX_TABS = 10;
 const TAB_HEIGHT = 40;
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface TabGroup {
   id: string;
@@ -49,15 +46,14 @@ interface TabsNavigatorProps {
 }
 
 export function EnhancedTabsNavigator({ onTabChange, currentContent, onNavigate }: TabsNavigatorProps) {
-  const { colors, isDark, settings } = useEnhancedTheme();
+  const { colors } = useEnhancedTheme();
   const [tabs, setTabs] = useState<StudyTab[]>([]);
   const [activeTabId, setActiveTabId] = useState<string>('');
   const [showTabMenu, setShowTabMenu] = useState(false);
   const [showNewTabModal, setShowNewTabModal] = useState(false);
   const [recentlyClosed, setRecentlyClosed] = useState<StudyTab[]>([]);
-  const [tabGroups, setTabGroups] = useState<TabGroup[]>([]);
   const [isIncognito, setIsIncognito] = useState(false);
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollViewRef = useRef<FlatList<StudyTab>>(null);
   const tabWidthAnimation = useRef(new Animated.Value(150)).current;
 
   // Load tabs on mount
@@ -89,7 +85,7 @@ export function EnhancedTabsNavigator({ onTabChange, currentContent, onNavigate 
         setActiveTabId(defaultTab.id);
       }
     } catch (error) {
-      console.error('Error loading tabs:', error);
+      log.error('Error loading tabs:', error);
       // Create default tab on error
       const defaultTab = createNewTab('home', {});
       setTabs([defaultTab]);
@@ -101,7 +97,7 @@ export function EnhancedTabsNavigator({ onTabChange, currentContent, onNavigate 
     try {
       await AsyncStorage.setItem(TABS_KEY, JSON.stringify(tabs));
     } catch (error) {
-      console.error('Error saving tabs:', error);
+      log.error('Error saving tabs:', error);
     }
   };
 

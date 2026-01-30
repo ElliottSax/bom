@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '../../utils/logger';
+
+const log = logger.scope('SearchAPI');
 
 // Base URLs for scripture sources from centerplace.org
 const CENTERPLACE_URLS = {
@@ -184,14 +187,14 @@ async function getAllScripturesForVolume(volumeId: VolumeId): Promise<SearchVers
       });
 
       if (!response.ok) {
-        console.error(`Failed to fetch ${book.name}: ${response.status}`);
+        log.error(`Failed to fetch ${book.name}: ${response.status}`);
         return [];
       }
 
       const html = await response.text();
       return parseScriptureHTML(html, book.name, volumeId);
     } catch (error) {
-      console.error(`Error fetching ${book.name}:`, error);
+      log.error(`Error fetching ${book.name}`, error);
       return [];
     }
   });
@@ -253,7 +256,7 @@ export async function GET(request: NextRequest) {
       volume: volumeId,
     });
   } catch (error) {
-    console.error('Search failed:', error);
+    log.error('Search failed', error);
     return NextResponse.json({ error: 'Search failed', volume: volumeId }, { status: 500 });
   }
 }

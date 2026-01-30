@@ -6,6 +6,9 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('ReadingGoals');
 
 const GOALS_KEY = '@bom_reading_goals';
 const GOAL_HISTORY_KEY = '@bom_goal_history';
@@ -80,7 +83,7 @@ export function useReadingGoals() {
         setHistory(JSON.parse(historyJson));
       }
     } catch (err) {
-      console.error('Failed to load goals:', err);
+      log.error('Failed to load goals', err);
     } finally {
       setLoading(false);
     }
@@ -91,7 +94,7 @@ export function useReadingGoals() {
       await AsyncStorage.setItem(GOALS_KEY, JSON.stringify(newGoals));
       setGoals(newGoals);
     } catch (err) {
-      console.error('Failed to save goals:', err);
+      log.error('Failed to save goals', err);
     }
   };
 
@@ -100,7 +103,7 @@ export function useReadingGoals() {
       await AsyncStorage.setItem(GOAL_HISTORY_KEY, JSON.stringify(newHistory));
       setHistory(newHistory);
     } catch (err) {
-      console.error('Failed to save history:', err);
+      log.error('Failed to save history', err);
     }
   };
 

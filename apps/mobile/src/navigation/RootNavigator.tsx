@@ -32,6 +32,9 @@ import { ReadingGoalsScreen } from '../screens/ReadingGoalsScreen';
 import { CoursesScreen } from '../screens/CoursesScreen';
 import { CourseDetailScreen } from '../screens/CourseDetailScreen';
 import { LessonScreen } from '../screens/LessonScreen';
+import { CoCCoursesScreen } from '../screens/CoCCoursesScreen';
+import { CoCCourseDetailScreen } from '../screens/CoCCourseDetailScreen';
+import { CoCLessonScreen } from '../screens/CoCLessonScreen';
 
 // Type definitions for navigation
 export type RootStackParamList = {
@@ -67,6 +70,9 @@ export type HomeStackParamList = {
   Courses: undefined;
   CourseDetail: { courseId: string };
   Lesson: { courseId: string; lessonId: string };
+  CoCCourses: undefined;
+  CoCCourseDetail: { courseId: string };
+  CoCLesson: { courseId: string; lessonId: string };
 };
 
 export type ReadStackParamList = {
@@ -180,6 +186,21 @@ function HomeStackNavigator() {
       <HomeStack.Screen
         name="Lesson"
         component={LessonScreen}
+        options={{ title: '' }}
+      />
+      <HomeStack.Screen
+        name="CoCCourses"
+        component={CoCCoursesScreen}
+        options={{ title: 'Community of Christ Courses' }}
+      />
+      <HomeStack.Screen
+        name="CoCCourseDetail"
+        component={CoCCourseDetailScreen}
+        options={{ title: 'Course Details' }}
+      />
+      <HomeStack.Screen
+        name="CoCLesson"
+        component={CoCLessonScreen}
         options={{ title: '' }}
       />
     </HomeStack.Navigator>

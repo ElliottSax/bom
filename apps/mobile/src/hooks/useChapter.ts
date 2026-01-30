@@ -6,6 +6,9 @@ import { useQuery, gql } from '@apollo/client';
 import { useNetInfo } from '@react-native-community/netinfo';
 import { useEffect, useState } from 'react';
 import { getCachedChapter, cacheChapter } from '../services/offlineStorage';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('Chapter');
 
 // GraphQL query for fetching verses
 const GET_CHAPTER = gql`
@@ -63,7 +66,7 @@ export function useChapter(
       // Cache verses when successfully fetched
       if (data?.verses) {
         cacheChapter(editionId, book, chapter, data.verses).catch((err) => {
-          console.error('Failed to cache chapter:', err);
+          log.error('Failed to cache chapter', err);
         });
       }
     },
@@ -77,7 +80,7 @@ export function useChapter(
         setCachedVerses(cached);
         setIsCacheLoaded(true);
       } catch (err) {
-        console.error('Failed to load cached chapter:', err);
+        log.error('Failed to load cached chapter', err);
         setIsCacheLoaded(true);
       }
     }
@@ -115,7 +118,7 @@ export function usePrefetchChapters(
 
   const prefetch = async () => {
     if (!netInfo.isConnected) {
-      console.warn('Cannot prefetch while offline');
+      log.warn('Cannot prefetch while offline');
       return;
     }
 
@@ -128,11 +131,11 @@ export function usePrefetchChapters(
       try {
         // This would use Apollo Client's query function
         // Implementation depends on how we structure the download manager
-        console.log(`Prefetching ${book} ${chapter}...`);
+        log.debug(`Prefetching ${book} ${chapter}...`);
 
         setProgress(((i + 1) / chapters.length) * 100);
       } catch (err) {
-        console.error(`Failed to prefetch ${book} ${chapter}:`, err);
+        log.error(`Failed to prefetch ${book} ${chapter}`, err);
       }
     }
 

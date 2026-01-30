@@ -19,6 +19,9 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSearch, highlightSearchTerm, SearchResult } from '../hooks/useSearch';
 import { useTheme } from '../contexts/ThemeContext';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('SearchScreen');
 
 const RECENT_SEARCHES_KEY = '@bom_recent_searches';
 const MAX_RECENT_SEARCHES = 8;
@@ -49,7 +52,7 @@ export function SearchScreen() {
         setRecentSearches(JSON.parse(saved));
       }
     } catch (error) {
-      console.error('Failed to load recent searches:', error);
+      log.error('Failed to load recent searches:', error);
     }
   };
 
@@ -62,7 +65,7 @@ export function SearchScreen() {
       setRecentSearches(updated);
       await AsyncStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
     } catch (error) {
-      console.error('Failed to save recent search:', error);
+      log.error('Failed to save recent search:', error);
     }
   };
 
@@ -71,7 +74,7 @@ export function SearchScreen() {
       setRecentSearches([]);
       await AsyncStorage.removeItem(RECENT_SEARCHES_KEY);
     } catch (error) {
-      console.error('Failed to clear recent searches:', error);
+      log.error('Failed to clear recent searches:', error);
     }
   };
 

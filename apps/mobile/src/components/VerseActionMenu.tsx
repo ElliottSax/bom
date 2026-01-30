@@ -24,6 +24,9 @@ import {
   getCrossRefTypeColor,
 } from '../hooks/useCrossReferences';
 import type { CrossReference } from '../hooks/useCrossReferences';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('VerseActionMenu');
 
 export type { CrossReference };
 
@@ -94,7 +97,7 @@ export function VerseActionMenu({
         title: reference,
       });
     } catch (error) {
-      console.error('Error sharing:', error);
+      log.error('Error sharing:', error);
     }
     onClose();
   };

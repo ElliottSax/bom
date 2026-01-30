@@ -12,7 +12,11 @@ import {
   ScrollView,
   Pressable,
   SafeAreaView,
+  Platform,
 } from 'react-native';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('ErrorBoundary');
 
 interface Props {
   children: ReactNode;
@@ -47,8 +51,8 @@ export class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Log error to console in development
     if (__DEV__) {
-      console.error('ErrorBoundary caught error:', error);
-      console.error('Error info:', errorInfo);
+      log.error('ErrorBoundary caught error:', error);
+      log.error('Error info:', undefined, { errorInfo });
     }
 
     // Update state with error info
@@ -150,9 +154,9 @@ export function ComponentErrorBoundary({
 export function ScreenErrorBoundary({ children }: { children: ReactNode }) {
   return (
     <ErrorBoundary
-      onError={(error, errorInfo) => {
+      onError={(error, _errorInfo) => {
         // Log to crash reporting in production
-        console.error('Screen crashed:', error);
+        log.error('Screen crashed:', error);
       }}
     >
       {children}

@@ -4,11 +4,15 @@
  * Manages offline data synchronization and caching
  */
 
+import React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 import { getApolloClient } from '../config/apollo';
 import { gql } from '@apollo/client';
 import type { OfflineOperationVariables } from '../types';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('OfflineSync');
 
 const SYNC_STATUS_KEY = '@bom_sync_status';
 const OFFLINE_QUEUE_KEY = '@bom_offline_queue';
@@ -125,15 +129,15 @@ class OfflineSyncService {
         });
 
         processedOps.push(op.id);
-        console.log(`Processed offline operation: ${op.id}`);
+        log.debug(`Processed offline operation: ${op.id}`);
       } catch (error) {
-        console.error(`Failed to process offline operation ${op.id}:`, error);
+        log.error(`Failed to process offline operation ${op.id}`, error);
         op.retries++;
 
         // Remove if too many retries
         if (op.retries > 3) {
           processedOps.push(op.id);
-          console.error(`Removing failed operation after 3 retries: ${op.id}`);
+          log.error(`Removing failed operation after 3 retries: ${op.id}`);
         }
       }
     }
@@ -181,11 +185,11 @@ class OfflineSyncService {
       });
 
       // The data is automatically cached by Apollo
-      console.log(`Downloaded ${result.data.verses.length} verses for offline access`);
+      log.info(`Downloaded ${result.data.verses.length} verses for offline access`);
 
       return result.data.verses;
     } catch (error) {
-      console.error('Error downloading verses:', error);
+      log.error('Error downloading verses', error);
       throw error;
     }
   }
@@ -240,7 +244,7 @@ class OfflineSyncService {
         this.syncStatus.pendingChanges = this.offlineQueue.length;
       }
     } catch (error) {
-      console.error('Error loading offline queue:', error);
+      log.error('Error loading offline queue', error);
     }
   }
 
@@ -254,7 +258,7 @@ class OfflineSyncService {
         JSON.stringify(this.offlineQueue)
       );
     } catch (error) {
-      console.error('Error saving offline queue:', error);
+      log.error('Error saving offline queue', error);
     }
   }
 

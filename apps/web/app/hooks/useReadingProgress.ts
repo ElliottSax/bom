@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { ReadingProgress, StudyPlanProgress } from '../lib/types';
 import { VolumeId } from '../lib/scriptures';
+import { logger } from '../utils/logger';
 
+const log = logger.scope('ReadingProgress');
 const STORAGE_PREFIX = 'coc-';
 
 const initialProgress: ReadingProgress = {
@@ -27,7 +29,7 @@ export const useReadingProgress = (volumeId: VolumeId) => {
         setStudyPlan(JSON.parse(load('studyPlan')!));
       }
     } catch (error) {
-      console.error('Error loading reading progress:', error);
+      log.error('Error loading reading progress', error);
     }
   }, []);
 

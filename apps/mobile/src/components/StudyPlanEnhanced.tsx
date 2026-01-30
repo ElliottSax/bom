@@ -24,6 +24,9 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import PushNotification from 'react-native-push-notification';
 import { useTheme } from '../contexts/ThemeContext';
 import type { StudyPlan as BaseStudyPlan, StudyPlanContent } from '../types';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('StudyPlanEnhanced');
 
 const STUDY_PLANS_KEY = '@bom_study_plans';
 const ACTIVE_PLAN_KEY = '@bom_active_plan';
@@ -157,7 +160,7 @@ export function EnhancedStudyPlanManager() {
     if (Platform.OS !== 'web') {
       PushNotification.configure({
         onNotification: function (notification) {
-          console.log('Notification:', notification);
+          log.debug('Notification:', { notification });
         },
         permissions: {
           alert: true,
@@ -226,7 +229,7 @@ export function EnhancedStudyPlanManager() {
         await AsyncStorage.setItem(STUDY_STATS_KEY, JSON.stringify(initialStats));
       }
     } catch (error) {
-      console.error('Error loading data:', error);
+      log.error('Error loading data:', error);
     } finally {
       setLoading(false);
     }
@@ -343,7 +346,7 @@ export function EnhancedStudyPlanManager() {
       await AsyncStorage.setItem(STUDY_PLANS_KEY, JSON.stringify(newPlans));
       setPlans(newPlans);
     } catch (error) {
-      console.error('Error saving plans:', error);
+      log.error('Error saving plans:', error);
     }
   };
 

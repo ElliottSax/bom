@@ -18,6 +18,9 @@ import {
   FlatList,
 } from 'react-native';
 import { useMutation, useQuery, gql } from '@apollo/client';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('VerseNotes');
 
 const GET_NOTES = gql`
   query GetNotes($userId: String!, $verseId: String!) {
@@ -170,7 +173,7 @@ export function VerseNotes({
         });
       }
     } catch (error) {
-      console.error('Error saving note:', error);
+      log.error('Error saving note:', error);
     }
   };
 
@@ -180,7 +183,7 @@ export function VerseNotes({
         variables: { id: noteId },
       });
     } catch (error) {
-      console.error('Error deleting note:', error);
+      log.error('Error deleting note:', error);
     }
   };
 

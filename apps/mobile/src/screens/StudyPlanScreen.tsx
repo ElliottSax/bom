@@ -24,6 +24,9 @@ import {
   StudyPlan,
   StudyPlanDay,
 } from '../hooks/useStudyPlan';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('StudyPlanScreen');
 
 export function StudyPlanScreen() {
   const navigation = useNavigation();
@@ -123,7 +126,7 @@ export function StudyPlanScreen() {
         title: 'My Book of Mormon Reading Progress',
       });
     } catch (error) {
-      console.error('Error sharing:', error);
+      log.error('Error sharing:', error);
     }
   };
 
@@ -139,7 +142,7 @@ export function StudyPlanScreen() {
         title: `Join the ${plan.name}`,
       });
     } catch (error) {
-      console.error('Error sharing:', error);
+      log.error('Error sharing:', error);
     }
   };
 

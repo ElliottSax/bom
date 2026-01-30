@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Bookmark, Highlight, Note } from '../lib/types';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('UserData');
 
 const STORAGE_PREFIX = 'coc-';
 
@@ -17,7 +20,7 @@ export const useUserData = () => {
       if (load('highlights')) setHighlights(JSON.parse(load('highlights')!));
       if (load('notes')) setNotes(JSON.parse(load('notes')!));
     } catch (error) {
-      console.error('Error loading user data:', error);
+      log.error('Error loading user data', error);
     }
   }, []);
 

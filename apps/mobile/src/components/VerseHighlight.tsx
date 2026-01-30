@@ -15,6 +15,9 @@ import {
 } from 'react-native';
 import { useMutation, useQuery, gql } from '@apollo/client';
 import type { Highlight } from '../types';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('VerseHighlight');
 
 const GET_HIGHLIGHT = gql`
   query GetHighlight($userId: String!, $verseId: String!) {
@@ -122,7 +125,7 @@ export function VerseHighlight({
         setCurrentHighlight(color);
       }
     } catch (error) {
-      console.error('Error updating highlight:', error);
+      log.error('Error updating highlight:', error);
     } finally {
       setShowColorPicker(false);
     }
@@ -135,7 +138,7 @@ export function VerseHighlight({
       });
       setCurrentHighlight(null);
     } catch (error) {
-      console.error('Error removing highlight:', error);
+      log.error('Error removing highlight:', error);
     } finally {
       setShowColorPicker(false);
     }

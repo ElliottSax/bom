@@ -39,7 +39,7 @@ interface BookListProps {
   onBookSelect: (bookName: string, totalChapters: number) => void;
 }
 
-export function BookList({ editionId, onBookSelect }: BookListProps) {
+export function BookList({ editionId: _editionId, onBookSelect }: BookListProps) {
   const { colors } = useTheme();
   const { downloadStatus, checkDownloadStatus } = useOfflineDownload();
 

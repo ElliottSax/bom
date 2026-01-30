@@ -7,6 +7,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('ThemeContext');
 
 const THEME_KEY = '@bom_theme_preference';
 
@@ -15,6 +18,7 @@ export type ThemeMode = 'light' | 'dark' | 'system';
 interface ThemeColors {
   primary: string;
   primaryDark: string;
+  secondary: string;
   background: string;
   surface: string;
   text: string;
@@ -23,6 +27,7 @@ interface ThemeColors {
   error: string;
   success: string;
   warning: string;
+  info: string;
   highlight: {
     yellow: string;
     blue: string;
@@ -43,6 +48,7 @@ interface ThemeContextType {
 const lightColors: ThemeColors = {
   primary: '#0066cc',
   primaryDark: '#0052a3',
+  secondary: '#6c757d',
   background: '#f5f5f5',
   surface: '#ffffff',
   text: '#333333',
@@ -51,6 +57,7 @@ const lightColors: ThemeColors = {
   error: '#f44336',
   success: '#4caf50',
   warning: '#ff9800',
+  info: '#2196f3',
   highlight: {
     yellow: '#ffeb3b',
     blue: '#2196f3',
@@ -64,6 +71,7 @@ const lightColors: ThemeColors = {
 const darkColors: ThemeColors = {
   primary: '#4da6ff',
   primaryDark: '#0066cc',
+  secondary: '#adb5bd',
   background: '#121212',
   surface: '#1e1e1e',
   text: '#ffffff',
@@ -72,6 +80,7 @@ const darkColors: ThemeColors = {
   error: '#ff6b6b',
   success: '#66bb6a',
   warning: '#ffa726',
+  info: '#64b5f6',
   highlight: {
     yellow: 'rgba(255, 235, 59, 0.3)',
     blue: 'rgba(33, 150, 243, 0.3)',
@@ -110,7 +119,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         setUseOledBlack(oled || false);
       }
     } catch (error) {
-      console.error('Error loading theme preference:', error);
+      log.error('Error loading theme preference', error);
     }
   };
 
@@ -122,7 +131,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         JSON.stringify({ theme: newTheme, oled: useOledBlack })
       );
     } catch (error) {
-      console.error('Error saving theme preference:', error);
+      log.error('Error saving theme preference', error);
     }
   };
 

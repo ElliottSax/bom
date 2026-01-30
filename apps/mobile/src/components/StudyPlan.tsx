@@ -17,6 +17,9 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('StudyPlan');
 
 const STUDY_PLANS_KEY = '@bom_study_plans';
 const ACTIVE_PLAN_KEY = '@bom_active_plan';
@@ -89,7 +92,7 @@ export function StudyPlanManager() {
         }
       }
     } catch (error) {
-      console.error('Error loading study plans:', error);
+      log.error('Error loading study plans:', error);
     }
   };
 
@@ -98,7 +101,7 @@ export function StudyPlanManager() {
       await AsyncStorage.setItem(STUDY_PLANS_KEY, JSON.stringify(newPlans));
       setPlans(newPlans);
     } catch (error) {
-      console.error('Error saving study plans:', error);
+      log.error('Error saving study plans:', error);
     }
   };
 

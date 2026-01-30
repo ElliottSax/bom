@@ -14,6 +14,9 @@ import {
   getCacheStats,
   clearCache,
 } from '../services/offlineStorage';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('OfflineDownload');
 
 const DOWNLOAD_STATUS_KEY = '@bom_download_status';
 
@@ -107,7 +110,7 @@ export function useOfflineDownload(): UseOfflineDownloadResult {
         setDownloadStatus(JSON.parse(saved));
       }
     } catch (error) {
-      console.error('Failed to load download status:', error);
+      log.error('Failed to load download status', error);
     }
   };
 
@@ -115,7 +118,7 @@ export function useOfflineDownload(): UseOfflineDownloadResult {
     try {
       await AsyncStorage.setItem(DOWNLOAD_STATUS_KEY, JSON.stringify(status));
     } catch (error) {
-      console.error('Failed to save download status:', error);
+      log.error('Failed to save download status', error);
     }
   };
 
@@ -161,20 +164,20 @@ export function useOfflineDownload(): UseOfflineDownloadResult {
       }
       return false;
     } catch (error) {
-      console.error(`Failed to download ${book} ${chapter}:`, error);
+      log.error(`Failed to download ${book} ${chapter}`, error);
       return false;
     }
   };
 
   const downloadBook = useCallback(async (bookName: string) => {
     if (isDownloadingRef.current) {
-      console.warn('Download already in progress');
+      log.warn('Download already in progress');
       return;
     }
 
     const totalChapters = getChapterCount(bookName);
     if (totalChapters === 0) {
-      console.error('Book not found:', bookName);
+      log.error(`Book not found: ${bookName}`);
       return;
     }
 
@@ -280,7 +283,7 @@ export function useOfflineDownload(): UseOfflineDownloadResult {
 
   const downloadAllBooks = useCallback(async () => {
     if (isDownloadingRef.current) {
-      console.warn('Download already in progress');
+      log.warn('Download already in progress');
       return;
     }
 

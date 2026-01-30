@@ -25,6 +25,9 @@ import { useMemorization } from '../hooks/useMemorization';
 import { useReadingGoals } from '../hooks/useReadingGoals';
 import { useCourses } from '../hooks/useCourses';
 import { useTheme } from '../contexts/ThemeContext';
+import { logger } from '../utils/logger';
+
+const log = logger.scope('HomeScreen');
 
 const LAST_READ_KEY = '@bom_last_read';
 
@@ -69,7 +72,7 @@ export function HomeScreen() {
           setLastRead(JSON.parse(stored));
         }
       } catch (error) {
-        console.error('Failed to load last read position:', error);
+        log.error('Failed to load last read position:', error);
       } finally {
         setLoadingLastRead(false);
       }
@@ -331,6 +334,15 @@ export function HomeScreen() {
               {coursesInProgress.length > 0 ? coursesInProgress.length : '→'}
             </Text>
           </Pressable>
+
+          <Pressable
+            style={[styles.toolCard, { backgroundColor: colors.surface }]}
+            onPress={() => navigation.navigate('CoCCourses')}
+          >
+            <Text style={styles.toolIcon}>🏛️</Text>
+            <Text style={[styles.toolLabel, { color: colors.text }]}>CoC Courses</Text>
+            <Text style={[styles.toolCount, { color: colors.primary }]}>→</Text>
+          </Pressable>
         </View>
       </View>
 
@@ -398,7 +410,7 @@ export async function saveLastReadPosition(
     };
     await AsyncStorage.setItem(LAST_READ_KEY, JSON.stringify(position));
   } catch (error) {
-    console.error('Failed to save last read position:', error);
+    logger.scope('HomeScreen').error('Failed to save last read position:', error);
   }
 }
 

@@ -99,6 +99,12 @@ export class AuthService {
 
       logger.info({ userId: user.id }, 'New user registered');
 
+      // Send welcome email (non-blocking)
+      import('./email.service').then(({ sendWelcomeEmail }) => {
+        sendWelcomeEmail(user.email, user.displayName || user.email.split('@')[0])
+          .catch((err) => logger.error({ err, userId: user.id }, 'Failed to send welcome email'));
+      });
+
       // Generate tokens
       return this.generateTokens(user);
     } catch (error) {
@@ -410,8 +416,9 @@ export class AuthService {
         logger.info({ resetToken }, 'DEV ONLY - Password reset token (send via email in production)');
       }
 
-      // TODO: In production, send resetToken via email service
-      // await emailService.sendPasswordResetEmail(user.email, resetToken);
+      // Send password reset email
+      const { sendPasswordResetEmail } = await import('./email.service');
+      await sendPasswordResetEmail(user.email, resetToken, user.name || undefined);
 
       return resetToken;
     } catch (error) {

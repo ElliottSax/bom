@@ -25,7 +25,8 @@ const passwordSchema = z.string().min(8).max(128)
   });
 
 const phoneSchema = z.string().regex(/^\+?[\d\s\-\(\)]+$/).max(20).optional();
-const urlSchema = z.string().url().max(2048);
+// URL schema for future use
+export const urlSchema = z.string().url().max(2048);
 
 // User schemas
 export const userRegistrationSchema = z.object({
