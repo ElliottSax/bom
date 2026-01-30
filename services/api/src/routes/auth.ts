@@ -6,6 +6,13 @@ import { userRegistrationSchema, userLoginSchema } from '../validation/schemas';
 import { requireAuth } from '../middleware/auth';
 import { z } from 'zod';
 
+/**
+ * Type guard to check if an error has a name property (like ValidationException)
+ */
+function isNamedError(error: unknown): error is Error & { name: string; errors?: unknown } {
+  return error instanceof Error && 'name' in error;
+}
+
 // Additional schemas for auth routes
 const refreshTokenSchema = z.object({
   refreshToken: z.string().min(1),
@@ -63,11 +70,11 @@ export async function authRoutes(fastify: FastifyInstance) {
           data: result,
           message: 'Registration successful',
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         fastify.log.error({ err: error }, 'Registration failed');
 
         // Pass ValidationException errors through
-        if (error.name === 'ValidationException') {
+        if (isNamedError(error) && error.name === 'ValidationException') {
           return reply.status(400).send({
             error: 'Validation failed',
             errors: error.errors,
@@ -113,10 +120,10 @@ export async function authRoutes(fastify: FastifyInstance) {
           data: result,
           message: 'Login successful',
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         fastify.log.error({ err: error }, 'Login failed');
 
-        if (error.name === 'ValidationException') {
+        if (isNamedError(error) && error.name === 'ValidationException') {
           return reply.status(401).send({
             error: 'Authentication failed',
             errors: error.errors,
@@ -153,7 +160,7 @@ export async function authRoutes(fastify: FastifyInstance) {
           data: result,
           message: 'Token refreshed successfully',
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         fastify.log.error({ err: error }, 'Token refresh failed');
 
         return reply.status(401).send({
@@ -219,10 +226,10 @@ export async function authRoutes(fastify: FastifyInstance) {
           success: true,
           message: 'Password changed successfully',
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         fastify.log.error({ err: error }, 'Password change failed');
 
-        if (error.name === 'ValidationException') {
+        if (isNamedError(error) && error.name === 'ValidationException') {
           return reply.status(400).send({
             error: 'Validation failed',
             errors: error.errors,
@@ -268,9 +275,10 @@ export async function authRoutes(fastify: FastifyInstance) {
           success: true,
           message: 'If an account exists with this email, password reset instructions have been sent',
         });
-      } catch (error) {
+      } catch (error: unknown) {
         fastify.log.error({ err: error }, 'Password reset request failed');
 
+        // Always return success to prevent email enumeration attacks
         return reply.status(200).send({
           success: true,
           message: 'If email exists, password reset instructions have been sent',
@@ -301,7 +309,7 @@ export async function authRoutes(fastify: FastifyInstance) {
           success: true,
           message: 'Password reset successfully',
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         fastify.log.error({ err: error }, 'Password reset failed');
 
         return reply.status(400).send({

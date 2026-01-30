@@ -4,6 +4,19 @@ import type { GraphQLContext } from './context';
 import { requireUser } from './context';
 import { validateBookName, validateChapter, validateVerse } from '../validation/schemas';
 
+// Type definitions for resolver arguments
+type ResolverParent = unknown;
+type EmptyArgs = Record<string, never>;
+
+/**
+ * Type guard to extract error message from unknown errors
+ */
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return 'An unknown error occurred';
+}
+
 /**
  * GraphQL Resolvers
  * Implements the schema queries, mutations, and subscriptions
@@ -20,7 +33,7 @@ export const resolvers = {
     /**
      * Get current authenticated user
      */
-    me: async (_parent: any, _args: any, context: GraphQLContext) => {
+    me: async (_parent: ResolverParent, _args: EmptyArgs, context: GraphQLContext) => {
       const { userId } = requireUser(context);
 
       const user = await context.prisma.user.findUnique({
@@ -43,7 +56,7 @@ export const resolvers = {
     /**
      * Get all scripture works
      */
-    scriptureWorks: async (_parent: any, _args: any, context: GraphQLContext) => {
+    scriptureWorks: async (_parent: ResolverParent, _args: EmptyArgs, context: GraphQLContext) => {
       return context.prisma.scriptureWork.findMany({
         orderBy: { name: 'asc' },
       });
@@ -52,7 +65,7 @@ export const resolvers = {
     /**
      * Get a single scripture work by ID
      */
-    scriptureWork: async (_parent: any, args: { id: string }, context: GraphQLContext) => {
+    scriptureWork: async (_parent: ResolverParent, args: { id: string }, context: GraphQLContext) => {
       const work = await context.prisma.scriptureWork.findUnique({
         where: { id: args.id },
       });
@@ -69,7 +82,7 @@ export const resolvers = {
     /**
      * Get editions (optionally filtered by work)
      */
-    editions: async (_parent: any, args: { workId?: string }, context: GraphQLContext) => {
+    editions: async (_parent: ResolverParent, args: { workId?: string }, context: GraphQLContext) => {
       return context.prisma.edition.findMany({
         where: args.workId ? { workId: args.workId } : undefined,
         orderBy: { displayOrder: 'asc' },
@@ -79,7 +92,7 @@ export const resolvers = {
     /**
      * Get a single edition by ID
      */
-    edition: async (_parent: any, args: { id: string }, context: GraphQLContext) => {
+    edition: async (_parent: ResolverParent, args: { id: string }, context: GraphQLContext) => {
       const edition = await context.prisma.edition.findUnique({
         where: { id: args.id },
       });
@@ -96,7 +109,7 @@ export const resolvers = {
     /**
      * Get a single verse by ID
      */
-    verse: async (_parent: any, args: { id: string }, context: GraphQLContext) => {
+    verse: async (_parent: ResolverParent, args: { id: string }, context: GraphQLContext) => {
       const verse = await context.prisma.verse.findUnique({
         where: { id: args.id },
         include: {
@@ -117,7 +130,7 @@ export const resolvers = {
      * Get all verses for a chapter in a specific edition
      */
     verses: async (
-      _parent: any,
+      _parent: ResolverParent,
       args: { book: string; chapter: number; editionId: string },
       context: GraphQLContext
     ) => {
@@ -127,8 +140,8 @@ export const resolvers = {
       try {
         validatedBook = validateBookName(args.book);
         validatedChapter = validateChapter(args.chapter);
-      } catch (error: any) {
-        throw new GraphQLError(error.message, {
+      } catch (error: unknown) {
+        throw new GraphQLError(getErrorMessage(error), {
           extensions: { code: 'BAD_USER_INPUT' },
         });
       }
@@ -152,7 +165,7 @@ export const resolvers = {
      * Get verse by book, chapter, verse reference in a specific edition
      */
     verseByReference: async (
-      _parent: any,
+      _parent: ResolverParent,
       args: { book: string; chapter: number; verse: number; editionId: string },
       context: GraphQLContext
     ) => {
@@ -164,8 +177,8 @@ export const resolvers = {
         validatedBook = validateBookName(args.book);
         validatedChapter = validateChapter(args.chapter);
         validatedVerse = validateVerse(args.verse);
-      } catch (error: any) {
-        throw new GraphQLError(error.message, {
+      } catch (error: unknown) {
+        throw new GraphQLError(getErrorMessage(error), {
           extensions: { code: 'BAD_USER_INPUT' },
         });
       }
@@ -195,7 +208,7 @@ export const resolvers = {
      * Get verse equivalents (cross-edition mappings)
      */
     verseEquivalents: async (
-      _parent: any,
+      _parent: ResolverParent,
       args: { verseId: string },
       context: GraphQLContext
     ) => {
@@ -223,7 +236,7 @@ export const resolvers = {
      * Get user's highlights
      */
     myHighlights: async (
-      _parent: any,
+      _parent: ResolverParent,
       args: { verseId?: string },
       context: GraphQLContext
     ) => {
@@ -247,7 +260,7 @@ export const resolvers = {
      * Get user's notes
      */
     myNotes: async (
-      _parent: any,
+      _parent: ResolverParent,
       args: { verseId?: string },
       context: GraphQLContext
     ) => {
@@ -271,7 +284,7 @@ export const resolvers = {
      * Get user's reading progress
      */
     myProgress: async (
-      _parent: any,
+      _parent: ResolverParent,
       args: { book?: string },
       context: GraphQLContext
     ) => {
@@ -291,7 +304,7 @@ export const resolvers = {
     /**
      * Get user's study streak
      */
-    myStreak: async (_parent: any, _args: any, context: GraphQLContext) => {
+    myStreak: async (_parent: ResolverParent, _args: EmptyArgs, context: GraphQLContext) => {
       const { userId } = requireUser(context);
 
       const streak = await context.prisma.studyStreak.findUnique({
@@ -315,7 +328,7 @@ export const resolvers = {
     /**
      * Get due memory cards
      */
-    dueCards: async (_parent: any, _args: any, context: GraphQLContext) => {
+    dueCards: async (_parent: ResolverParent, _args: EmptyArgs, context: GraphQLContext) => {
       const { userId } = requireUser(context);
 
       return context.prisma.memoryCard.findMany({
@@ -338,7 +351,7 @@ export const resolvers = {
     /**
      * Get memory card statistics
      */
-    cardStats: async (_parent: any, _args: any, context: GraphQLContext) => {
+    cardStats: async (_parent: ResolverParent, _args: EmptyArgs, context: GraphQLContext) => {
       const { userId } = requireUser(context);
 
       const total = await context.prisma.memoryCard.count({
@@ -385,7 +398,7 @@ export const resolvers = {
     /**
      * Get user's groups
      */
-    myGroups: async (_parent: any, _args: any, context: GraphQLContext) => {
+    myGroups: async (_parent: ResolverParent, _args: EmptyArgs, context: GraphQLContext) => {
       const { userId } = requireUser(context);
 
       const memberships = await context.prisma.groupMember.findMany({
@@ -405,7 +418,7 @@ export const resolvers = {
     /**
      * Get group by ID
      */
-    group: async (_parent: any, args: { id: string }, context: GraphQLContext) => {
+    group: async (_parent: ResolverParent, args: { id: string }, context: GraphQLContext) => {
       const { userId } = requireUser(context);
 
       const group = await context.prisma.group.findUnique({
@@ -436,7 +449,7 @@ export const resolvers = {
     /**
      * Search verses (stub - requires search infrastructure)
      */
-    searchVerses: async (_parent: any, _args: any, _context: GraphQLContext) => {
+    searchVerses: async (_parent: ResolverParent, _args: EmptyArgs, _context: GraphQLContext) => {
       throw new GraphQLError('Search functionality not yet implemented', {
         extensions: { code: 'NOT_IMPLEMENTED' },
       });
@@ -446,7 +459,7 @@ export const resolvers = {
      * Get group discussions
      */
     groupDiscussions: async (
-      _parent: any,
+      _parent: ResolverParent,
       args: { groupId: string },
       context: GraphQLContext
     ) => {
@@ -478,7 +491,7 @@ export const resolvers = {
     /**
      * AI question (stub - requires AI infrastructure)
      */
-    askQuestion: async (_parent: any, _args: any, _context: GraphQLContext) => {
+    askQuestion: async (_parent: ResolverParent, _args: EmptyArgs, _context: GraphQLContext) => {
       throw new GraphQLError('AI functionality not yet implemented', {
         extensions: { code: 'NOT_IMPLEMENTED' },
       });
@@ -487,7 +500,7 @@ export const resolvers = {
     /**
      * Get AI interaction history (stub)
      */
-    myAIHistory: async (_parent: any, _args: any, _context: GraphQLContext) => {
+    myAIHistory: async (_parent: ResolverParent, _args: EmptyArgs, _context: GraphQLContext) => {
       throw new GraphQLError('AI functionality not yet implemented', {
         extensions: { code: 'NOT_IMPLEMENTED' },
       });
@@ -502,7 +515,7 @@ export const resolvers = {
      * Create a highlight
      */
     createHighlight: async (
-      _parent: any,
+      _parent: ResolverParent,
       args: { input: { verseId: string; color: string } },
       context: GraphQLContext
     ) => {
@@ -542,7 +555,7 @@ export const resolvers = {
      * Delete a highlight
      */
     deleteHighlight: async (
-      _parent: any,
+      _parent: ResolverParent,
       args: { id: string },
       context: GraphQLContext
     ) => {
@@ -569,7 +582,7 @@ export const resolvers = {
      * Create a note
      */
     createNote: async (
-      _parent: any,
+      _parent: ResolverParent,
       args: { input: { verseId: string; content: string; tags?: string[] } },
       context: GraphQLContext
     ) => {
@@ -590,7 +603,7 @@ export const resolvers = {
      * Update a note
      */
     updateNote: async (
-      _parent: any,
+      _parent: ResolverParent,
       args: { id: string; input: { content?: string; tags?: string[] } },
       context: GraphQLContext
     ) => {
@@ -620,7 +633,7 @@ export const resolvers = {
      * Delete a note
      */
     deleteNote: async (
-      _parent: any,
+      _parent: ResolverParent,
       args: { id: string },
       context: GraphQLContext
     ) => {
@@ -647,7 +660,7 @@ export const resolvers = {
      * Update reading progress
      */
     updateProgress: async (
-      _parent: any,
+      _parent: ResolverParent,
       args: { verseId: string },
       context: GraphQLContext
     ) => {
@@ -709,7 +722,7 @@ export const resolvers = {
      * Create a memory card for verse memorization
      */
     createCard: async (
-      _parent: any,
+      _parent: ResolverParent,
       args: { verseId: string },
       context: GraphQLContext
     ) => {
@@ -744,7 +757,7 @@ export const resolvers = {
      * Review a memory card (SM-2 algorithm)
      */
     reviewCard: async (
-      _parent: any,
+      _parent: ResolverParent,
       args: { input: { cardId: string; quality: number } },
       context: GraphQLContext
     ) => {
@@ -816,7 +829,7 @@ export const resolvers = {
      * Delete a memory card
      */
     deleteCard: async (
-      _parent: any,
+      _parent: ResolverParent,
       args: { id: string },
       context: GraphQLContext
     ) => {
@@ -843,7 +856,7 @@ export const resolvers = {
      * Create a study group
      */
     createGroup: async (
-      _parent: any,
+      _parent: ResolverParent,
       args: { input: { name: string; description?: string; isPrivate?: boolean } },
       context: GraphQLContext
     ) => {
@@ -877,7 +890,7 @@ export const resolvers = {
      * Join a group using invite code
      */
     joinGroup: async (
-      _parent: any,
+      _parent: ResolverParent,
       args: { inviteCode: string },
       context: GraphQLContext
     ) => {
@@ -927,7 +940,7 @@ export const resolvers = {
      * Leave a group
      */
     leaveGroup: async (
-      _parent: any,
+      _parent: ResolverParent,
       args: { groupId: string },
       context: GraphQLContext
     ) => {
@@ -959,7 +972,7 @@ export const resolvers = {
      * Create a discussion in a group
      */
     createDiscussion: async (
-      _parent: any,
+      _parent: ResolverParent,
       args: { input: { groupId: string; title: string; content: string; verseId: string } },
       context: GraphQLContext
     ) => {
@@ -997,7 +1010,7 @@ export const resolvers = {
      * Add a comment to a discussion
      */
     addComment: async (
-      _parent: any,
+      _parent: ResolverParent,
       args: { discussionId: string; content: string },
       context: GraphQLContext
     ) => {
@@ -1042,7 +1055,7 @@ export const resolvers = {
     /**
      * Provide feedback on AI interaction (stub)
      */
-    provideFeedback: async (_parent: any, _args: any, _context: GraphQLContext) => {
+    provideFeedback: async (_parent: ResolverParent, _args: EmptyArgs, _context: GraphQLContext) => {
       throw new GraphQLError('AI functionality not yet implemented', {
         extensions: { code: 'NOT_IMPLEMENTED' },
       });
@@ -1054,28 +1067,28 @@ export const resolvers = {
   // ============================================================================
 
   ScriptureWork: {
-    editions: async (parent: any, _args: any, context: GraphQLContext) => {
+    editions: async (parent: { id: string }, _args: EmptyArgs, context: GraphQLContext) => {
       // Use DataLoader to batch edition queries
       return context.loaders.editionsByWorkId.load(parent.id);
     },
   },
 
   Edition: {
-    work: async (parent: any, _args: any, context: GraphQLContext) => {
+    work: async (parent: { id: string }, _args: EmptyArgs, context: GraphQLContext) => {
       // Use DataLoader to batch scripture work queries
       return context.loaders.scriptureWorkById.load(parent.workId);
     },
   },
 
   User: {
-    highlights: async (parent: any, _args: any, context: GraphQLContext) => {
+    highlights: async (parent: { id: string }, _args: EmptyArgs, context: GraphQLContext) => {
       return context.prisma.highlight.findMany({
         where: { userId: parent.id },
         include: { verse: true },
       });
     },
 
-    notes: async (parent: any, _args: any, context: GraphQLContext) => {
+    notes: async (parent: { id: string }, _args: EmptyArgs, context: GraphQLContext) => {
       return context.prisma.note.findMany({
         where: { userId: parent.id },
         include: { verse: true },
@@ -1084,7 +1097,7 @@ export const resolvers = {
   },
 
   Verse: {
-    edition: async (parent: any, _args: any, context: GraphQLContext) => {
+    edition: async (parent: { id: string }, _args: EmptyArgs, context: GraphQLContext) => {
       // Return if already loaded
       if (parent.edition) return parent.edition;
 
@@ -1092,26 +1105,26 @@ export const resolvers = {
       return context.loaders.editionById.load(parent.editionId);
     },
 
-    highlights: async (parent: any, _args: any, context: GraphQLContext) => {
+    highlights: async (parent: { id: string }, _args: EmptyArgs, context: GraphQLContext) => {
       if (!context.user) return [];
 
       // Use DataLoader to batch highlight queries
       return context.loaders.highlightsByVerseId.load(parent.id);
     },
 
-    notes: async (parent: any, _args: any, context: GraphQLContext) => {
+    notes: async (parent: { id: string }, _args: EmptyArgs, context: GraphQLContext) => {
       if (!context.user) return [];
 
       // Use DataLoader to batch note queries
       return context.loaders.notesByVerseId.load(parent.id);
     },
 
-    crossReferences: async (parent: any, _args: any, context: GraphQLContext) => {
+    crossReferences: async (parent: { id: string }, _args: EmptyArgs, context: GraphQLContext) => {
       // Use DataLoader to batch cross reference queries
       return context.loaders.crossReferencesByVerseId.load(parent.id);
     },
 
-    equivalentVerses: async (parent: any, _args: any, context: GraphQLContext) => {
+    equivalentVerses: async (parent: { id: string }, _args: EmptyArgs, context: GraphQLContext) => {
       return context.prisma.verseMapping.findMany({
         where: {
           OR: [

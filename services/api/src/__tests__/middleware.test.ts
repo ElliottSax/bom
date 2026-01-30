@@ -5,7 +5,7 @@ import { userLoginSchema, searchQuerySchema } from '../validation/schemas';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 
 // Mock Fastify request and reply
-const createMockRequest = (overrides: any = {}): FastifyRequest => ({
+const createMockRequest = (overrides: Partial<FastifyRequest> = {}): FastifyRequest => ({
   body: {},
   query: {},
   params: {},

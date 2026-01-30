@@ -270,15 +270,13 @@ async function sendViaConsole(options: EmailOptions): Promise<void> {
   }, '📧 Email sent (console mode)');
 
   if (process.env.NODE_ENV === 'development') {
-    console.log('\n' + '='.repeat(60));
-    console.log('📧 EMAIL (Development Mode)');
-    console.log('='.repeat(60));
-    console.log(`To: ${options.to}`);
-    console.log(`From: ${options.from || config.from}`);
-    console.log(`Subject: ${options.subject}`);
-    console.log('-'.repeat(60));
-    console.log(options.text);
-    console.log('='.repeat(60) + '\n');
+    // Log email content for development testing
+    logger.debug({
+      to: options.to,
+      from: options.from || config.from,
+      subject: options.subject,
+      text: options.text,
+    }, '📧 EMAIL (Development Mode) - Full content');
   }
 }
 
@@ -319,20 +317,43 @@ async function sendViaSendGrid(options: EmailOptions): Promise<void> {
 
 /**
  * AWS SES provider
+ *
+ * To enable:
+ * 1. npm install @aws-sdk/client-ses
+ * 2. Set AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY env vars
+ * 3. Configure SES domain/email verification in AWS Console
  */
 async function sendViaSES(_options: EmailOptions): Promise<void> {
-  // Note: For production, use @aws-sdk/client-ses
-  // This is a simplified implementation using the REST API
-  throw new Error('AWS SES provider not yet implemented. Install @aws-sdk/client-ses for production use.');
+  logger.error({
+    provider: 'ses',
+    requiredPackage: '@aws-sdk/client-ses',
+  }, 'AWS SES provider not configured');
+
+  throw new Error(
+    'AWS SES provider not configured. ' +
+    'Install @aws-sdk/client-ses and set AWS credentials. ' +
+    'See email.service.ts for setup instructions.'
+  );
 }
 
 /**
  * SMTP provider using Nodemailer
+ *
+ * To enable:
+ * 1. npm install nodemailer @types/nodemailer
+ * 2. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD env vars
  */
 async function sendViaSMTP(_options: EmailOptions): Promise<void> {
-  // Note: For production, install nodemailer
-  // npm install nodemailer @types/nodemailer
-  throw new Error('SMTP provider not yet implemented. Install nodemailer for production use.');
+  logger.error({
+    provider: 'smtp',
+    requiredPackage: 'nodemailer',
+  }, 'SMTP provider not configured');
+
+  throw new Error(
+    'SMTP provider not configured. ' +
+    'Install nodemailer and set SMTP_* environment variables. ' +
+    'See email.service.ts for setup instructions.'
+  );
 }
 
 // ============================================================================
@@ -372,6 +393,22 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
 }
 
 /**
+ * Get the application base URL with validation
+ */
+function getAppBaseUrl(): string {
+  const baseUrl = process.env.APP_URL;
+
+  if (!baseUrl) {
+    if (process.env.NODE_ENV === 'production') {
+      logger.warn('APP_URL not set in production - using default. Email links may not work correctly.');
+    }
+    return 'http://localhost:3000';
+  }
+
+  return baseUrl;
+}
+
+/**
  * Send a password reset email
  */
 export async function sendPasswordResetEmail(
@@ -379,7 +416,7 @@ export async function sendPasswordResetEmail(
   resetToken: string,
   userName?: string
 ): Promise<void> {
-  const baseUrl = process.env.APP_URL || 'http://localhost:3000';
+  const baseUrl = getAppBaseUrl();
   const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
   const template = emailTemplates.passwordReset(resetUrl, userName);
 
@@ -400,7 +437,7 @@ export async function sendWelcomeEmail(
   email: string,
   userName: string
 ): Promise<void> {
-  const baseUrl = process.env.APP_URL || 'http://localhost:3000';
+  const baseUrl = getAppBaseUrl();
   const loginUrl = `${baseUrl}/login`;
   const template = emailTemplates.welcomeEmail(userName, loginUrl);
 
@@ -422,7 +459,7 @@ export async function sendDailyReminderEmail(
   userName: string,
   dailyVerse?: { reference: string; text: string }
 ): Promise<void> {
-  const baseUrl = process.env.APP_URL || 'http://localhost:3000';
+  const baseUrl = getAppBaseUrl();
   const template = emailTemplates.dailyReminder(userName, baseUrl, dailyVerse);
 
   await sendEmail({

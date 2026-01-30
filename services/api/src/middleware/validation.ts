@@ -186,8 +186,18 @@ export interface FileValidationOptions {
   requireAuth: boolean;
 }
 
+/**
+ * Represents a file upload object (from multipart form data)
+ */
+export interface UploadedFile {
+  size: number;
+  mimetype: string;
+  filename?: string;
+  data?: Buffer;
+}
+
 export async function validateFileUpload(
-  file: any,
+  file: UploadedFile | null | undefined,
   options: FileValidationOptions
 ): Promise<void> {
   if (!file) {

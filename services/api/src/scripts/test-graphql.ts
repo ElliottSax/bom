@@ -26,15 +26,17 @@ async function main() {
     console.log('\n1. Testing scriptureWorks query...');
     const works = await resolvers.Query.scriptureWorks(null, {}, context);
     console.log(`✓ Found ${works.length} scripture works:`);
-    works.forEach((w: any) => console.log(`  - ${w.name} (${w.abbreviation})`));
+    for (const w of works) {
+      console.log(`  - ${w.name} (${w.abbreviation})`);
+    }
 
     // Test 2: Get all editions
     console.log('\n2. Testing editions query...');
     const editions = await resolvers.Query.editions(null, {}, context);
     console.log(`✓ Found ${editions.length} editions:`);
-    editions.forEach((e: any) =>
-      console.log(`  - ${e.shortName}: ${e.name} (${e.year})`)
-    );
+    for (const e of editions) {
+      console.log(`  - ${e.shortName}: ${e.name} (${e.year})`);
+    }
 
     // Test 3: Get Book of Mormon editions
     console.log('\n3. Testing editions for Book of Mormon...');
@@ -44,9 +46,9 @@ async function main() {
       context
     );
     console.log(`✓ Found ${bomEditions.length} Book of Mormon editions:`);
-    bomEditions.forEach((e: any) =>
-      console.log(`  - ${e.shortName} (${e.versificationSystem})`)
-    );
+    for (const e of bomEditions) {
+      console.log(`  - ${e.shortName} (${e.versificationSystem})`);
+    }
 
     // Test 4: Get verses from I Nephi Chapter 1
     console.log('\n4. Testing verses query (I Nephi 1, CoC edition)...');
@@ -56,9 +58,9 @@ async function main() {
       context
     );
     console.log(`✓ Found ${verses.length} verses in I Nephi 1 (CoC):`);
-    verses.forEach((v: any) =>
-      console.log(`  ${v.verse}. ${v.text.substring(0, 60)}...`)
-    );
+    for (const v of verses) {
+      console.log(`  ${v.verse}. ${v.text.substring(0, 60)}...`);
+    }
 
     // Test 5: Get specific verse
     console.log('\n5. Testing verseByReference query...');
@@ -101,9 +103,9 @@ async function main() {
     );
     console.log(`✓ Found ${mappings.length} cross-edition mappings`);
     if (mappings.length > 0) {
-      mappings.forEach((m: any) => {
+      for (const m of mappings) {
         console.log(`  ${m.fromVerse.id} ↔ ${m.toVerse.id} (${m.mappingType})`);
-      });
+      }
     }
 
     // Test 9: Test Verse field resolvers
