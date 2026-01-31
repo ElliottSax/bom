@@ -1,7 +1,6 @@
 import React from 'react';
 import { type Volume, type SearchResult, type VolumeId } from '../lib/types';
 import { SearchIcon } from './Icons';
-import { useUserData } from '../contexts/UserDataContext';
 
 interface SearchModalProps {
   showSearch: boolean;
@@ -12,6 +11,7 @@ interface SearchModalProps {
   searching: boolean;
   searchResults: SearchResult[];
   volumeId?: VolumeId; // Optional - not currently used
+  navigateToReference: (volumeId: VolumeId, book: string, chapter: number) => void;
 }
 
 const SearchModal: React.FC<SearchModalProps> = ({
@@ -22,8 +22,8 @@ const SearchModal: React.FC<SearchModalProps> = ({
   currentVolume,
   searching,
   searchResults,
+  navigateToReference,
 }) => {
-  const { navigateToReference } = useUserData();
   if (!showSearch) return null;
 
   return (

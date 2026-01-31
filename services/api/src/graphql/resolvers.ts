@@ -8,6 +8,31 @@ import { validateBookName, validateChapter, validateVerse } from '../validation/
 type ResolverParent = unknown;
 type EmptyArgs = Record<string, never>;
 
+// Search types
+type SearchType = 'KEYWORD' | 'SEMANTIC' | 'HYBRID';
+
+interface SearchInput {
+  query: string;
+  type?: SearchType;
+  books?: string[];
+  limit?: number;
+  offset?: number;
+}
+
+interface SearchResult {
+  verse: {
+    id: string;
+    editionId: string;
+    book: string;
+    chapter: number;
+    verse: number;
+    text: string;
+    verseType: string;
+  };
+  score: number;
+  highlights: string[];
+}
+
 /**
  * Type guard to extract error message from unknown errors
  */
@@ -15,6 +40,64 @@ function getErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
   if (typeof error === 'string') return error;
   return 'An unknown error occurred';
+}
+
+/**
+ * Escape special regex characters for safe use in search highlighting
+ */
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Extract highlights (context snippets) from verse text matching search terms
+ */
+function extractHighlights(text: string, searchTerms: string[]): string[] {
+  const highlights: string[] = [];
+  const lowerText = text.toLowerCase();
+
+  for (const term of searchTerms) {
+    const lowerTerm = term.toLowerCase();
+    const index = lowerText.indexOf(lowerTerm);
+    if (index !== -1) {
+      // Extract ~50 chars around the match
+      const start = Math.max(0, index - 25);
+      const end = Math.min(text.length, index + term.length + 25);
+      let snippet = text.substring(start, end);
+      if (start > 0) snippet = '...' + snippet;
+      if (end < text.length) snippet = snippet + '...';
+      highlights.push(snippet);
+    }
+  }
+
+  return highlights.length > 0 ? highlights : [text.substring(0, 100) + '...'];
+}
+
+/**
+ * Calculate relevance score for a verse based on search terms
+ */
+function calculateScore(text: string, searchTerms: string[]): number {
+  const lowerText = text.toLowerCase();
+  let score = 0;
+
+  for (const term of searchTerms) {
+    const lowerTerm = term.toLowerCase();
+    // Count occurrences
+    const regex = new RegExp(escapeRegex(lowerTerm), 'gi');
+    const matches = text.match(regex);
+    if (matches) {
+      score += matches.length * 10;
+    }
+    // Bonus for exact word match
+    const wordRegex = new RegExp(`\\b${escapeRegex(lowerTerm)}\\b`, 'gi');
+    const wordMatches = text.match(wordRegex);
+    if (wordMatches) {
+      score += wordMatches.length * 5;
+    }
+  }
+
+  // Normalize score to 0-1 range (approximate)
+  return Math.min(1, score / 100);
 }
 
 /**
@@ -447,12 +530,96 @@ export const resolvers = {
     },
 
     /**
-     * Search verses (stub - requires search infrastructure)
+     * Search verses using keyword matching
+     * Supports filtering by books and pagination
      */
-    searchVerses: async (_parent: ResolverParent, _args: EmptyArgs, _context: GraphQLContext) => {
-      throw new GraphQLError('Search functionality not yet implemented', {
-        extensions: { code: 'NOT_IMPLEMENTED' },
-      });
+    searchVerses: async (
+      _parent: ResolverParent,
+      args: { input: SearchInput },
+      context: GraphQLContext
+    ) => {
+      const { query, type = 'KEYWORD', books, limit = 20, offset = 0 } = args.input;
+
+      if (!query || query.trim().length < 2) {
+        throw new GraphQLError('Search query must be at least 2 characters', {
+          extensions: { code: 'BAD_USER_INPUT' },
+        });
+      }
+
+      // Parse search terms (split by spaces, filter short terms)
+      const searchTerms = query
+        .split(/\s+/)
+        .filter(term => term.length >= 2)
+        .slice(0, 10); // Limit to 10 terms
+
+      if (searchTerms.length === 0) {
+        return {
+          results: [],
+          total: 0,
+          offset,
+          limit,
+          query,
+          type,
+        };
+      }
+
+      try {
+        // Build where clause for Prisma
+        const whereClause: {
+          AND: Array<{ text: { contains: string; mode: 'insensitive' } }>;
+          book?: { in: string[] };
+        } = {
+          AND: searchTerms.map(term => ({
+            text: { contains: term, mode: 'insensitive' as const },
+          })),
+        };
+
+        // Add book filter if specified
+        if (books && books.length > 0) {
+          whereClause.book = { in: books };
+        }
+
+        // Get total count
+        const total = await context.prisma.verse.count({ where: whereClause });
+
+        // Get verses with pagination
+        const verses = await context.prisma.verse.findMany({
+          where: whereClause,
+          include: {
+            edition: true,
+          },
+          skip: offset,
+          take: Math.min(limit, 100), // Cap at 100 results per page
+          orderBy: [
+            { book: 'asc' },
+            { chapter: 'asc' },
+            { verse: 'asc' },
+          ],
+        });
+
+        // Calculate scores and build results
+        const results: SearchResult[] = verses.map(verse => ({
+          verse,
+          score: calculateScore(verse.text, searchTerms),
+          highlights: extractHighlights(verse.text, searchTerms),
+        }));
+
+        // Sort by score descending
+        results.sort((a, b) => b.score - a.score);
+
+        return {
+          results,
+          total,
+          offset,
+          limit,
+          query,
+          type,
+        };
+      } catch (error: unknown) {
+        throw new GraphQLError(`Search failed: ${getErrorMessage(error)}`, {
+          extensions: { code: 'INTERNAL_SERVER_ERROR' },
+        });
+      }
     },
 
     /**
@@ -489,21 +656,121 @@ export const resolvers = {
     },
 
     /**
-     * AI question (stub - requires AI infrastructure)
+     * AI-powered scripture question answering
+     * Currently uses keyword search to find relevant verses.
+     * Can be enhanced with LLM integration (OpenAI, Anthropic, etc.)
      */
-    askQuestion: async (_parent: ResolverParent, _args: EmptyArgs, _context: GraphQLContext) => {
-      throw new GraphQLError('AI functionality not yet implemented', {
-        extensions: { code: 'NOT_IMPLEMENTED' },
-      });
+    askQuestion: async (
+      _parent: ResolverParent,
+      args: { input: { message: string; scriptureContext?: string[] } },
+      context: GraphQLContext
+    ) => {
+      const { userId } = requireUser(context);
+      const { message, scriptureContext } = args.input;
+
+      if (!message || message.trim().length < 3) {
+        throw new GraphQLError('Question must be at least 3 characters', {
+          extensions: { code: 'BAD_USER_INPUT' },
+        });
+      }
+
+      try {
+        // Extract key terms from the question
+        const searchTerms = message
+          .toLowerCase()
+          .replace(/[?.,!'"]/g, '')
+          .split(/\s+/)
+          .filter(term => term.length >= 3 && !['the', 'and', 'what', 'how', 'why', 'who', 'where', 'when', 'does', 'did', 'was', 'were', 'are', 'have', 'has', 'about'].includes(term))
+          .slice(0, 5);
+
+        // Find relevant verses
+        let verses;
+        if (scriptureContext && scriptureContext.length > 0) {
+          // If specific verses provided, use those
+          verses = await context.prisma.verse.findMany({
+            where: { id: { in: scriptureContext } },
+            include: { edition: true },
+            take: 5,
+          });
+        } else if (searchTerms.length > 0) {
+          // Search for relevant verses
+          verses = await context.prisma.verse.findMany({
+            where: {
+              OR: searchTerms.map(term => ({
+                text: { contains: term, mode: 'insensitive' as const },
+              })),
+            },
+            include: { edition: true },
+            take: 5,
+            orderBy: { id: 'asc' },
+          });
+        } else {
+          verses = [];
+        }
+
+        // Generate a simple answer based on found verses
+        // TODO: Integrate with LLM (OpenAI, Anthropic) for better answers
+        let answer: string;
+        let confidence: number;
+
+        if (verses.length === 0) {
+          answer = `I couldn't find specific verses related to "${message}". Try rephrasing your question or searching for specific terms.`;
+          confidence = 0.2;
+        } else {
+          const verseRefs = verses.map(v => `${v.book} ${v.chapter}:${v.verse}`).join(', ');
+          answer = `Based on your question about "${message}", here are some relevant scriptures:\n\n` +
+            verses.map(v => `**${v.book} ${v.chapter}:${v.verse}** - "${v.text.substring(0, 200)}${v.text.length > 200 ? '...' : ''}"`).join('\n\n') +
+            `\n\nThese verses (${verseRefs}) may help address your question. For deeper study, consider reading the full chapters for context.`;
+          confidence = Math.min(0.9, 0.5 + (verses.length * 0.1));
+        }
+
+        // Store the interaction
+        await context.prisma.aIInteraction.create({
+          data: {
+            userId,
+            question: message,
+            answer,
+            sources: verses.map(v => v.id),
+            confidence,
+          },
+        });
+
+        return {
+          answer,
+          sources: verses,
+          confidence,
+        };
+      } catch (error: unknown) {
+        throw new GraphQLError(`AI question failed: ${getErrorMessage(error)}`, {
+          extensions: { code: 'INTERNAL_SERVER_ERROR' },
+        });
+      }
     },
 
     /**
-     * Get AI interaction history (stub)
+     * Get user's AI interaction history
      */
-    myAIHistory: async (_parent: ResolverParent, _args: EmptyArgs, _context: GraphQLContext) => {
-      throw new GraphQLError('AI functionality not yet implemented', {
-        extensions: { code: 'NOT_IMPLEMENTED' },
-      });
+    myAIHistory: async (
+      _parent: ResolverParent,
+      args: { limit?: number },
+      context: GraphQLContext
+    ) => {
+      const { userId } = requireUser(context);
+      const limit = Math.min(args.limit || 20, 100);
+
+      try {
+        const interactions = await context.prisma.aIInteraction.findMany({
+          where: { userId },
+          orderBy: { createdAt: 'desc' },
+          take: limit,
+        });
+
+        return interactions;
+      } catch (error: unknown) {
+        throw new GraphQLError(`Failed to fetch AI history: ${getErrorMessage(error)}`, {
+          extensions: { code: 'INTERNAL_SERVER_ERROR' },
+        });
+      }
     },
   },
 
@@ -1053,12 +1320,53 @@ export const resolvers = {
     },
 
     /**
-     * Provide feedback on AI interaction (stub)
+     * Provide feedback on an AI interaction
      */
-    provideFeedback: async (_parent: ResolverParent, _args: EmptyArgs, _context: GraphQLContext) => {
-      throw new GraphQLError('AI functionality not yet implemented', {
-        extensions: { code: 'NOT_IMPLEMENTED' },
-      });
+    provideFeedback: async (
+      _parent: ResolverParent,
+      args: { interactionId: string; feedback: string },
+      context: GraphQLContext
+    ) => {
+      const { userId } = requireUser(context);
+      const { interactionId, feedback } = args;
+
+      if (!['helpful', 'not_helpful'].includes(feedback)) {
+        throw new GraphQLError('Feedback must be "helpful" or "not_helpful"', {
+          extensions: { code: 'BAD_USER_INPUT' },
+        });
+      }
+
+      try {
+        // Verify the interaction belongs to this user
+        const interaction = await context.prisma.aIInteraction.findUnique({
+          where: { id: interactionId },
+        });
+
+        if (!interaction) {
+          throw new GraphQLError('AI interaction not found', {
+            extensions: { code: 'NOT_FOUND' },
+          });
+        }
+
+        if (interaction.userId !== userId) {
+          throw new GraphQLError('Cannot provide feedback on another user\'s interaction', {
+            extensions: { code: 'FORBIDDEN' },
+          });
+        }
+
+        // Update the interaction with feedback
+        await context.prisma.aIInteraction.update({
+          where: { id: interactionId },
+          data: { feedback },
+        });
+
+        return true;
+      } catch (error: unknown) {
+        if (error instanceof GraphQLError) throw error;
+        throw new GraphQLError(`Failed to save feedback: ${getErrorMessage(error)}`, {
+          extensions: { code: 'INTERNAL_SERVER_ERROR' },
+        });
+      }
     },
   },
 

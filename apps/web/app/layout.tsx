@@ -1,9 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Noto_Serif, Inter } from 'next/font/google';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Providers } from './providers';
 import './globals.css';
-
-const queryClient = new QueryClient();
 
 const notoSerif = Noto_Serif({
   subsets: ['latin'],
@@ -56,9 +54,9 @@ export default function RootLayout({
             `,
           }}
         />
-        <QueryClientProvider client={queryClient}>
+        <Providers>
           {children}
-        </QueryClientProvider>
+        </Providers>
       </body>
     </html>
   );

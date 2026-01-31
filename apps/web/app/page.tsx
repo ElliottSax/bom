@@ -198,14 +198,10 @@ function HomeContent() {
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         currentVolume={currentVolume}
-        readingProgress={readingProgress}
         setShowStudyPlanModal={setShowStudyPlanModal}
         setShowResourcesModal={setShowResourcesModal}
         setShowBackupModal={setShowBackupModal}
-        cycleTheme={cycleTheme}
-        theme={theme}
         setShowSettings={setShowSettings}
-        showSettings={showSettings}
         setShowSearch={setShowSearch}
         setShowCoCResources={setShowCoCResources}
         setShowAboutCoC={setShowAboutCoC}
@@ -317,14 +313,8 @@ function HomeContent() {
           setSelectedBook={handleBookSelect}
           setSelectedChapter={setSelectedChapter}
           setVerses={() => {}} // Not needed with React Query
-          bookmarks={bookmarks}
-          notes={notes}
-          readingProgress={readingProgress}
-          navigateToReference={navigateToReference}
-          deleteNote={deleteNote}
           totalChapters={totalChapters}
-          chaptersReadInVolume={chaptersReadInVolume}
-          completionPercentage={completionPercentage}
+          navigateToReference={navigateToReference}
         />
 
         <main className="flex-1 overflow-y-auto bg-[var(--color-bg-primary)]">

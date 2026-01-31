@@ -38,7 +38,7 @@ const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
         </div>
         <div className="p-4 border-t border-[var(--color-border-light)] flex justify-end gap-2">
           <button onClick={() => setShowNoteEditor(false)} className="px-4 py-2 text-[var(--color-text-secondary)]">Cancel</button>
-          <button onClick={saveNote} className="px-5 py-2 bg-[var(--color-accent)] text-white font-medium rounded-lg">Save</button>
+          <button onClick={() => saveNote(currentBook?.name ?? null, selectedChapter, editingNoteVerse, noteContent)} className="px-5 py-2 bg-[var(--color-accent)] text-white font-medium rounded-lg">Save</button>
         </div>
       </div>
     </div>

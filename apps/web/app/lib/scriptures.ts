@@ -2,6 +2,9 @@
 
 import { type VolumeId, type Book, type Volume } from './types';
 
+// Re-export types for convenience
+export type { VolumeId, Book, Volume } from './types';
+
 export const VOLUMES: Volume[] = [
   {
     id: 'bom',

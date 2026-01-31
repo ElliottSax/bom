@@ -1,113 +1,114 @@
 'use client';
 
-import React, { useState } from 'react';
-import { CloseIcon, CheckIcon } from './Icons';
+import React, { useState, useCallback } from 'react';
+import { CloseIcon } from './Icons';
+import { QuizQuestion, type QuizQuestionData } from './QuizQuestion';
+import { QuizResults } from './QuizResults';
+import { useCourseProgress } from '../contexts/CourseProgressContext';
 
-export interface QuizQuestion {
-  id: string;
-  question: string;
-  options: string[];
-  correctAnswer: number; // index of correct option
-  explanation: string;
-}
+// Re-export QuizQuestionData for external use
+export type { QuizQuestionData };
 
 export interface QuizData {
-  id: string;
-  lessonId: string;
-  title: string;
-  description: string;
-  questions: QuizQuestion[];
-  passingScore: number; // percentage
+  questions: QuizQuestionData[];
+  passingScore: number; // percentage (e.g., 70)
 }
 
 interface QuizProps {
+  lessonId: string;
   quiz: QuizData;
   onClose: () => void;
   onComplete?: (score: number, passed: boolean) => void;
 }
 
-export function Quiz({ quiz, onClose, onComplete }: QuizProps) {
+export function Quiz({ lessonId, quiz, onClose, onComplete }: QuizProps) {
+  const { recordQuizScore } = useCourseProgress();
+
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<(number | null)[]>(
     Array(quiz.questions.length).fill(null)
   );
+  const [submittedQuestions, setSubmittedQuestions] = useState<boolean[]>(
+    Array(quiz.questions.length).fill(false)
+  );
   const [showResults, setShowResults] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
 
   const currentQuestion = quiz.questions[currentQuestionIndex];
+  const isCurrentSubmitted = submittedQuestions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === quiz.questions.length - 1;
-  const canProceed = selectedAnswers[currentQuestionIndex] !== null;
+  const allQuestionsSubmitted = submittedQuestions.every(Boolean);
 
-  const handleSelectAnswer = (optionIndex: number) => {
-    if (submitted) return;
+  const handleSelectAnswer = useCallback((optionIndex: number) => {
+    if (isCurrentSubmitted) return;
 
     const newAnswers = [...selectedAnswers];
     newAnswers[currentQuestionIndex] = optionIndex;
     setSelectedAnswers(newAnswers);
-  };
+  }, [currentQuestionIndex, isCurrentSubmitted, selectedAnswers]);
 
-  const handleNext = () => {
-    if (isLastQuestion) {
-      handleSubmit();
-    } else {
+  const handleSubmitQuestion = useCallback(() => {
+    if (selectedAnswers[currentQuestionIndex] === null) return;
+
+    const newSubmitted = [...submittedQuestions];
+    newSubmitted[currentQuestionIndex] = true;
+    setSubmittedQuestions(newSubmitted);
+  }, [currentQuestionIndex, selectedAnswers, submittedQuestions]);
+
+  const handleNext = useCallback(() => {
+    if (!isLastQuestion) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-    }
-  };
+    } else if (allQuestionsSubmitted) {
+      // Calculate and record final score
+      const correctCount = selectedAnswers.filter(
+        (answer, index) => answer === quiz.questions[index].correctAnswer
+      ).length;
+      const score = Math.round((correctCount / quiz.questions.length) * 100);
+      const passed = score >= quiz.passingScore;
 
-  const handlePrevious = () => {
+      // Record score to context
+      recordQuizScore(lessonId, score, passed);
+
+      // Notify parent
+      if (onComplete) {
+        onComplete(score, passed);
+      }
+
+      setShowResults(true);
+    }
+  }, [
+    currentQuestionIndex,
+    isLastQuestion,
+    allQuestionsSubmitted,
+    selectedAnswers,
+    quiz.questions,
+    quiz.passingScore,
+    lessonId,
+    recordQuizScore,
+    onComplete,
+  ]);
+
+  const handlePrevious = useCallback(() => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
-  };
+  }, [currentQuestionIndex]);
 
-  const handleSubmit = () => {
-    // Check if all questions are answered
-    const unansweredCount = selectedAnswers.filter(a => a === null).length;
-
-    if (unansweredCount > 0) {
-      const confirmed = window.confirm(
-        `You have ${unansweredCount} unanswered question${unansweredCount > 1 ? 's' : ''}. Submit anyway? Unanswered questions will be marked as incorrect.`
-      );
-      if (!confirmed) return;
-    }
-
-    setSubmitted(true);
-    setShowResults(true);
-
-    // Calculate score using helper function
-    const score = calculateScore();
-    const passed = score >= quiz.passingScore;
-
-    if (onComplete) {
-      onComplete(score, passed);
-    }
-  };
-
-  const handleRetry = () => {
+  const handleRetry = useCallback(() => {
     setCurrentQuestionIndex(0);
     setSelectedAnswers(Array(quiz.questions.length).fill(null));
+    setSubmittedQuestions(Array(quiz.questions.length).fill(false));
     setShowResults(false);
-    setSubmitted(false);
-  };
+  }, [quiz.questions.length]);
 
-  const calculateScore = () => {
-    const correctCount = selectedAnswers.filter(
-      (answer, index) => answer === quiz.questions[index].correctAnswer
-    ).length;
-    return Math.round((correctCount / quiz.questions.length) * 100);
-  };
+  const handleGoToQuestion = useCallback((index: number) => {
+    setCurrentQuestionIndex(index);
+  }, []);
 
-  // Calculate these values once at component level if showing results
-  const score = showResults ? calculateScore() : 0;
-  const passed = showResults ? score >= quiz.passingScore : false;
-  const correctCount = showResults
-    ? selectedAnswers.filter(
-        (answer, index) => answer === quiz.questions[index].correctAnswer
-      ).length
-    : 0;
+  // Calculate progress
+  const answeredCount = submittedQuestions.filter(Boolean).length;
+  const progressPercentage = (answeredCount / quiz.questions.length) * 100;
 
   if (showResults) {
-
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-[var(--color-bg-primary)] rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
@@ -125,89 +126,15 @@ export function Quiz({ quiz, onClose, onComplete }: QuizProps) {
             </button>
           </div>
 
-          {/* Results */}
+          {/* Results Content */}
           <div className="flex-1 overflow-y-auto p-6">
-            {/* Score Card */}
-            <div className={`rounded-lg p-6 mb-6 text-center ${
-              passed ? 'bg-green-500/10' : 'bg-red-500/10'
-            }`}>
-              <div className={`text-6xl font-bold mb-2 ${passed ? 'text-green-500' : 'text-red-500'}`}>
-                {score}%
-              </div>
-              <p className={`text-lg font-semibold mb-1 ${passed ? 'text-green-500' : 'text-red-500'}`}>
-                {passed ? '✓ Passed!' : '✗ Not Passed'}
-              </p>
-              <p className="text-[var(--color-text-secondary)]">
-                {correctCount} of {quiz.questions.length} correct
-                {!passed && ` (${quiz.passingScore}% required to pass)`}
-              </p>
-            </div>
-
-            {/* Question Review */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
-                Review Your Answers
-              </h3>
-              {quiz.questions.map((question, index) => {
-                const userAnswer = selectedAnswers[index];
-                const isCorrect = userAnswer === question.correctAnswer;
-
-                return (
-                  <div
-                    key={question.id}
-                    className={`rounded-lg p-4 border-2 ${
-                      isCorrect
-                        ? 'border-green-500 bg-green-500/5'
-                        : 'border-red-500 bg-red-500/5'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3 mb-2">
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        isCorrect ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-                      }`}>
-                        {isCorrect ? '✓' : '✗'}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-[var(--color-text-primary)] mb-2">
-                          {index + 1}. {question.question}
-                        </p>
-                        <p className="text-sm text-[var(--color-text-secondary)] mb-1">
-                          Your answer: <span className={isCorrect ? 'text-green-500' : 'text-red-500'}>
-                            {userAnswer !== null ? question.options[userAnswer] : 'Not answered'}
-                          </span>
-                        </p>
-                        {!isCorrect && (
-                          <p className="text-sm text-[var(--color-text-secondary)] mb-2">
-                            Correct answer: <span className="text-green-500">
-                              {question.options[question.correctAnswer]}
-                            </span>
-                          </p>
-                        )}
-                        <p className="text-sm text-[var(--color-text-tertiary)] italic">
-                          {question.explanation}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="flex items-center justify-between p-4 border-t border-[var(--color-border-light)]">
-            <button
-              onClick={handleRetry}
-              className="px-4 py-2 rounded-lg bg-[var(--color-bg-secondary)] hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] transition-colors"
-            >
-              Try Again
-            </button>
-            <button
-              onClick={onClose}
-              className="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition-colors"
-            >
-              Close
-            </button>
+            <QuizResults
+              questions={quiz.questions}
+              answers={selectedAnswers}
+              passingScore={quiz.passingScore}
+              onRetry={handleRetry}
+              onClose={onClose}
+            />
           </div>
         </div>
       </div>
@@ -221,10 +148,10 @@ export function Quiz({ quiz, onClose, onComplete }: QuizProps) {
         <div className="flex items-center justify-between p-4 border-b border-[var(--color-border-light)]">
           <div>
             <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
-              {quiz.title}
+              Quiz
             </h2>
             <p className="text-sm text-[var(--color-text-secondary)]">
-              Question {currentQuestionIndex + 1} of {quiz.questions.length}
+              {answeredCount} of {quiz.questions.length} questions answered
             </p>
           </div>
           <button
@@ -241,70 +168,59 @@ export function Quiz({ quiz, onClose, onComplete }: QuizProps) {
           <div className="w-full bg-[var(--color-bg-tertiary)] rounded-full h-2">
             <div
               className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-              style={{
-                width: `${((currentQuestionIndex + 1) / quiz.questions.length) * 100}%`,
-              }}
+              style={{ width: `${progressPercentage}%` }}
             />
           </div>
         </div>
 
-        {/* Question */}
+        {/* Question Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-4">
-            {currentQuestion.question}
-          </h3>
+          <QuizQuestion
+            question={currentQuestion}
+            questionNumber={currentQuestionIndex + 1}
+            totalQuestions={quiz.questions.length}
+            selectedAnswer={selectedAnswers[currentQuestionIndex]}
+            onSelectAnswer={handleSelectAnswer}
+            onSubmit={handleSubmitQuestion}
+            submitted={isCurrentSubmitted}
+            showFeedback={isCurrentSubmitted}
+          />
+        </div>
 
-          {/* Options */}
-          <div className="space-y-3">
-            {currentQuestion.options.map((option, index) => {
-              const isSelected = selectedAnswers[currentQuestionIndex] === index;
+        {/* Question Navigation Pills */}
+        <div className="px-4 pb-2">
+          <div className="flex flex-wrap gap-2 justify-center">
+            {quiz.questions.map((_, index) => {
+              const isAnswered = submittedQuestions[index];
+              const isCorrect = isAnswered && selectedAnswers[index] === quiz.questions[index].correctAnswer;
+              const isCurrent = index === currentQuestionIndex;
 
               return (
                 <button
                   key={index}
-                  onClick={() => handleSelectAnswer(index)}
-                  className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-                    isSelected
-                      ? 'border-blue-500 bg-blue-500/10'
-                      : 'border-[var(--color-border-light)] hover:border-blue-300 hover:bg-[var(--color-bg-secondary)]'
+                  onClick={() => handleGoToQuestion(index)}
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium transition-all ${
+                    isCurrent
+                      ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-[var(--color-bg-primary)]'
+                      : ''
+                  } ${
+                    isAnswered
+                      ? isCorrect
+                        ? 'bg-green-500 text-white'
+                        : 'bg-red-500 text-white'
+                      : selectedAnswers[index] !== null
+                      ? 'bg-blue-500/20 text-blue-500 border-2 border-blue-500'
+                      : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border-2 border-[var(--color-border-light)]'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                      isSelected
-                        ? 'border-blue-500 bg-blue-500'
-                        : 'border-[var(--color-border-light)]'
-                    }`}>
-                      {isSelected && <CheckIcon />}
-                    </div>
-                    <span className="text-[var(--color-text-primary)]">{option}</span>
-                  </div>
+                  {index + 1}
                 </button>
               );
             })}
           </div>
-
-          {/* Answered Questions Indicator */}
-          <div className="mt-6 flex flex-wrap gap-2">
-            {quiz.questions.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentQuestionIndex(index)}
-                className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium transition-colors ${
-                  index === currentQuestionIndex
-                    ? 'bg-blue-500 text-white'
-                    : selectedAnswers[index] !== null
-                    ? 'bg-green-500/20 text-green-500 border-2 border-green-500'
-                    : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border-2 border-[var(--color-border-light)]'
-                }`}
-              >
-                {index + 1}
-              </button>
-            ))}
-          </div>
         </div>
 
-        {/* Footer */}
+        {/* Footer Navigation */}
         <div className="flex items-center justify-between p-4 border-t border-[var(--color-border-light)]">
           <button
             onClick={handlePrevious}
@@ -320,14 +236,14 @@ export function Quiz({ quiz, onClose, onComplete }: QuizProps) {
 
           <button
             onClick={handleNext}
-            disabled={!canProceed}
+            disabled={!isCurrentSubmitted}
             className={`px-4 py-2 rounded-lg transition-colors ${
-              !canProceed
+              !isCurrentSubmitted
                 ? 'bg-blue-500/50 text-white cursor-not-allowed opacity-50'
                 : 'bg-blue-500 hover:bg-blue-600 text-white'
             }`}
           >
-            {isLastQuestion ? 'Submit Quiz' : 'Next'}
+            {isLastQuestion && allQuestionsSubmitted ? 'See Results' : 'Next'}
           </button>
         </div>
       </div>

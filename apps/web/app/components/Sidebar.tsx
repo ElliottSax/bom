@@ -3,6 +3,7 @@ import {
   type Volume,
   type Book,
   type Verse,
+  type VolumeId,
 } from '../lib/types';
 import { CloseIcon, FireIcon } from './Icons';
 import { useUserData } from '../contexts/UserDataContext';
@@ -14,10 +15,11 @@ interface SidebarProps {
   currentVolume: Volume;
   books: Book[];
   selectedBook: string | null;
-  setSelectedBook: React.Dispatch<React.SetStateAction<string | null>>;
+  setSelectedBook: (bookId: string) => void;
   setSelectedChapter: React.Dispatch<React.SetStateAction<number | null>>;
   setVerses: React.Dispatch<React.SetStateAction<Verse[]>>;
   totalChapters: number;
+  navigateToReference: (volumeId: VolumeId, book: string, chapter: number) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -31,8 +33,9 @@ const Sidebar: React.FC<SidebarProps> = ({
   setSelectedChapter,
   setVerses,
   totalChapters,
+  navigateToReference,
 }) => {
-  const { bookmarks, notes, readingProgress, navigateToReference, deleteNote } = useUserData();
+  const { bookmarks, notes, readingProgress, deleteNote } = useUserData();
 
   const chaptersReadInVolume = Object.keys(readingProgress.chaptersRead).filter(key => key.startsWith(`${currentVolume.id}:`)).length;
   const completionPercentage = Math.round((chaptersReadInVolume / totalChapters) * 100);
