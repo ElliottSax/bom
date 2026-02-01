@@ -21,11 +21,13 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useCoCCourses } from '../hooks/useCoCCourses';
 import { useCourseProgress } from '../hooks/useCourseProgress';
 import { HomeStackParamList } from '../navigation/RootNavigator';
+import { Quiz } from '../components/Quiz';
+import { COC_QUIZZES } from '../data/cocQuizzes';
 
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList>;
 type RouteProps = RouteProp<HomeStackParamList, 'CoCLesson'>;
 
-type TabType = 'content' | 'scriptures' | 'terms' | 'discussion' | 'materials';
+type TabType = 'content' | 'scriptures' | 'terms' | 'discussion' | 'materials' | 'quiz';
 
 export function CoCLessonScreen() {
   const navigation = useNavigation<NavigationProp>();
@@ -61,6 +63,10 @@ export function CoCLessonScreen() {
   const prevLesson = course.lessons[lessonIndex - 1];
   const lessonCompleted = isLessonComplete(courseId, lessonId);
 
+  // Find quiz for this lesson
+  const quizData = Object.values(COC_QUIZZES).find((q) => q.lessonId === lessonId);
+  const hasQuiz = !!quizData;
+
   // Mark lesson complete and check if course is done
   const handleMarkComplete = useCallback(async () => {
     await markLessonComplete(courseId, lessonId);
@@ -82,6 +88,21 @@ export function CoCLessonScreen() {
       await Linking.openURL(url);
     }
   };
+
+  const handleQuizComplete = useCallback(async (score: number, passed: boolean) => {
+    // Mark lesson as complete if quiz is passed
+    if (passed && !lessonCompleted) {
+      await handleMarkComplete();
+    }
+    // Switch back to content tab
+    setActiveTab('content');
+  }, [lessonCompleted, handleMarkComplete]);
+
+  const handleQuizRetake = useCallback(() => {
+    // Reset quiz state by re-rendering
+    setActiveTab('content');
+    setTimeout(() => setActiveTab('quiz'), 100);
+  }, []);
 
   const renderMarkdown = () => (
     <View style={styles.markdownContainer}>
@@ -266,6 +287,28 @@ export function CoCLessonScreen() {
     </View>
   );
 
+  const renderQuiz = () => {
+    if (!quizData) {
+      return (
+        <View style={styles.tabContent}>
+          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+            No quiz available for this lesson
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.quizContainer}>
+        <Quiz
+          quiz={quizData}
+          onComplete={handleQuizComplete}
+          onRetake={handleQuizRetake}
+        />
+      </View>
+    );
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
@@ -360,6 +403,24 @@ export function CoCLessonScreen() {
             Resources
           </Text>
         </Pressable>
+        {hasQuiz && (
+          <Pressable
+            style={[
+              styles.tab,
+              activeTab === 'quiz' && { borderBottomColor: course.color, borderBottomWidth: 2 },
+            ]}
+            onPress={() => setActiveTab('quiz')}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                { color: activeTab === 'quiz' ? course.color : colors.textSecondary },
+              ]}
+            >
+              Quiz
+            </Text>
+          </Pressable>
+        )}
       </View>
 
       {/* Content */}
@@ -369,6 +430,7 @@ export function CoCLessonScreen() {
         {activeTab === 'terms' && renderKeyTerms()}
         {activeTab === 'discussion' && renderDiscussion()}
         {activeTab === 'materials' && renderMaterials()}
+        {activeTab === 'quiz' && renderQuiz()}
 
         {/* Mark Complete Button */}
         <View style={styles.completeSection}>
@@ -626,5 +688,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginTop: 40,
+  },
+  quizContainer: {
+    flex: 1,
   },
 });
