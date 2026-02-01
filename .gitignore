@@ -102,3 +102,4 @@ schema.graphql.generated.ts
 
 # Scraped scripture data (can be regenerated)
 services/api/prisma/seeds/scraped/
+*.tsbuildinfo

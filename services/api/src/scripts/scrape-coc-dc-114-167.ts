@@ -38,23 +38,46 @@ const SECTION_CONTEXTS: Record<number, {
     conferenceDate: '1860-04-06',
     context: 'First revelation to Joseph Smith III after accepting presidency. Addressed church organization and priesthood order after succession crisis.',
   },
-  156: {
+  145: {
     prophet: 'W. Wallace Smith',
-    dateReceived: '1984-04-01',
+    dateReceived: '1958-10-08',
+    conferenceDate: '1958-10-08',
+    context: 'Released Israel A. Smith, called F. Henry Edwards and Maurice L. Draper to First Presidency. Called Roy A. Cheville as Presiding Patriarch.',
+  },
+  156: {
+    prophet: 'Wallace B. Smith',
+    dateReceived: '1984-04-03',
     conferenceDate: '1984-04-05',
-    context: 'Authorized women\'s ordination to priesthood. Led to schism of ~50,000 members who formed Restoration Branches. First women ordained 1985.',
+    context: 'Authorized women\'s ordination to priesthood. Announced temple purposes. Led to schism of ~50,000 members who formed Restoration Branches. First women ordained 1985.',
   },
-  167: {
+  163: {
     prophet: 'Stephen M. Veazey',
-    dateReceived: '2023-03-27',
-    conferenceDate: '2023-04-09',
-    context: 'Latest revelation calling church to live as Christ\'s people, pursue peace, and share good news. Emphasizes unity and mission.',
+    dateReceived: '2007-03-28',
+    conferenceDate: '2007-04-08',
+    context: 'Enduring Principles revelation. Established core principles of Community of Christ identity, emphasizing Jesus Christ, worth of all persons, sacredness of creation, and responsible choices.',
   },
-  // Add more contexts as needed
+  164: {
+    prophet: 'Stephen M. Veazey',
+    dateReceived: '2010-03-28',
+    conferenceDate: '2010-04-10',
+    context: 'Temple dedication revelation. Provided guidance on temple purposes and worship, emphasizing peace, reconciliation, and healing ministries.',
+  },
+  165: {
+    prophet: 'Stephen M. Veazey',
+    dateReceived: '2016-03-28',
+    conferenceDate: '2016-04-10',
+    context: 'Called church to courageously make Jesus Christ the center of individual and community life. Emphasized sharing ministries and blessings of Community of Christ.',
+  },
+  // Note: There is no Section 167 as of 2026. Section 165 (2016) is the most recent.
 };
 
 async function scrapeCoCSection(sectionNum: number): Promise<Section | null> {
-  const url = `https://www.centerplace.org/hs/dc/section${sectionNum}.htm`;
+  // Centerplace.org uses different URL formats for different section ranges
+  // Sections 114-144: /hs/dc/sectionXXX.htm
+  // Sections 145-159: /library/study/dc/rdc-XXX.htm
+  const url = sectionNum <= 144
+    ? `https://www.centerplace.org/hs/dc/section${sectionNum}.htm`
+    : `https://www.centerplace.org/library/study/dc/rdc-${sectionNum}.htm`;
 
   try {
     console.log(`Scraping section ${sectionNum}...`);
@@ -68,37 +91,40 @@ async function scrapeCoCSection(sectionNum: number): Promise<Section | null> {
     const html = await response.text();
     const $ = cheerio.load(html);
 
-    // Extract verses - Centerplace uses various formats, need to adapt
+    // Extract verses - Centerplace uses different formats for different sections
     const verses: Verse[] = [];
 
-    // Try different selectors
+    // Parse paragraphs with verse markers
     $('p').each((i, elem) => {
       const text = $(elem).text().trim();
 
-      // Look for verse numbers at start of paragraphs
-      const verseMatch = text.match(/^(\d+)[:.]\s*(.+)/);
+      // Try different verse marker formats:
+      // Format 1: "D&C 114:1a Text here" (used in /hs/dc/ pages)
+      // Format 2: "[Sec 156:1a] Text here" (used in /library/study/dc/ pages)
+      let verseMatch = text.match(/^(?:D&C|Sec)\s+\d+:(\d+)[a-z]?\s+(.+)$/);
+      if (!verseMatch) {
+        verseMatch = text.match(/^\[(?:Sec|D&C)\s+\d+:(\d+)[a-z]?\]\s*(.+)$/);
+      }
+
       if (verseMatch) {
         const num = parseInt(verseMatch[1]);
-        const verseText = verseMatch[2];
-        verses.push({ num, text: verseText });
-      } else if (text && !text.startsWith('Section') && verses.length > 0) {
-        // Continuation of previous verse
-        verses[verses.length - 1].text += ' ' + text;
-      } else if (text && verses.length === 0 && !text.startsWith('Section')) {
-        // First verse without number
-        verses.push({ num: 1, text });
+        const verseText = verseMatch[2].trim();
+
+        // Check if we already have this verse number (e.g., 1a, 1b are both verse 1)
+        const existingVerse = verses.find(v => v.num === num);
+        if (existingVerse) {
+          // Append to existing verse
+          existingVerse.text += ' ' + verseText;
+        } else {
+          verses.push({ num, text: verseText });
+        }
       }
     });
 
-    // Fallback: if no verses found, get all text
+    // If no verses found, skip this section
     if (verses.length === 0) {
-      const allText = $.text().trim();
-      const lines = allText.split('\n').filter(line => line.trim());
-      lines.forEach((line, i) => {
-        if (line.trim() && !line.includes('Section ' + sectionNum)) {
-          verses.push({ num: i + 1, text: line.trim() });
-        }
-      });
+      console.log(`No verses found for section ${sectionNum}`);
+      return null;
     }
 
     const context = SECTION_CONTEXTS[sectionNum];
@@ -121,8 +147,9 @@ async function scrapeCoCSection(sectionNum: number): Promise<Section | null> {
 async function scrapeAllCoCSections(): Promise<Section[]> {
   const sections: Section[] = [];
 
-  // Scrape sections 114-167
-  for (let sectionNum = 114; sectionNum <= 167; sectionNum++) {
+  // Scrape sections 114-159 (centerplace.org only has up to 159)
+  // Sections 160-165 need to be sourced from official CoC website or added manually
+  for (let sectionNum = 114; sectionNum <= 159; sectionNum++) {
     const section = await scrapeCoCSection(sectionNum);
     if (section && section.verses.length > 0) {
       sections.push(section);
