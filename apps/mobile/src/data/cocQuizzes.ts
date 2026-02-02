@@ -336,4 +336,193 @@ export const COC_QUIZZES: Record<string, QuizData> = {
       },
     ],
   },
+
+  'intro-coc-4-quiz': {
+    id: 'intro-coc-4-quiz',
+    lessonId: 'intro-coc-4',
+    title: 'Section 156 and Women\'s Ordination Quiz',
+    description: 'Test your knowledge of the 1984 revelation and women\'s ordination in Community of Christ',
+    passingScore: 70,
+    questions: [
+      {
+        id: 'q1',
+        question: 'When was Section 156 received and presented to the church?',
+        options: [
+          'April 1980',
+          'April 1984',
+          'April 1990',
+          'April 2001',
+        ],
+        correctAnswer: 1,
+        explanation:
+          'Section 156 was received on April 1, 1984, and presented to the World Conference on April 5, 1984, where it was sustained by vote.',
+      },
+      {
+        id: 'q2',
+        question: 'Who was the prophet who presented Section 156?',
+        options: [
+          'Joseph Smith III',
+          'Frederick M. Smith',
+          'W. Wallace Smith',
+          'Grant McMurray',
+        ],
+        correctAnswer: 2,
+        explanation:
+          'W. Wallace Smith was the prophet-president who received and presented Section 156. He served from 1958-1978 and remained prophet until his death in 1989.',
+      },
+      {
+        id: 'q3',
+        question: 'What did D&C 156:9 specifically affirm?',
+        options: [
+          'That temples should be built in Independence',
+          'That men and women are of equal worth before God',
+          'That the church should change its name',
+          'That polygamy was never authorized',
+        ],
+        correctAnswer: 1,
+        explanation:
+          'D&C 156:9 states: "The time has come for all to hear that men and women are of equal worth before God. The church is to move toward the time when all are called according to gifts and talents."',
+      },
+      {
+        id: 'q4',
+        question: 'Approximately how many members left RLDS Church after Section 156?',
+        options: [
+          '5,000',
+          '20,000',
+          '50,000',
+          '100,000',
+        ],
+        correctAnswer: 2,
+        explanation:
+          'Approximately 50,000 members (out of ~250,000) left the RLDS Church between 1984-1990 due to disagreement with Section 156 and women\'s ordination.',
+      },
+      {
+        id: 'q5',
+        question: 'What are the groups that rejected Section 156 and maintain pre-1984 RLDS practices called?',
+        options: [
+          'Reorganized Saints',
+          'Restoration Branches',
+          'Traditional RLDS',
+          'Conservative CoC',
+        ],
+        correctAnswer: 1,
+        explanation:
+          'Those who rejected Section 156 formed independent congregations called Restoration Branches. They maintain pre-1984 RLDS practices, do not ordain women, and do not use the Community of Christ name.',
+      },
+      {
+        id: 'q6',
+        question: 'What biblical passage is often cited in support of women\'s ordination in CoC?',
+        options: [
+          '1 Timothy 2:12',
+          'Galatians 3:28',
+          '1 Corinthians 14:34',
+          'Ephesians 5:22',
+        ],
+        correctAnswer: 1,
+        explanation:
+          'Galatians 3:28 states "There is neither Jew nor Gentile, neither slave nor free, nor is there male and female, for you are all one in Christ Jesus." This passage is frequently cited in support of gender equality in priesthood.',
+      },
+    ],
+  },
+
+  'intro-coc-5-quiz': {
+    id: 'intro-coc-5-quiz',
+    lessonId: 'intro-coc-5',
+    title: 'Temple Theology Quiz',
+    description: 'Test your knowledge of CoC temples and their purpose',
+    passingScore: 75,
+    questions: [
+      {
+        id: 'q1',
+        question: 'When was the Kirtland Temple dedicated?',
+        options: [
+          'March 27, 1830',
+          'March 27, 1836',
+          'April 6, 1836',
+          'December 25, 1833',
+        ],
+        correctAnswer: 1,
+        explanation:
+          'The Kirtland Temple was dedicated on March 27, 1836. It was the first temple built in the Restoration movement and featured spectacular spiritual experiences during the dedication.',
+      },
+      {
+        id: 'q2',
+        question: 'When did the RLDS Church acquire ownership of Kirtland Temple?',
+        options: [
+          '1838 (when Saints left)',
+          '1860 (reorganization)',
+          '1880',
+          '1920',
+        ],
+        correctAnswer: 2,
+        explanation:
+          'The RLDS Church acquired ownership of the Kirtland Temple in 1880 and has maintained continuous stewardship since then.',
+      },
+      {
+        id: 'q3',
+        question: 'When was the Independence Temple dedicated?',
+        options: [
+          '1984',
+          '1990',
+          '1994',
+          '2001',
+        ],
+        correctAnswer: 2,
+        explanation:
+          'The Independence Temple was dedicated in 1994. Its construction was authorized in the 1980s, with D&C 156:5 (1984) providing revelation about its purpose.',
+      },
+      {
+        id: 'q4',
+        question: 'What is the primary purpose of CoC temples according to church teaching?',
+        options: [
+          'Performing saving ordinances for the living and dead',
+          'Worship, peace-building, and community reconciliation',
+          'Secret ceremonies for worthy members only',
+          'Genealogical research and family sealing',
+        ],
+        correctAnswer: 1,
+        explanation:
+          'CoC temples are for worship, peace-building, and community reconciliation. They are open to all and do not require temple recommends or perform exclusive saving ordinances.',
+      },
+      {
+        id: 'q5',
+        question: 'What does D&C 164:9 say about being "people of the Temple"?',
+        options: [
+          'Those who perform temple ordinances regularly',
+          'Those who have temple recommends',
+          'Those who see violence but proclaim peace, feel conflict yet extend reconciliation',
+          'Those who are sealed in eternal families',
+        ],
+        correctAnswer: 2,
+        explanation:
+          'D&C 164:9 states: "Become a people of the Temple—those who see violence but proclaim peace, who feel conflict yet extend the hand of reconciliation, who encounter broken spirits and find pathways for healing."',
+      },
+      {
+        id: 'q6',
+        question: 'Which of these activities happens in CoC temples?',
+        options: [
+          'Baptisms for the dead',
+          'Endowment ceremonies',
+          'Sunday worship services and community concerts',
+          'Eternal marriage sealings',
+        ],
+        correctAnswer: 2,
+        explanation:
+          'CoC temples host Sunday worship services, concerts, community education, and are open for public tours. They do not perform LDS-style ordinances such as baptisms for the dead, endowments, or sealings.',
+      },
+      {
+        id: 'q7',
+        question: 'How do CoC temples differ from LDS temples?',
+        options: [
+          'CoC temples are taller and more ornate',
+          'CoC temples are open to all and focus on peace/worship, not exclusive ordinances',
+          'CoC temples require higher standards of worthiness',
+          'CoC temples are only for priesthood members',
+        ],
+        correctAnswer: 1,
+        explanation:
+          'CoC temples are fundamentally different from LDS temples: they are open to all (no recommend required), focus on worship and peace-building rather than saving ordinances, and do not perform proxy work for the dead or exclusive rituals.',
+      },
+    ],
+  },
 };
