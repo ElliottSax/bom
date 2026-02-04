@@ -2,7 +2,8 @@
  * Optimized React hooks for performance
  */
 
-import { useMemo, useCallback, useRef, useEffect } from 'react';
+import { useMemo, useCallback, useRef, useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { StudyPlan, Verse, SearchResult } from '../types';
 
 /**
@@ -309,7 +310,3 @@ export function useFormValidation<T extends Record<string, any>>(
     resetForm,
   };
 }
-
-// Add missing imports
-import { useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';

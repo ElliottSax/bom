@@ -16,6 +16,8 @@ const log = logger.scope('CloudSync');
 const SYNC_CONFIG_KEY = '@bom_sync_config';
 const SYNC_QUEUE_KEY = '@bom_sync_queue';
 const LAST_SYNC_KEY = '@bom_last_sync';
+const AUTH_TOKEN_KEY = '@bom_auth_token';
+const REFRESH_TOKEN_KEY = '@bom_refresh_token';
 
 const DATA_KEYS = {
   bookmarks: '@bom_bookmarks',
@@ -26,7 +28,7 @@ const DATA_KEYS = {
 };
 
 // API configuration - replace with your actual API URL
-const API_BASE_URL = 'https://api.bomstudytools.com';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.bomstudytools.org';
 
 export interface SyncConfig {
   enabled: boolean;
@@ -55,6 +57,12 @@ export interface SyncStatus {
   isOnline: boolean;
 }
 
+interface AuthTokens {
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: number;
+}
+
 const DEFAULT_CONFIG: SyncConfig = {
   enabled: false,
   userId: null,
@@ -75,6 +83,7 @@ export function useCloudSync() {
     isOnline: true,
   });
   const [loading, setLoading] = useState(true);
+  const [authTokens, setAuthTokens] = useState<AuthTokens | null>(null);
 
   const syncIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -116,8 +125,151 @@ export function useCloudSync() {
     };
   }, [config.enabled, config.autoSync, config.syncInterval]);
 
+  // Load auth tokens from storage
+  const loadAuthTokens = async () => {
+    try {
+      const [accessToken, refreshToken] = await Promise.all([
+        AsyncStorage.getItem(AUTH_TOKEN_KEY),
+        AsyncStorage.getItem(REFRESH_TOKEN_KEY),
+      ]);
+
+      if (accessToken && refreshToken) {
+        // Parse JWT to get expiration (basic implementation)
+        const payload = JSON.parse(atob(accessToken.split('.')[1]));
+        const expiresAt = payload.exp * 1000; // Convert to milliseconds
+
+        setAuthTokens({
+          accessToken,
+          refreshToken,
+          expiresAt,
+        });
+      }
+    } catch (err) {
+      log.error('Failed to load auth tokens', err);
+    }
+  };
+
+  // Save auth tokens to storage
+  const saveAuthTokens = async (tokens: AuthTokens) => {
+    try {
+      await Promise.all([
+        AsyncStorage.setItem(AUTH_TOKEN_KEY, tokens.accessToken),
+        AsyncStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken),
+      ]);
+      setAuthTokens(tokens);
+    } catch (err) {
+      log.error('Failed to save auth tokens', err);
+    }
+  };
+
+  // Get valid access token (refresh if needed)
+  const getValidAccessToken = async (): Promise<string | null> => {
+    if (!authTokens) {
+      log.warn('No auth tokens available');
+      return null;
+    }
+
+    // Check if token is expired or about to expire (within 5 minutes)
+    const now = Date.now();
+    const bufferTime = 5 * 60 * 1000; // 5 minutes
+
+    if (now >= authTokens.expiresAt - bufferTime) {
+      // Token expired or about to expire, refresh it
+      log.info('Access token expired, refreshing...');
+      const newToken = await refreshAccessToken();
+      return newToken;
+    }
+
+    return authTokens.accessToken;
+  };
+
+  // Refresh access token using refresh token
+  const refreshAccessToken = async (): Promise<string | null> => {
+    if (!authTokens?.refreshToken) {
+      log.error('No refresh token available');
+      return null;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          refreshToken: authTokens.refreshToken,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to refresh token');
+      }
+
+      const data = await response.json();
+      const payload = JSON.parse(atob(data.accessToken.split('.')[1]));
+
+      const newTokens: AuthTokens = {
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken || authTokens.refreshToken,
+        expiresAt: payload.exp * 1000,
+      };
+
+      await saveAuthTokens(newTokens);
+      return newTokens.accessToken;
+    } catch (err) {
+      log.error('Failed to refresh access token', err);
+      // Clear invalid tokens
+      await AsyncStorage.multiRemove([AUTH_TOKEN_KEY, REFRESH_TOKEN_KEY]);
+      setAuthTokens(null);
+      return null;
+    }
+  };
+
+  // Make authenticated API request
+  const authenticatedFetch = async (
+    url: string,
+    options: RequestInit = {}
+  ): Promise<Response> => {
+    const token = await getValidAccessToken();
+
+    if (!token) {
+      throw new Error('Not authenticated. Please log in again.');
+    }
+
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        ...options.headers,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    // Handle 401 Unauthorized - try to refresh token once
+    if (response.status === 401) {
+      const newToken = await refreshAccessToken();
+      if (newToken) {
+        // Retry request with new token
+        return fetch(url, {
+          ...options,
+          headers: {
+            ...options.headers,
+            'Authorization': `Bearer ${newToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+      }
+      throw new Error('Authentication failed. Please log in again.');
+    }
+
+    return response;
+  };
+
   const initializeSync = async () => {
     try {
+      // Load auth tokens
+      await loadAuthTokens();
+
       // Load config
       const savedConfig = await AsyncStorage.getItem(SYNC_CONFIG_KEY);
       if (savedConfig) {
@@ -225,17 +377,13 @@ export function useCloudSync() {
       const pending = queue.filter((c) => !c.synced);
 
       if (pending.length > 0) {
-        // Upload changes
-        const response = await fetch(`${API_BASE_URL}/sync/push`, {
+        // Upload changes using JWT authentication
+        const response = await authenticatedFetch(`${API_BASE_URL}/sync/push`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-User-ID': config.userId,
-            'X-Device-ID': config.deviceId,
-          },
           body: JSON.stringify({
             changes: pending,
             lastSyncAt: config.lastSyncAt,
+            deviceId: config.deviceId,
           }),
         });
 
@@ -250,15 +398,9 @@ export function useCloudSync() {
         await saveSyncQueue(updatedQueue);
       }
 
-      // Pull changes from cloud
-      const pullResponse = await fetch(
-        `${API_BASE_URL}/sync/pull?since=${config.lastSyncAt || 0}`,
-        {
-          headers: {
-            'X-User-ID': config.userId,
-            'X-Device-ID': config.deviceId,
-          },
-        }
+      // Pull changes from cloud using JWT authentication
+      const pullResponse = await authenticatedFetch(
+        `${API_BASE_URL}/sync/pull?since=${config.lastSyncAt || 0}&deviceId=${config.deviceId}`
       );
 
       if (pullResponse.ok) {
@@ -396,15 +538,78 @@ export function useCloudSync() {
     return new Date(timestamp).toLocaleDateString();
   };
 
+  // Login to enable cloud sync
+  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+
+      const data = await response.json();
+      const payload = JSON.parse(atob(data.accessToken.split('.')[1]));
+
+      const tokens: AuthTokens = {
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+        expiresAt: payload.exp * 1000,
+      };
+
+      await saveAuthTokens(tokens);
+
+      // Extract user ID from token payload
+      const userId = payload.sub || payload.userId;
+
+      // Enable sync with user ID
+      await saveConfig({
+        ...config,
+        enabled: true,
+        userId,
+      });
+
+      return true;
+    } catch (err) {
+      log.error('Login failed', err);
+      return false;
+    }
+  }, [config]);
+
+  // Logout and disable cloud sync
+  const logout = useCallback(async () => {
+    try {
+      // Clear auth tokens
+      await AsyncStorage.multiRemove([AUTH_TOKEN_KEY, REFRESH_TOKEN_KEY]);
+      setAuthTokens(null);
+
+      // Disable sync
+      await disableSync();
+    } catch (err) {
+      log.error('Logout failed', err);
+    }
+  }, [disableSync]);
+
+  // Check if user is authenticated
+  const isAuthenticated = authTokens !== null;
+
   return {
     config,
     status,
     loading,
+    isAuthenticated,
     enableSync,
     disableSync,
     updateSettings,
     performSync,
     queueChange,
     formatLastSync,
+    login,
+    logout,
   };
 }

@@ -7,7 +7,7 @@
 import { useState, useCallback } from 'react';
 import { Platform, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import RNFS from 'react-native-fs';
+import * as RNFS from 'react-native-fs';
 import Share from 'react-native-share';
 import DocumentPicker from 'react-native-document-picker';
 import { logger } from '../utils/logger';
@@ -170,6 +170,14 @@ export function useDataBackup() {
 
       const fileUri = result[0].uri;
 
+      // Validate file size (max 10MB to prevent memory issues)
+      const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+      const stats = await RNFS.stat(fileUri);
+
+      if (stats.size > MAX_FILE_SIZE) {
+        throw new Error('File is too large. Maximum file size is 10MB.');
+      }
+
       // Read file content
       const content = await RNFS.readFile(fileUri, 'utf8');
       const backupData: BackupData = JSON.parse(content);
@@ -226,12 +234,12 @@ export function useDataBackup() {
       const existingProgress = JSON.parse(
         (await AsyncStorage.getItem(STORAGE_KEYS.readingProgress)) || '{}'
       );
-      const mergedChapters = [
-        ...new Set([
+      const mergedChapters = Array.from(
+        new Set([
           ...(existingProgress.completedChapters || []),
           ...(data.readingProgress.completedChapters || []),
-        ]),
-      ];
+        ])
+      );
       await AsyncStorage.setItem(
         STORAGE_KEYS.readingProgress,
         JSON.stringify({
@@ -247,7 +255,7 @@ export function useDataBackup() {
       const existingSearches = JSON.parse(
         (await AsyncStorage.getItem(STORAGE_KEYS.recentSearches)) || '[]'
       );
-      const mergedSearches = [...new Set([...existingSearches, ...data.recentSearches])].slice(0, 20);
+      const mergedSearches = Array.from(new Set([...existingSearches, ...data.recentSearches])).slice(0, 20);
       await AsyncStorage.setItem(STORAGE_KEYS.recentSearches, JSON.stringify(mergedSearches));
     }
   };

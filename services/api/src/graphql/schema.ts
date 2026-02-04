@@ -305,6 +305,17 @@ export const typeDefs = `#graphql
     scriptureContext: [ID!]
   }
 
+  input UpdateProfileInput {
+    displayName: String
+    avatarUrl: String
+    email: String
+  }
+
+  input DeleteAccountInput {
+    password: String!
+    confirmation: String! # Must match "DELETE MY ACCOUNT"
+  }
+
   # ============================================================================
   # Queries
   # ============================================================================
@@ -363,6 +374,10 @@ export const typeDefs = `#graphql
   # ============================================================================
 
   type Mutation {
+    # User mutations
+    updateProfile(input: UpdateProfileInput!): User!
+    deleteAccount(input: DeleteAccountInput!): Boolean!
+
     # Highlight mutations
     createHighlight(input: CreateHighlightInput!): Highlight!
     deleteHighlight(id: ID!): Boolean!

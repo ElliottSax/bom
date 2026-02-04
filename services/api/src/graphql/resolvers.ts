@@ -779,6 +779,145 @@ export const resolvers = {
   // ============================================================================
   Mutation: {
     /**
+     * Update user profile
+     */
+    updateProfile: async (
+      _parent: ResolverParent,
+      args: { input: { displayName?: string; avatarUrl?: string; email?: string } },
+      context: GraphQLContext
+    ) => {
+      const { userId } = requireUser(context);
+
+      // Validate email if provided
+      if (args.input.email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(args.input.email)) {
+          throw new GraphQLError('Invalid email format', {
+            extensions: { code: 'VALIDATION_ERROR' },
+          });
+        }
+
+        // Check if email is already taken by another user
+        const existingUser = await context.prisma.user.findUnique({
+          where: { email: args.input.email },
+        });
+
+        if (existingUser && existingUser.id !== userId) {
+          throw new GraphQLError('Email already in use', {
+            extensions: { code: 'VALIDATION_ERROR' },
+          });
+        }
+      }
+
+      // Validate displayName if provided
+      if (args.input.displayName !== undefined) {
+        if (args.input.displayName.length > 0 && args.input.displayName.length < 2) {
+          throw new GraphQLError('Display name must be at least 2 characters', {
+            extensions: { code: 'VALIDATION_ERROR' },
+          });
+        }
+        if (args.input.displayName.length > 50) {
+          throw new GraphQLError('Display name must be less than 50 characters', {
+            extensions: { code: 'VALIDATION_ERROR' },
+          });
+        }
+      }
+
+      // Validate avatarUrl if provided
+      if (args.input.avatarUrl) {
+        try {
+          new URL(args.input.avatarUrl);
+        } catch {
+          throw new GraphQLError('Invalid avatar URL format', {
+            extensions: { code: 'VALIDATION_ERROR' },
+          });
+        }
+      }
+
+      // Update user profile
+      const updatedUser = await context.prisma.user.update({
+        where: { id: userId },
+        data: {
+          ...(args.input.displayName !== undefined && { displayName: args.input.displayName || null }),
+          ...(args.input.avatarUrl && { avatarUrl: args.input.avatarUrl }),
+          ...(args.input.email && { email: args.input.email }),
+        },
+        include: {
+          preferences: true,
+          studyStreak: true,
+        },
+      });
+
+      return updatedUser;
+    },
+
+    /**
+     * Delete user account (GDPR Right to be Forgotten)
+     */
+    deleteAccount: async (
+      _parent: ResolverParent,
+      args: { input: { password: string; confirmation: string } },
+      context: GraphQLContext
+    ) => {
+      const { userId } = requireUser(context);
+
+      // Verify confirmation text
+      if (args.input.confirmation !== 'DELETE MY ACCOUNT') {
+        throw new GraphQLError(
+          'Confirmation text must be "DELETE MY ACCOUNT" (case sensitive)',
+          {
+            extensions: { code: 'VALIDATION_ERROR' },
+          }
+        );
+      }
+
+      // Get user with password for verification
+      const user = await context.prisma.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        throw new GraphQLError('User not found', {
+          extensions: { code: 'NOT_FOUND' },
+        });
+      }
+
+      // Verify password (using bcrypt if implemented)
+      // Note: This assumes you have bcrypt password hashing implemented
+      // If not using bcrypt, implement your password verification here
+      const bcrypt = require('bcrypt');
+      const passwordValid = await bcrypt.compare(args.input.password, user.password);
+
+      if (!passwordValid) {
+        throw new GraphQLError('Invalid password', {
+          extensions: { code: 'AUTHENTICATION_ERROR' },
+        });
+      }
+
+      // Delete all user data (Prisma cascade handles related records)
+      // This deletes:
+      // - User preferences (CASCADE)
+      // - Highlights (CASCADE)
+      // - Notes (CASCADE)
+      // - Reading progress (CASCADE)
+      // - Study streak (CASCADE)
+      // - Memory cards (CASCADE)
+      // - Group memberships (CASCADE)
+      // - Notifications (CASCADE)
+
+      await context.prisma.user.delete({
+        where: { id: userId },
+      });
+
+      // Optionally: Invalidate all user sessions/tokens
+      // await context.prisma.refreshToken.deleteMany({
+      //   where: { userId },
+      // });
+
+      return true;
+    },
+
+    /**
      * Create a highlight
      */
     createHighlight: async (

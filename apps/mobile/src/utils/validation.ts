@@ -245,10 +245,17 @@ export class RateLimiter {
 }
 
 // XSS prevention for displaying user content
+// React Native compatible version (no DOM API)
 export function escapeHtml(text: string): string {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
+  const entities: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#x27;',
+    '/': '&#x2F;',
+  };
+  return text.replace(/[&<>"'\/]/g, (char) => entities[char] || char);
 }
 
 // Validate JSON structure
