@@ -230,13 +230,13 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   bookmarkItem: {
-    padding: 16,
+    padding: 20,
     borderRadius: 12,
     marginBottom: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
     elevation: 2,
   },
   bookmarkHeader: {
@@ -247,14 +247,16 @@ const styles = StyleSheet.create({
   },
   reference: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
   date: {
     fontSize: 12,
   },
   verseText: {
     fontSize: 14,
-    lineHeight: 20,
+    lineHeight: 22,
+    fontFamily: 'serif',
   },
   label: {
     fontSize: 12,
@@ -273,12 +275,13 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 8,
+    fontWeight: '700',
+    marginBottom: 12,
+    letterSpacing: 0.3,
   },
   emptyText: {
     fontSize: 14,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 22,
   },
 });

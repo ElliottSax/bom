@@ -359,7 +359,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   header: {
-    padding: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
     backgroundColor: '#f5f5f5',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
@@ -369,8 +370,9 @@ const styles = StyleSheet.create({
   },
   chapterTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#333333',
+    letterSpacing: 0.3,
   },
   headerStats: {
     flexDirection: 'row',
@@ -389,13 +391,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
   },
   verseContainer: {
     flexDirection: 'row',
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-    marginBottom: 4,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    marginBottom: 8,
     borderRadius: 4,
   },
   highlightedVerse: {
@@ -412,14 +415,14 @@ const styles = StyleSheet.create({
     marginTop: 0,
   },
   verseNumberContainer: {
-    minWidth: 32,
-    marginRight: 8,
+    minWidth: 36,
+    marginRight: 12,
     alignItems: 'flex-start',
   },
   verseNumber: {
     fontSize: 12,
-    fontWeight: 'bold',
-    color: '#0066cc',
+    fontWeight: '700',
+    color: '#49cce6',
     marginTop: 4,
   },
   indicators: {

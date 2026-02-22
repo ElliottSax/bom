@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
   searchHeader: {
     backgroundColor: '#ffffff',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
@@ -345,9 +345,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    height: 44,
+    borderRadius: 40,
+    paddingHorizontal: 16,
+    height: 48,
   },
   searchIcon: {
     fontSize: 16,
@@ -380,8 +380,8 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
   },
   editionChipSelected: {
-    backgroundColor: '#0066cc',
-    borderColor: '#0066cc',
+    backgroundColor: '#49cce6',
+    borderColor: '#49cce6',
   },
   editionChipText: {
     fontSize: 13,
@@ -408,14 +408,14 @@ const styles = StyleSheet.create({
   },
   resultItem: {
     backgroundColor: '#ffffff',
-    padding: 16,
+    padding: 20,
     marginHorizontal: 16,
-    marginTop: 8,
-    borderRadius: 10,
+    marginTop: 12,
+    borderRadius: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
     elevation: 2,
   },
   resultHeader: {
@@ -426,8 +426,9 @@ const styles = StyleSheet.create({
   },
   resultReference: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#0066cc',
+    fontWeight: '700',
+    color: '#49cce6',
+    letterSpacing: 0.2,
   },
   resultEdition: {
     fontSize: 12,
@@ -439,8 +440,9 @@ const styles = StyleSheet.create({
   },
   resultText: {
     fontSize: 14,
-    color: '#333333',
-    lineHeight: 20,
+    color: '#212225',
+    lineHeight: 22,
+    fontFamily: 'serif',
   },
   highlightedText: {
     backgroundColor: '#fff3cd',
@@ -505,16 +507,18 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   promptTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333333',
-    marginBottom: 8,
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#212225',
+    marginBottom: 12,
+    letterSpacing: 0.3,
   },
   promptText: {
     fontSize: 14,
     color: '#666666',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 32,
+    lineHeight: 22,
   },
   suggestionsContainer: {
     alignItems: 'center',
@@ -551,8 +555,8 @@ const styles = StyleSheet.create({
   },
   suggestionText: {
     fontSize: 14,
-    color: '#0066cc',
-    fontWeight: '500',
+    color: '#49cce6',
+    fontWeight: '600',
   },
   recentChip: {
     flexDirection: 'row',

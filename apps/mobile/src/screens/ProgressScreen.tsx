@@ -207,6 +207,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 16,
     fontStyle: 'italic',
+    lineHeight: 24,
   },
   progressBarContainer: {
     width: '100%',
@@ -227,14 +228,15 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    padding: 16,
+    padding: 20,
     borderRadius: 12,
     alignItems: 'center',
   },
   statNumber: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '700',
     marginBottom: 4,
+    letterSpacing: 0.3,
   },
   statLabel: {
     fontSize: 12,
@@ -245,8 +247,9 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 12,
+    fontWeight: '700',
+    marginBottom: 16,
+    letterSpacing: 0.3,
   },
   bookItem: {
     padding: 12,
