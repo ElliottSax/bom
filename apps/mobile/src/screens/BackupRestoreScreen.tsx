@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { useDataBackup, BackupStats } from '../hooks/useDataBackup';
+import type { ThemeColors } from '../types';
 
 export function BackupRestoreScreen() {
   const { colors } = useTheme();
@@ -271,7 +272,7 @@ interface StatItemProps {
   label: string;
   value: number;
   icon: string;
-  colors: any;
+  colors: ThemeColors;
 }
 
 function StatItem({ label, value, icon, colors }: StatItemProps) {

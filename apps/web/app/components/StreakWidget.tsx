@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { FireIcon } from './Icons';
 import { ShareButton } from './ShareButton';
 import { createStreakShareData } from '../hooks/useShare';
 
@@ -32,7 +31,7 @@ export function StreakWidget({
     return { level: 'starting', emoji: '🔥', color: 'text-gray-500' };
   };
 
-  const { level, emoji, color } = getStreakLevel(currentStreak);
+  const { emoji, color } = getStreakLevel(currentStreak);
   const isMilestone = [3, 7, 14, 30, 60, 100, 365].includes(currentStreak);
 
   // Calculate days until next milestone
@@ -172,7 +171,7 @@ export function StreakWidget({
       {currentStreak >= 3 && (
         <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
           <p className="text-sm text-center text-red-600 dark:text-red-400 font-medium">
-            ⚠️ Don't break the streak! Study today to keep it going.
+            ⚠️ Don&apos;t break the streak! Study today to keep it going.
           </p>
         </div>
       )}

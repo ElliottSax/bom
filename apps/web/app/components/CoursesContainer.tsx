@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useCoCCourses, type Course } from '../hooks/useCoCCourses';
+import { useCoCCourses } from '../hooks/useCoCCourses';
 import { CourseCatalog } from './CourseCatalog';
 import { CourseDetail } from './CourseDetail';
 import useLocalStorage from '../hooks/useLocalStorage';

@@ -1,3 +1,4 @@
+import React from 'react';
 import { Bookmark, Highlight, Note, Verse } from '../lib/types';
 import { VolumeId } from '../lib/scriptures';
 

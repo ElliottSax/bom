@@ -5,7 +5,7 @@
  * and modern CoC resources from Herald House, Gathering Resources, etc.
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 
 export type CourseLevel = 'beginner' | 'intermediate' | 'advanced';
 export type LessonType = 'reading' | 'study' | 'quiz' | 'reflection';

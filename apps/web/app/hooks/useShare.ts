@@ -83,7 +83,7 @@ export function useShare() {
       const platform = options.platform || 'native';
 
       switch (platform) {
-        case 'native':
+        case 'native': {
           if (canUseNativeShare()) {
             await shareNative(data);
           } else {
@@ -92,6 +92,7 @@ export function useShare() {
             await copyToClipboard(fullText);
           }
           break;
+        }
         case 'twitter':
           shareToTwitter(data);
           break;
@@ -104,10 +105,11 @@ export function useShare() {
         case 'email':
           shareToEmail(data);
           break;
-        case 'copy':
+        case 'copy': {
           const fullText = data.url ? `${data.text}\n${data.url}` : data.text;
           await copyToClipboard(fullText);
           break;
+        }
       }
     } finally {
       setIsSharing(false);

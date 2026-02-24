@@ -24,6 +24,7 @@ import {
   getCrossRefTypeColor,
 } from '../hooks/useCrossReferences';
 import type { CrossReference } from '../hooks/useCrossReferences';
+import type { ThemeColors } from '../types';
 import { logger } from '../utils/logger';
 
 const log = logger.scope('VerseActionMenu');
@@ -283,7 +284,7 @@ interface ActionButtonProps {
   icon: string;
   label: string;
   onPress: () => void;
-  colors: any;
+  colors: ThemeColors;
   active?: boolean;
   accessibilityHint?: string;
 }

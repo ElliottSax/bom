@@ -1,63 +1,229 @@
 # Book of Mormon Study Tools - Community of Christ Edition
 
-🌟 **Authentic Community of Christ study platform** featuring:
-- 📖 **Book of Mormon** (1908 CoC Authorized Edition - original 1830 chapter divisions)
-- 📜 **Doctrine & Covenants** with all **167 sections** (114-167 are CoC-specific revelations)
-- ✨ **Inspired Version Bible** (Joseph Smith Translation)
-- 📚 **Historical RLDS materials** from archive.org (Saints' Herald 1860-1928, Joseph Smith III history)
-- 🎓 **Authentic CoC courses** using RLDS study materials and modern CoC resources
-- 🏛️ **CoC theology and perspective** throughout
+A modern scripture study platform for the Community of Christ featuring the Book of Mormon (1908 edition), Doctrine & Covenants (167 sections), and Inspired Version Bible.
 
-**Not affiliated with LDS Church.** This platform is built exclusively for Community of Christ scriptures, theology, and historical tradition.
+## Quick Start
 
-## Project Focus
-
-This project is designed specifically for **Community of Christ** scriptures and their unique versification systems:
-
-- **Book of Mormon** - Original 1830 chapter divisions (not LDS Pratt 1879 versification)
-- **Doctrine & Covenants** - 167 sections (sections 114+ are CoC-specific revelations)
-- **Bible** - Inspired Version (Joseph Smith Translation) and NRSV
-
-### About the LDS Research Documents
-
-The `LDS_STUDY_TOOLS_*.md` files contain **competitive analysis** of LDS Church's Gospel Library app and other scripture study platforms. This research informs our feature decisions but the platform is built specifically for Community of Christ texts and theology.
-
-## 📋 Quick Links
-
-### CoC Integration Resources
-- **[COC_RLDS_STUDY_MATERIALS_CATALOG.md](./COC_RLDS_STUDY_MATERIALS_CATALOG.md)** - Comprehensive catalog of CoC/RLDS study materials
-- **[COC_INTEGRATION_PLAN.md](./COC_INTEGRATION_PLAN.md)** - 7-phase implementation roadmap
-- **[QUICK_COC_IMPLEMENTATION_GUIDE.md](./QUICK_COC_IMPLEMENTATION_GUIDE.md)** - Quick start guide with code examples
-
-### Project Documentation
-- **[PROJECT_SUMMARY.md](./PROJECT_SUMMARY.md)** - Complete project overview with all deliverables
-- **[COMMUNITY_OF_CHRIST_VERSIFICATION.md](./docs/COMMUNITY_OF_CHRIST_VERSIFICATION.md)** - CoC scripture versification guide
-- **[DEVELOPER_ONBOARDING.md](./DEVELOPER_ONBOARDING.md)** - Get started in <30 minutes
-- **[PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)** - Codebase layout and architecture
-
-## 🏗️ Project Structure
-
-This is a production-ready monorepo using npm workspaces and Turborepo. See [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md) for complete directory layout and setup instructions.
-
-**Quick Start:**
 ```bash
-npm install           # Install all dependencies
-make docker-up        # Start PostgreSQL, Redis, Qdrant
-make db-migrate       # Run database migrations
-make dev              # Start all development servers
+# Clone and install
+git clone https://github.com/ElliottSax/bom.git
+cd bom
+npm install
+
+# Start infrastructure
+make docker-up
+
+# Run database migrations
+make db-migrate
+
+# Start all development servers
+make dev
 ```
 
-**Workspaces:**
+Visit:
+- Web app: http://localhost:3000
+- API: http://localhost:4000/graphql
+- Mobile: Use Metro bundler instructions
+
+## Features
+
+**Scripture Study**
+- Cross-references between verses
+- Highlighting and note-taking
+- Daily verse rotation
+- Reading goals and progress tracking
+- Spaced repetition memorization
+
+**Technical Capabilities**
+- Offline-first mobile app
+- Real-time sync across devices
+- GraphQL API with DataLoader optimization
+- Semantic search (planned)
+- Community of Christ specific versification
+
+## Project Structure
+
+This is a monorepo managed with npm workspaces and Turborepo:
+
+```
+bom/
+├── apps/
+│   ├── mobile/          # React Native app (iOS + Android)
+│   └── web/             # Next.js web application
+├── services/
+│   └── api/             # GraphQL API (TypeScript + Fastify + Prisma)
+├── packages/
+│   ├── shared/          # Shared utilities and types
+│   └── graphql/         # GraphQL schema and generated types
+└── scripts/             # Build, deploy, and maintenance scripts
+```
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed system design.
+
+## Development
+
+### Prerequisites
+
+- Node.js 18+ and npm 9+
+- Docker and Docker Compose
+- For mobile: Xcode (iOS) or Android Studio (Android)
+
+### Setup
+
+1. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+2. **Start infrastructure**
+   ```bash
+   make docker-up  # Starts PostgreSQL, Redis, Qdrant
+   ```
+
+3. **Run migrations**
+   ```bash
+   make db-migrate
+   ```
+
+4. **Start development servers**
+   ```bash
+   # All services
+   make dev
+
+   # Individual services
+   make web-dev      # Web only
+   make api-dev      # API only
+   make mobile-ios   # iOS only
+   make mobile-android  # Android only
+   ```
+
+### Available Commands
+
+```bash
+make help          # Show all available commands
+make build         # Build all packages
+make test          # Run all tests
+make lint          # Lint all code
+make format        # Format with Prettier
+make type-check    # TypeScript type checking
+make clean         # Clean build artifacts
+```
+
+## Testing
+
+```bash
+# Run all tests
+npm test
+
+# Test specific workspace
+cd apps/web && npm test
+cd apps/mobile && npm test
+cd services/api && npm test
+
+# Integration tests
+./test-end-to-end.sh
+```
+
+## Deployment
+
+### Production
+
+```bash
+# Build production assets
+npm run build
+
+# Deploy API (Fly.io)
+./deploy-flyio-free.sh
+
+# Deploy web (Vercel)
+./deploy-web-to-vercel.sh
+
+# Import scripture data
+./import-all-scriptures-flyio.sh
+```
+
+### Environments
+
+- **Development**: Local with Docker services
+- **Staging**: Not yet configured
+- **Production**: API on Fly.io, Web on Vercel, Database on Fly.io Postgres
+
+See deployment scripts in `/scripts` for detailed procedures.
+
+## Contributing
+
+### Workflow
+
+1. Create a feature branch: `git checkout -b feature/your-feature`
+2. Make changes and test thoroughly
+3. Commit with clear messages: `git commit -m "feat: add feature"`
+4. Push and create a pull request
+
+### Code Style
+
+- TypeScript for all new code
+- ESLint + Prettier for formatting
+- Run `make lint` and `make format` before committing
+- Use conventional commits (feat, fix, docs, etc.)
+
+### Testing Requirements
+
+- Add tests for new features
+- Maintain 70%+ code coverage
+- All tests must pass before merging
+
+## Documentation
+
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - System design and architecture
+- [apps/web/README.md](./apps/web/README.md) - Web app documentation
+- [apps/mobile/README.md](./apps/mobile/README.md) - Mobile app documentation
+- [services/api/README.md](./services/api/README.md) - API documentation
+- [DEVELOPER_ONBOARDING.md](./DEVELOPER_ONBOARDING.md) - New developer guide
+- [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md) - Codebase organization
+
+## Community of Christ Resources
+
+### Scripture Editions
+- **Book of Mormon**: 1908 CoC Authorized Edition (original 1830 chapters)
+- **Doctrine & Covenants**: 167 sections (sections 114-167 are CoC-specific)
+- **Bible**: Inspired Version (Joseph Smith Translation)
+
+### Reference Documents
+- [COMMUNITY_OF_CHRIST_VERSIFICATION.md](./docs/COMMUNITY_OF_CHRIST_VERSIFICATION.md) - Versification guide
+- [COC_INTEGRATION_PLAN.md](./COC_INTEGRATION_PLAN.md) - Integration roadmap
+- [COC_RLDS_STUDY_MATERIALS_CATALOG.md](./COC_RLDS_STUDY_MATERIALS_CATALOG.md) - Study materials catalog
+
+**Note**: This platform is built specifically for Community of Christ scriptures and theology. The LDS research documents in this repo are for competitive analysis only.
+
+## Workspaces
+
 - `apps/mobile` - React Native mobile app (iOS + Android)
 - `apps/web` - Next.js 14 web application
 - `services/api` - GraphQL API server (Apollo + Fastify)
 - `packages/shared` - Shared utilities and types
 - `packages/graphql` - GraphQL schema and generated types
 
-## 📚 Research Documents
+## License
+
+MIT License - see LICENSE file for details.
+
+## Support
+
+For issues and questions:
+- Open an issue on GitHub
+- Review existing documentation
+- Check the DEVELOPER_ONBOARDING guide
+
+## Acknowledgments
+
+Built for the Community of Christ community with scriptures and theology specific to the CoC tradition.
+
+---
+
+## Research Documents (Reference Only)
 
 ### [LDS_STUDY_TOOLS_RESEARCH.md](./LDS_STUDY_TOOLS_RESEARCH.md)
-**Competitive Analysis** (for reference only)
+**Competitive Analysis**
 
 Analysis of LDS Gospel Library app and other scripture study platforms used as competitive intelligence for feature planning. Note: This project focuses on Community of Christ scriptures, not LDS tools.
 
@@ -225,218 +391,4 @@ The research documents analyze LDS Gospel Library app and competitors as **compe
 - ❌ Minimal community features (no group study, collaboration)
 - ❌ Limited personalization (same experience for everyone)
 
-**Note:** These gaps inform our feature planning for Community of Christ study tools.
-
-### Market Context
-
-**Leading Competitors:**
-- **YouVersion**: 500M+ downloads, excellent reading plans, daily engagement
-- **Logos**: Professional-grade with 2024 AI features, advanced research tools
-- **Blue Letter Bible**: Deep word study, interlinear, completely free
-- **AI Apps (2025)**: Semantic search, personalized devotionals, 73% engagement boost
-
-### Recommended Improvements
-
-#### High Priority (Quick Wins)
-1. **Enhanced Search** - Semantic/concept search, Boolean operators, filters
-2. **AI Cross-References** - Auto-suggest related passages based on themes
-3. **Reading Plans & Progress** - Expanded plans, streaks, completion tracking
-4. **Visualization Dashboard** - Study stats, cross-reference maps, progress charts
-
-#### Medium Priority (Strategic)
-5. **AI Study Assistant** - Chat interface for questions (with disclaimers)
-6. **Group Study Features** - Collaborative reading, shared notes, discussions
-7. **Advanced Note Organization** - Hierarchical tags, templates, export
-8. **Personalized Engagement** - Daily verse, smart reminders, recommendations
-
-#### Future Considerations
-9. **Parallel Text Views** - Side-by-side version comparison
-10. **Voice Integration** - Voice journaling, hands-free study
-11. **Memory System** - Spaced repetition for scripture memorization
-
-## 🔧 Technical Stack Recommendations
-
-### Mobile Framework
-**Primary: React Native 0.77+** (New Architecture)
-- Reason: Cross-platform, large ecosystem, web code reuse
-- Alternative: Flutter 3.29+ (better performance for text-heavy apps)
-
-### AI/ML Infrastructure
-**Semantic Search:**
-- Vector DB: Qdrant (open-source) or Pinecone (managed)
-- Embeddings: Sentence Transformers (fine-tuned on scriptures)
-- Search: Hybrid (semantic + keyword)
-
-**RAG Chatbot:**
-- LLM: GPT-4 (API) or Llama 3 (local via Ollama)
-- Framework: LangChain
-- Important: Clear disclaimers, theological review process
-
-### Data Architecture
-**Offline-First:**
-- Scripture text: SQLite (read-only, ~50MB local storage)
-- User data: PouchDB + CouchDB (master-master sync)
-- Sync strategy: Per-user databases, optimistic UI
-
-### Privacy & Analytics
-- Analytics: Matomo (self-hosted, GDPR compliant)
-- Encryption: AES-256 for sensitive notes
-- Auth: Device-based with optional cloud sync
-
-### Testing & Deployment
-- Testing: Jest (unit), Detox (E2E), 70/20/10 pyramid
-- CI/CD: Fastlane + GitHub Actions
-- Deployment: Staged rollouts, A/B testing
-
-## 📊 Key Statistics from Research
-
-- **25M+ Christians** using AI Bible apps in 2025
-- **73% increase** in daily engagement with AI-powered tools
-- **3-8x higher** retention with push notifications enabled
-- **95% churn** within 90 days without any push notifications
-- **4x higher** open rates for personalized notifications
-- **65% of population** are visual learners (underserved by text-only)
-- **500+ million** YouVersion downloads worldwide
-- **60-100ms** query latency for semantic search (1M-10M vectors)
-
-## 🎓 Research Methodology
-
-### Data Sources
-1. **Official Church Resources** - churchofjesuschrist.org, Gospel Library app
-2. **Competitive Apps** - YouVersion, Logos, Blue Letter Bible, 15+ others
-3. **Industry Reports** - Gartner, app analytics platforms, user studies
-4. **Academic Research** - NLP for religious texts, memory science, UX studies
-5. **Technical Documentation** - Framework docs, API references, best practices
-
-### Analysis Approach
-- Feature-by-feature comparison across 15+ criteria
-- User review analysis (App Store, Google Play)
-- Technical capability assessment
-- Cost-benefit analysis for each recommendation
-- Feasibility scoring (impact vs. complexity)
-
-## 💡 Implementation Recommendations
-
-### Phased Rollout Strategy
-
-**Phase 1: Foundation** (3-6 months)
-- Enhanced search (semantic + Boolean)
-- Study statistics dashboard
-- Expanded reading plans
-- Basic offline improvements
-
-**Phase 2: Intelligence** (6-9 months)
-- AI cross-reference suggestions
-- Semantic search with vector DB
-- Personalized recommendations
-- Advanced note organization
-
-**Phase 3: Engagement** (9-12 months)
-- RAG chatbot (with theological safeguards)
-- Spaced repetition memory system
-- Achievement/streak system
-- Push notification optimization
-
-**Phase 4: Advanced** (12+ months)
-- Network visualization (D3.js)
-- Community/group features
-- Voice integration
-- Third-party API
-
-### Risk Mitigation
-
-**Theological Accuracy (AI Features):**
-- ⚠️ Clear disclaimers: "AI-generated, not official doctrine"
-- ✅ Review process for common queries
-- ✅ Train on authoritative sources only
-- ✅ Option to disable AI features
-
-**Privacy Concerns:**
-- ✅ GDPR compliance from day one
-- ✅ Data minimization (collect only what's needed)
-- ✅ Encryption for sensitive content
-- ✅ User control over data sharing
-
-**Complexity Management:**
-- ✅ Progressive disclosure (advanced features hidden initially)
-- ✅ Maintain simplicity for core reading experience
-- ✅ Extensive user testing before rollout
-- ✅ Gradual feature introduction
-
-## 🔗 Related Resources
-
-### Tools & Platforms Analyzed
-- [Gospel Library](https://www.churchofjesuschrist.org/study/scriptures) - Official LDS app
-- [YouVersion](https://www.bible.com/) - Most popular Bible app
-- [Logos](https://www.logos.com/) - Professional Bible software
-- [Blue Letter Bible](https://www.blueletterbible.org/) - Free study tools
-- [Scripture Central](https://scripturecentral.org/) - LDS scholarship
-- [Viz.Bible](https://viz.bible/) - Scripture visualization
-
-### Technical Resources
-- [Sentence Transformers](https://www.sbert.net/) - Text embeddings
-- [Qdrant](https://qdrant.tech/) - Vector database
-- [LangChain](https://www.langchain.com/) - LLM framework
-- [D3.js](https://d3js.org/) - Data visualization
-- [Matomo](https://matomo.org/) - Privacy-friendly analytics
-- [Fastlane](https://fastlane.tools/) - Mobile automation
-
-### Best Practices Guides
-- [WCAG 2.1](https://www.w3.org/WAI/WCAG21/quickref/) - Accessibility guidelines
-- [GDPR Info](https://gdpr-info.eu/) - Privacy regulation
-- [React Native Best Practices](https://reactnative.dev/docs/performance)
-- [Flutter Performance](https://docs.flutter.dev/perf)
-
-## 📈 Success Metrics (Proposed)
-
-### Engagement
-- Daily Active Users (DAU)
-- Average session duration
-- Study streak retention (7-day, 30-day)
-- Feature adoption rates
-
-### Content
-- Verses read per session
-- Chapters completed
-- Highlights/notes created
-- Searches performed
-
-### AI Features (if implemented)
-- Semantic search usage rate
-- Chat interactions per user
-- AI suggestion acceptance rate
-- User satisfaction scores
-
-### Quality
-- App crash rate < 0.1%
-- Search relevance score > 85%
-- Sync success rate > 99%
-- Accessibility audit score: AAA
-
-## 🤝 Contributing
-
-This research was compiled through:
-- Web research and competitive analysis
-- Technical documentation review
-- Industry best practices synthesis
-- Academic literature on learning and memory
-
-For questions or suggestions, please review the detailed documents above.
-
-## 📝 License & Usage
-
-This research is intended for:
-- Product planning and development
-- Technical architecture decisions
-- Feature prioritization
-- Competitive positioning
-
-The implementation code examples are provided as educational references and should be adapted to specific project requirements.
-
----
-
-**Project Started:** November 19, 2025
-**Target Audience:** Community of Christ members and investigators
-**Scripture Focus:** CoC Book of Mormon, D&C (167 sections), Inspired Version Bible
-**Versification:** Original 1830 chapters (not LDS Pratt system)
-**Competitive Research:** LDS Gospel Library, YouVersion, Logos (for feature planning only)
+These documents contain competitive analysis of LDS and other scripture platforms. They inform our feature planning but this platform is built specifically for Community of Christ.

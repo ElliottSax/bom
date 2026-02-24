@@ -67,7 +67,7 @@ export function RemindersScreen() {
     }
   };
 
-  const handleTimeChange = (event: any, selectedDate?: Date) => {
+  const handleTimeChange = (_event: unknown, selectedDate?: Date) => {
     setShowTimePicker(Platform.OS === 'ios');
     if (selectedDate) {
       updateTime(selectedDate.getHours(), selectedDate.getMinutes());

@@ -12,8 +12,8 @@ import {
   ScrollView,
   Pressable,
   Animated,
-  PanResponder,
   Dimensions,
+  Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../contexts/ThemeContext';
@@ -41,7 +41,7 @@ interface TabsNavigatorProps {
 }
 
 export function TabsNavigator({ onTabChange, currentContent }: TabsNavigatorProps) {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const [tabs, setTabs] = useState<StudyTab[]>([
     {
       id: 'tab_1',
@@ -55,7 +55,7 @@ export function TabsNavigator({ onTabChange, currentContent }: TabsNavigatorProp
   const [showTabsOverview, setShowTabsOverview] = useState(false);
 
   const scrollViewRef = useRef<ScrollView>(null);
-  const tabWidthAnimation = useRef(new Animated.Value(100)).current;
+  // const tabWidthAnimation = useRef(new Animated.Value(100)).current; // Reserved for tab width animations
 
   // Load tabs from storage
   React.useEffect(() => {
@@ -94,7 +94,7 @@ export function TabsNavigator({ onTabChange, currentContent }: TabsNavigatorProp
 
   const addTab = (type: StudyTab['type'] = 'books', data: StudyTabData = {}) => {
     if (tabs.length >= MAX_TABS) {
-      alert(`Maximum ${MAX_TABS} tabs allowed`);
+      Alert.alert('Maximum Tabs', `Maximum ${MAX_TABS} tabs allowed`);
       return;
     }
 

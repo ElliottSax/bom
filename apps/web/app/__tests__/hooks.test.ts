@@ -102,7 +102,14 @@ describe('Course Progress State', () => {
   });
 
   it('should track course progress in localStorage', () => {
-    const initialProgress = {
+    interface CourseProgress {
+      started: string;
+      lessonsCompleted: string[];
+      completed: boolean;
+      completedDate: string | null;
+    }
+
+    const initialProgress: Record<string, CourseProgress> = {
       'course-1': {
         started: new Date().toISOString(),
         lessonsCompleted: [],
@@ -111,7 +118,7 @@ describe('Course Progress State', () => {
       },
     };
 
-    const { result } = renderHook(() => useLocalStorage('courseProgress', {}));
+    const { result } = renderHook(() => useLocalStorage<Record<string, CourseProgress>>('courseProgress', {}));
 
     act(() => {
       result.current[1](initialProgress);

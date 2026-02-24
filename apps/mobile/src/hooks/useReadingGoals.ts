@@ -1,7 +1,48 @@
 /**
  * Reading Goals Hook
  *
- * Set and track daily/weekly reading goals
+ * Create and track reading goals (chapters, verses, or minutes).
+ * Supports daily and weekly goals with progress tracking, streaks, and statistics.
+ *
+ * Features:
+ * - Multiple goal types: chapters, verses, minutes
+ * - Daily or weekly periods
+ * - Streak tracking (current and longest)
+ * - Progress history
+ * - Suggested goals for quick setup
+ *
+ * @module useReadingGoals
+ *
+ * @example
+ * ```typescript
+ * const {
+ *   activeGoals,
+ *   createGoal,
+ *   recordProgress,
+ *   getGoalStats
+ * } = useReadingGoals();
+ *
+ * // Create a daily goal
+ * await createGoal('chapters', 'daily', 1); // 1 chapter per day
+ *
+ * // Record progress
+ * await recordProgress(goalId, 1); // Read 1 chapter
+ *
+ * // Get statistics
+ * const stats = getGoalStats(goalId);
+ * // {
+ * //   currentProgress: 1,
+ * //   target: 1,
+ * //   percentComplete: 100,
+ * //   currentStreak: 5,
+ * //   longestStreak: 12,
+ * //   daysCompleted: 45
+ * // }
+ *
+ * // Use suggested goals
+ * const { suggestedGoals } = useReadingGoals();
+ * // [{ type: 'chapters', period: 'daily', target: 1, label: '1 chapter per day' }, ...]
+ * ```
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -59,6 +100,45 @@ const getWeekString = (date: Date = new Date()): string => {
   return `${year}-W${week.toString().padStart(2, '0')}`;
 };
 
+/**
+ * React hook for reading goal management.
+ *
+ * @returns Object with goal management methods and state
+ *
+ * @example
+ * ```typescript
+ * function GoalsScreen() {
+ *   const {
+ *     activeGoals,
+ *     createGoal,
+ *     recordProgress,
+ *     getCurrentProgress,
+ *     getGoalStats
+ *   } = useReadingGoals();
+ *
+ *   const handleCreateGoal = async () => {
+ *     await createGoal('chapters', 'daily', 2); // 2 chapters per day
+ *   };
+ *
+ *   return (
+ *     <View>
+ *       {activeGoals.map(goal => {
+ *         const stats = getGoalStats(goal.id);
+ *         return (
+ *           <GoalCard
+ *             key={goal.id}
+ *             goal={goal}
+ *             progress={stats.currentProgress}
+ *             target={stats.target}
+ *             streak={stats.currentStreak}
+ *           />
+ *         );
+ *       })}
+ *     </View>
+ *   );
+ * }
+ * ```
+ */
 export function useReadingGoals() {
   const [goals, setGoals] = useState<ReadingGoal[]>(DEFAULT_GOALS);
   const [history, setHistory] = useState<GoalProgress[]>([]);

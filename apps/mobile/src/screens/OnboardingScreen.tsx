@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../contexts/ThemeContext';
 import { logger } from '../utils/logger';
+import type { ThemeColors } from '../types';
 
 const log = logger.scope('Onboarding');
 
@@ -142,6 +143,9 @@ export function OnboardingScreen() {
           style={styles.skipButton}
           onPress={handleSkip}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Skip onboarding"
+          accessibilityHint="Closes the onboarding tour and goes to the home screen"
         >
           <Text style={styles.skipText}>Skip</Text>
         </TouchableOpacity>
@@ -157,29 +161,62 @@ export function OnboardingScreen() {
         scrollEventThrottle={16}
         bounces={false}
         style={styles.scrollView}
+        accessibilityLabel="Onboarding pages"
+        accessibilityRole="none"
       >
         {PAGES.map((page, index) => (
-          <View key={index} style={styles.page}>
+          <View
+            key={index}
+            style={styles.page}
+            accessible
+            accessibilityRole="none"
+            accessibilityLabel={`Step ${index + 1} of ${PAGES.length}: ${page.title}`}
+          >
             <View style={styles.pageContent}>
               {/* Emoji icon */}
-              <View style={styles.emojiContainer}>
-                <Text style={styles.emoji}>{page.emoji}</Text>
+              <View style={styles.emojiContainer} accessible={false}>
+                <Text style={styles.emoji} accessible={false}>{page.emoji}</Text>
               </View>
 
               {/* Subtitle label */}
-              <Text style={styles.subtitle}>{page.subtitle}</Text>
+              <Text
+                style={styles.subtitle}
+                accessibilityRole="text"
+              >
+                {page.subtitle}
+              </Text>
 
               {/* Title */}
-              <Text style={styles.title}>{page.title}</Text>
+              <Text
+                style={styles.title}
+                accessibilityRole="header"
+              >
+                {page.title}
+              </Text>
 
               {/* Description */}
-              <Text style={styles.description}>{page.description}</Text>
+              <Text
+                style={styles.description}
+                accessibilityRole="text"
+              >
+                {page.description}
+              </Text>
 
               {/* Feature list (if present) */}
               {page.features && (
-                <View style={styles.featureList}>
+                <View
+                  style={styles.featureList}
+                  accessible
+                  accessibilityRole="list"
+                  accessibilityLabel="Features"
+                >
                   {page.features.map((feature, featureIndex) => (
-                    <View key={featureIndex} style={styles.featureItem}>
+                    <View
+                      key={featureIndex}
+                      style={styles.featureItem}
+                      accessible
+                      accessibilityRole="text"
+                    >
                       <Text style={styles.featureText}>{feature}</Text>
                     </View>
                   ))}
@@ -193,7 +230,12 @@ export function OnboardingScreen() {
       {/* Bottom section: dots + button */}
       <View style={styles.bottomSection}>
         {/* Page indicator dots */}
-        <View style={styles.dotsContainer}>
+        <View
+          style={styles.dotsContainer}
+          accessible
+          accessibilityRole="none"
+          accessibilityLabel={`Page ${currentPage + 1} of ${PAGES.length}`}
+        >
           {PAGES.map((_, index) => (
             <View
               key={index}
@@ -201,6 +243,7 @@ export function OnboardingScreen() {
                 styles.dot,
                 index === currentPage ? styles.dotActive : styles.dotInactive,
               ]}
+              accessible={false}
             />
           ))}
         </View>
@@ -210,6 +253,13 @@ export function OnboardingScreen() {
           style={styles.actionButton}
           onPress={handleNext}
           activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel={isLastPage ? 'Get started with the app' : 'Next page'}
+          accessibilityHint={
+            isLastPage
+              ? 'Completes onboarding and opens the home screen'
+              : `Advances to page ${currentPage + 2} of ${PAGES.length}`
+          }
         >
           <Text style={styles.actionButtonText}>
             {isLastPage ? 'Get Started' : 'Next'}
@@ -220,7 +270,7 @@ export function OnboardingScreen() {
   );
 }
 
-function getStyles(colors: any) {
+function getStyles(colors: ThemeColors) {
   return StyleSheet.create({
     container: {
       flex: 1,

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useShare, type ShareData, type ShareOptions } from '../hooks/useShare';
+import { useShare, type ShareData, type ShareOptions, createVerseShareData } from '../hooks/useShare';
 
 interface ShareButtonProps {
   data: ShareData;
@@ -165,7 +165,6 @@ export function ShareVerseButton({
   size,
   className,
 }: ShareVerseButtonProps) {
-  const { createVerseShareData } = require('../hooks/useShare');
   const shareData = createVerseShareData(verse, reference, url);
 
   return (

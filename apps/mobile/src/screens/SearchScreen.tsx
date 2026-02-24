@@ -18,6 +18,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSearch, highlightSearchTerm, SearchResult } from '../hooks/useSearch';
+import type { ThemeColors } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 import { logger } from '../utils/logger';
 
@@ -295,7 +296,7 @@ interface SearchResultItemProps {
   result: SearchResult;
   searchTerm: string;
   onPress: () => void;
-  colors: any;
+  colors: ThemeColors;
 }
 
 function SearchResultItem({ result, searchTerm, onPress, colors }: SearchResultItemProps) {

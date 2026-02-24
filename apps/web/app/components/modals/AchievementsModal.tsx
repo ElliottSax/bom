@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { AchievementBadge } from '../AchievementBadge';
 import { ShareButton } from '../ShareButton';
-import { createAchievementShareData } from '../../hooks/useShare';
 import type { Achievement, AchievementUserData } from '../../lib/achievements';
 
 interface AchievementsModalProps {

@@ -30,13 +30,13 @@ export interface BackupData {
   version: number;
   exportedAt: string;
   data: {
-    bookmarks: any[];
-    highlights: any[];
-    notes: any[];
-    readingProgress: any;
-    studyPlan: any;
-    settings: any;
-    lastRead: any;
+    bookmarks: Record<string, unknown>[];
+    highlights: Record<string, unknown>[];
+    notes: Record<string, unknown>[];
+    readingProgress: Record<string, unknown>;
+    studyPlan: Record<string, unknown> | null;
+    settings: Record<string, unknown>;
+    lastRead: Record<string, unknown> | null;
     recentSearches: string[];
   };
 }
@@ -139,9 +139,9 @@ export function useDataBackup() {
 
       setExporting(false);
       return true;
-    } catch (err: any) {
+    } catch (err) {
       // User cancelled share is not an error
-      if (err?.message?.includes('User did not share')) {
+      if (err instanceof Error && err.message?.includes('User did not share')) {
         setExporting(false);
         return true;
       }

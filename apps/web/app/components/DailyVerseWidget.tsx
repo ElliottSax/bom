@@ -58,7 +58,7 @@ export function DailyVerseWidget({
           )}
         </div>
         <p className="text-xs leading-relaxed text-[var(--color-text-tertiary)] line-clamp-3 italic">
-          "{verse.text.length > 100 ? verse.text.slice(0, 100) + '...' : verse.text}"
+          &quot;{verse.text.length > 100 ? verse.text.slice(0, 100) + '...' : verse.text}&quot;
         </p>
         <p className="text-xs font-medium mt-2" style={{ color: volumeColor }}>
           {verse.reference}
@@ -106,7 +106,7 @@ export function DailyVerseWidget({
           </div>
 
           <blockquote className="text-lg md:text-xl leading-relaxed text-[var(--color-text-primary)] italic mb-4">
-            "{verse.text}"
+            &quot;{verse.text}&quot;
           </blockquote>
 
           <p className="text-base font-semibold" style={{ color: volumeColor }}>
@@ -145,7 +145,7 @@ export function DailyVerseWidget({
       </div>
 
       <blockquote className="text-sm leading-relaxed text-[var(--color-text-secondary)] italic mb-3">
-        "{verse.text}"
+        &quot;{verse.text}&quot;
       </blockquote>
 
       <p className="text-sm font-semibold" style={{ color: volumeColor }}>
@@ -187,7 +187,7 @@ export function DailyVerseBanner() {
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-[var(--color-text-secondary)]">Today's Verse</p>
             <p className="text-sm text-[var(--color-text-primary)] truncate">
-              "{verse.text.length > 80 ? verse.text.slice(0, 80) + '...' : verse.text}"
+              &quot;{verse.text.length > 80 ? verse.text.slice(0, 80) + '...' : verse.text}&quot;
             </p>
           </div>
         </div>
@@ -217,7 +217,7 @@ export function DailyVerseHomeScreenWidget() {
             <span className="text-sm font-semibold">Daily Verse</span>
           </div>
           <p className="text-base leading-snug mb-2 line-clamp-4">
-            "{verse.text.length > 120 ? verse.text.slice(0, 120) + '...' : verse.text}"
+            &quot;{verse.text.length > 120 ? verse.text.slice(0, 120) + '...' : verse.text}&quot;
           </p>
         </div>
         <p className="text-sm font-semibold opacity-90">

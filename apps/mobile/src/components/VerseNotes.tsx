@@ -15,7 +15,6 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  FlatList,
 } from 'react-native';
 import { useMutation, useQuery, gql } from '@apollo/client';
 import { logger } from '../utils/logger';
@@ -80,6 +79,7 @@ interface VerseNotesProps {
 
 interface Note {
   id: string;
+  verseId: string;
   content: string;
   tags: string[];
   createdAt: string;

@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
-import { CheckIcon } from './Icons';
+import React from 'react';
 
 export interface QuizQuestionData {
   id: number;

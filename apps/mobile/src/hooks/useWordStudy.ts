@@ -75,7 +75,23 @@ export function useWordStudy() {
           fetchPolicy: 'network-only',
         });
 
-        const occurrences: WordOccurrence[] = data.searchVerses.map((verse: any) => ({
+        interface SearchVerseResult {
+          id: string;
+          verse: number;
+          text: string;
+          chapter: {
+            number: number;
+            book: {
+              name: string;
+              edition: {
+                id: string;
+                name: string;
+              };
+            };
+          };
+        }
+
+        const occurrences: WordOccurrence[] = data.searchVerses.map((verse: SearchVerseResult) => ({
           id: verse.id,
           verse: verse.verse,
           text: verse.text,

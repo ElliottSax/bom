@@ -23,7 +23,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import PushNotification from 'react-native-push-notification';
 import { useTheme } from '../contexts/ThemeContext';
-import type { StudyPlan as BaseStudyPlan, StudyPlanContent } from '../types';
+import type { StudyPlan as BaseStudyPlan, StudyPlanContent, ThemeColors } from '../types';
 import { logger } from '../utils/logger';
 
 const log = logger.scope('StudyPlanEnhanced');
@@ -627,9 +627,9 @@ export function EnhancedStudyPlanManager() {
 }
 
 // Mini Calendar Component
-function MiniProgressCalendar({ plan, colors }: { plan: StudyPlan; colors: any }) {
+function MiniProgressCalendar({ plan, colors }: { plan: StudyPlan; colors: ThemeColors }) {
   const today = new Date();
-  const startDate = new Date(plan.startDate);
+  // const startDate = new Date(plan.startDate); // Reserved for future date range calculation
   const currentWeek = [];
 
   for (let i = -3; i <= 3; i++) {

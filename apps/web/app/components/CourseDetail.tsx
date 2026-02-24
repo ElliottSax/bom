@@ -198,7 +198,7 @@ export function CourseDetail({
       {course.outcomes.length > 0 && (
         <div className="bg-[var(--color-bg-secondary)] rounded-lg p-6 mb-6">
           <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-4">
-            What You'll Learn
+            What You&apos;ll Learn
           </h2>
           <ul className="space-y-2">
             {course.outcomes.map((outcome, index) => (

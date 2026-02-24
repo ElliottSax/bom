@@ -427,7 +427,7 @@ function CourseCard({ course, onClick, progressPercentage, isStarted, searchQuer
       {!isStarted && course.outcomes.length > 0 && (
         <div className="mt-4 pt-4 border-t border-[var(--color-border-light)]">
           <p className="text-xs font-medium text-[var(--color-text-secondary)] mb-2">
-            You'll learn:
+            You&apos;ll learn:
           </p>
           <ul className="text-xs text-[var(--color-text-tertiary)] space-y-1">
             {course.outcomes.slice(0, 2).map((outcome, index) => (

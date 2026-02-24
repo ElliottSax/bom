@@ -1,7 +1,25 @@
 /**
  * Cross-References Hook
  *
- * Provides related scripture references for verses
+ * Provides access to scripture cross-references for Book of Mormon verses.
+ * Cross-references include quotes from Isaiah, parallels to the Sermon on the Mount,
+ * and thematic connections between passages.
+ *
+ * @module useCrossReferences
+ *
+ * @example
+ * ```typescript
+ * const { getCrossReferences, hasCrossReferences } = useCrossReferences();
+ *
+ * // Get references for a specific verse
+ * const refs = getCrossReferences('coc-bom-1908:I Nephi:3:7');
+ * // Returns: [{ toBook: 'I Nephi', toChapter: 17, toVerse: 3, type: 'related', ... }]
+ *
+ * // Check if verse has references
+ * if (hasCrossReferences('coc-bom-1908:III Nephi:12:3')) {
+ *   // Show cross-reference indicator
+ * }
+ * ```
  */
 
 import { useMemo, useCallback } from 'react';
@@ -262,11 +280,42 @@ interface UseCrossReferencesResult {
   getChapterCrossReferences: (editionId: string, book: string, chapter: number) => Map<number, CrossReference[]>;
 }
 
+/**
+ * React hook providing cross-reference lookup functionality.
+ *
+ * @returns Object with cross-reference lookup methods
+ *
+ * @example
+ * ```typescript
+ * const { getCrossReferences, getChapterCrossReferences } = useCrossReferences();
+ *
+ * // Get all references for a verse
+ * const refs = getCrossReferences('coc-bom-1908:Moroni:10:4');
+ *
+ * // Get all references in a chapter (organized by verse number)
+ * const chapterRefs = getChapterCrossReferences('coc-bom-1908', 'III Nephi', 12);
+ * // Returns: Map { 3 => [...], 4 => [...], ... }
+ * ```
+ */
 export function useCrossReferences(): UseCrossReferencesResult {
+  /**
+   * Get all cross-references originating from a specific verse.
+   *
+   * @param verseId - Full verse ID (e.g., 'coc-bom-1908:I Nephi:3:7')
+   * @returns Array of cross-references, or empty array if none exist
+   */
   const getCrossReferences = useCallback((verseId: string): CrossReference[] => {
     return crossRefsByFrom.get(verseId) || [];
   }, []);
 
+  /**
+   * Get cross-references using book/chapter/verse components.
+   *
+   * @param book - Book name (e.g., 'I Nephi')
+   * @param chapter - Chapter number
+   * @param verse - Verse number
+   * @returns Array of cross-references
+   */
   const getRelatedVerses = useCallback(
     (book: string, chapter: number, verse: number): CrossReference[] => {
       const verseId = `coc-bom-1908:${book}:${chapter}:${verse}`;
@@ -275,10 +324,24 @@ export function useCrossReferences(): UseCrossReferencesResult {
     [getCrossReferences]
   );
 
+  /**
+   * Check if a verse has any cross-references.
+   *
+   * @param verseId - Full verse ID
+   * @returns true if verse has cross-references, false otherwise
+   */
   const hasCrossReferences = useCallback((verseId: string): boolean => {
     return crossRefsByFrom.has(verseId);
   }, []);
 
+  /**
+   * Get all cross-references for an entire chapter, organized by verse number.
+   *
+   * @param editionId - Edition ID (e.g., 'coc-bom-1908')
+   * @param book - Book name
+   * @param chapter - Chapter number
+   * @returns Map of verse numbers to their cross-references
+   */
   const getChapterCrossReferences = useCallback(
     (editionId: string, book: string, chapter: number): Map<number, CrossReference[]> => {
       const result = new Map<number, CrossReference[]>();

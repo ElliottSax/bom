@@ -132,7 +132,7 @@ export function QuizResults({
 
         {/* Questions Review */}
         <div className="flex-1 overflow-y-auto space-y-4 pr-2">
-          {questionsToShow.map((question, displayIndex) => {
+          {questionsToShow.map((question) => {
             const originalIndex = questions.indexOf(question);
             const userAnswer = answers[originalIndex];
             const isCorrect = userAnswer === question.correctAnswer;

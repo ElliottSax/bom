@@ -230,11 +230,13 @@ export function useCachedStorage<T>(
 /**
  * Optimized scroll position restoration
  */
+import { NativeSyntheticEvent, NativeScrollEvent, ScrollView } from 'react-native';
+
 export function useScrollPosition(key: string) {
-  const scrollViewRef = useRef<any>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
   const positionRef = useRef(0);
 
-  const savePosition = useCallback((event: any) => {
+  const savePosition = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const position = event.nativeEvent.contentOffset.y;
     positionRef.current = position;
     AsyncStorage.setItem(`scroll_${key}`, position.toString());
@@ -287,7 +289,7 @@ export function useFormValidation<T extends Record<string, any>>(
     return Object.keys(errors).length === 0;
   }, [errors]);
 
-  const setFieldValue = useCallback((field: keyof T, value: any) => {
+  const setFieldValue = useCallback(<K extends keyof T>(field: K, value: T[K]) => {
     setValues(prev => ({ ...prev, [field]: value }));
   }, []);
 

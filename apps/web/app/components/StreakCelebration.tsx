@@ -141,7 +141,8 @@ export function StreakCelebration({ streak, onClose }: StreakCelebrationProps) {
         </div>
       </div>
 
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @keyframes confetti {
           0% {
             transform: translateY(0) rotate(0deg);
@@ -171,7 +172,7 @@ export function StreakCelebration({ streak, onClose }: StreakCelebrationProps) {
         .animate-fire {
           animation: fire 1s ease-in-out infinite;
         }
-      `}</style>
+      `}} />
     </div>
   );
 }

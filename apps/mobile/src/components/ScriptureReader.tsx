@@ -22,6 +22,7 @@ import { useNotes } from '../hooks/useNotes';
 import { useBookmarks } from '../hooks/useBookmarks';
 import { useCrossReferences } from '../hooks/useCrossReferences';
 import { estimateVerseReadingTime } from '../hooks/useReadingProgress';
+import type { ThemeColors } from '../types';
 
 interface ScriptureReaderProps {
   editionId: string;
@@ -230,7 +231,7 @@ interface VerseItemProps {
   onPress?: (verseId: string, verseNumber: number) => void;
   onLongPress?: (verseId: string, verseNumber: number, text: string) => void;
   isFirst: boolean;
-  colors: any;
+  colors: ThemeColors;
   highlightColor?: string;
   hasNote?: boolean;
   isBookmarked?: boolean;

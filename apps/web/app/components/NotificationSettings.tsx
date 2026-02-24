@@ -128,7 +128,7 @@ export function NotificationSettings() {
                   <h5 className="font-medium">Streak Reminder</h5>
                 </div>
                 <p className="text-sm text-[var(--color-text-secondary)]">
-                  Don't break your streak!
+                  Don&apos;t break your streak!
                 </p>
                 {settings.streakReminder && (
                   <input
