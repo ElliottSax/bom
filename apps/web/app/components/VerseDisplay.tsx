@@ -2,6 +2,7 @@ import React from 'react';
 import { Verse, Highlight, Note } from '../lib/types';
 import { BookmarkIcon, NoteIcon } from './Icons';
 import { HIGHLIGHT_COLORS } from '../lib/types';
+import { ShareVerseButton } from './ShareButton';
 
 interface VerseDisplayProps {
   verse: Verse;
@@ -13,6 +14,8 @@ interface VerseDisplayProps {
   lineHeight: number;
   fontFamily: string;
   showVerseNumbers: boolean;
+  bookName?: string;
+  chapter?: number;
   onVerseClick: () => void;
   onToggleBookmark: () => void;
   onOpenNoteEditor: () => void;
@@ -29,11 +32,14 @@ const VerseDisplayComponent: React.FC<VerseDisplayProps> = ({
   lineHeight,
   fontFamily,
   showVerseNumbers,
+  bookName,
+  chapter,
   onVerseClick,
   onToggleBookmark,
   onOpenNoteEditor,
   onSetHighlightColor,
 }) => {
+  const reference = bookName && chapter ? `${bookName} ${chapter}:${verse.num}` : `Verse ${verse.num}`;
   return (
     <div>
       <div
@@ -80,6 +86,13 @@ const VerseDisplayComponent: React.FC<VerseDisplayProps> = ({
           >
             <NoteIcon /> {note ? 'Edit' : 'Note'}
           </button>
+
+          <ShareVerseButton
+            verse={verse.text}
+            reference={reference}
+            variant="secondary"
+            size="sm"
+          />
 
           <div className="flex items-center gap-1 ml-auto">
             <span className="text-xs text-[var(--color-text-tertiary)] mr-2">Highlight:</span>

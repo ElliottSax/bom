@@ -33,12 +33,15 @@ const ResourcesModal = lazy(() => import('./components/modals/ResourcesModal').t
 const CoCResourcesModal = lazy(() => import('./components/modals/CoCResourcesModal').then(m => ({ default: m.CoCResourcesModal })));
 const AboutCoCModal = lazy(() => import('./components/modals/AboutCoCModal').then(m => ({ default: m.AboutCoCModal })));
 const CoursesModal = lazy(() => import('./components/modals/CoursesModal').then(m => ({ default: m.CoursesModal })));
+const WordStudyModal = lazy(() => import('./components/modals/WordStudyModal').then(m => ({ default: m.WordStudyModal })));
+const ReadingGoalsModal = lazy(() => import('./components/modals/ReadingGoalsModal').then(m => ({ default: m.ReadingGoalsModal })));
+const MemorizationModal = lazy(() => import('./components/modals/MemorizationModal').then(m => ({ default: m.MemorizationModal })));
 
 function HomeContent() {
   // ==================== CONTEXTS ====================
   const {
     theme,
-    cycleTheme,
+    cycleTheme: _cycleTheme, // used by Header via its own useSettings
     fontSize,
     setFontSize,
     lineHeight,
@@ -63,7 +66,7 @@ function HomeContent() {
     getHighlight,
     setHighlightColor,
     getNote,
-    deleteNote,
+    deleteNote: _deleteNote,
     openNoteEditor,
     startStudyPlan,
     completeStudyPlanDay,
@@ -93,6 +96,9 @@ function HomeContent() {
   const [showCoCResources, setShowCoCResources] = useState(false);
   const [showAboutCoC, setShowAboutCoC] = useState(false);
   const [showCourses, setShowCourses] = useState(false);
+  const [showWordStudy, setShowWordStudy] = useState(false);
+  const [showReadingGoals, setShowReadingGoals] = useState(false);
+  const [showMemorization, setShowMemorization] = useState(false);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -206,6 +212,9 @@ function HomeContent() {
         setShowCoCResources={setShowCoCResources}
         setShowAboutCoC={setShowAboutCoC}
         setShowCourses={setShowCourses}
+        setShowWordStudy={setShowWordStudy}
+        setShowReadingGoals={setShowReadingGoals}
+        setShowMemorization={setShowMemorization}
       />
 
       <VolumeTabs volumeId={volumeId} onVolumeChange={handleVolumeChange} />
@@ -299,6 +308,23 @@ function HomeContent() {
         {showCourses && (
           <CoursesModal show={showCourses} onClose={() => setShowCourses(false)} />
         )}
+
+        {showWordStudy && (
+          <WordStudyModal
+            show={showWordStudy}
+            onClose={() => setShowWordStudy(false)}
+            volumeId={volumeId}
+            onNavigate={navigateToReference}
+          />
+        )}
+
+        {showReadingGoals && (
+          <ReadingGoalsModal show={showReadingGoals} onClose={() => setShowReadingGoals(false)} />
+        )}
+
+        {showMemorization && (
+          <MemorizationModal show={showMemorization} onClose={() => setShowMemorization(false)} />
+        )}
       </Suspense>
 
       {/* Main Layout */}
@@ -325,6 +351,8 @@ function HomeContent() {
               completionPercentage={completionPercentage}
               booksCount={books.length}
               currentStreak={readingProgress.currentStreak}
+              chaptersRead={chaptersReadInVolume}
+              totalChapters={totalChapters}
               onSearchClick={() => setShowSearch(true)}
               onStudyPlanClick={() => setShowStudyPlanModal(true)}
               hasStudyPlan={!!studyPlan}

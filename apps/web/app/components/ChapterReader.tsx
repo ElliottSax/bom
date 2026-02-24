@@ -150,6 +150,8 @@ export const ChapterReader: React.FC<ChapterReaderProps> = ({
               lineHeight={lineHeight}
               fontFamily={fontFamily}
               showVerseNumbers={showVerseNumbers}
+              bookName={currentBook.name}
+              chapter={selectedChapter}
               onVerseClick={() => setSelectedVerse(selectedVerse === verse.num ? null : verse.num)}
               onToggleBookmark={() => toggleBookmark(verse)}
               onOpenNoteEditor={() => openNoteEditor(verse)}
