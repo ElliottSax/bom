@@ -5,8 +5,9 @@ import {
   type Verse,
   type VolumeId,
 } from '../lib/types';
-import { CloseIcon, FireIcon } from './Icons';
+import { CloseIcon } from './Icons';
 import { useUserData } from '../contexts/UserDataContext';
+import { StreakWidget } from './StreakWidget';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -66,7 +67,14 @@ const Sidebar: React.FC<SidebarProps> = ({
         {activeTab === 'progress' && (
           <div className="p-3">
             <div className="bg-[var(--color-bg-tertiary)] rounded-xl p-4 mb-4"><div className="flex items-center justify-between mb-3"><span className="text-sm font-medium">{currentVolume.shortName}</span><span className="text-lg font-bold" style={{ color: currentVolume.color }}>{completionPercentage}%</span></div><div className="w-full bg-[var(--color-border)] rounded-full h-2 mb-3"><div className="h-2 rounded-full" style={{ width: `${completionPercentage}%`, backgroundColor: currentVolume.color }} /></div><p className="text-xs text-[var(--color-text-secondary)]">{chaptersReadInVolume}/{totalChapters} chapters</p></div>
-            <div className="bg-[var(--color-bg-tertiary)] rounded-xl p-4 mb-4"><div className="flex items-center gap-3"><div className="text-orange-500"><FireIcon /></div><div><p className="text-sm font-medium">Streak</p><p className="text-2xl font-bold">{readingProgress.currentStreak} days</p><p className="text-xs text-[var(--color-text-tertiary)]">Best: {readingProgress.longestStreak}</p></div></div></div>
+            <div className="bg-[var(--color-bg-tertiary)] rounded-xl p-4 mb-4">
+              <StreakWidget
+                currentStreak={readingProgress.currentStreak}
+                longestStreak={readingProgress.longestStreak}
+                variant="detailed"
+                showShare={true}
+              />
+            </div>
           </div>
         )}
       </div>

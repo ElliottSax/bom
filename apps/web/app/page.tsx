@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
+import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from 'react';
 import useLocalStorage from './hooks/useLocalStorage';
 import { useVerses } from './hooks/useVerses';
 import { useSearch } from './hooks/useSearch';
+import { useAchievements } from './hooks/useAchievements';
+import { useChallenges } from './hooks/useChallenges';
 import { VOLUMES, getBooksForVolume, getTotalChapters } from './lib/scriptures';
 import { type VolumeId } from './lib/types';
 
@@ -22,6 +24,8 @@ import { VolumeHomeScreen } from './components/VolumeHomeScreen';
 import { BookChapterSelector } from './components/BookChapterSelector';
 import { ChapterReader } from './components/ChapterReader';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { AchievementNotificationContainer } from './components/AchievementNotificationContainer';
+import { NotificationPromptModal } from './components/NotificationSettings';
 
 // Lazy load modals for better initial load performance
 const SettingsModal = lazy(() => import('./components/modals/SettingsModal').then(m => ({ default: m.SettingsModal })));
@@ -36,6 +40,9 @@ const CoursesModal = lazy(() => import('./components/modals/CoursesModal').then(
 const WordStudyModal = lazy(() => import('./components/modals/WordStudyModal').then(m => ({ default: m.WordStudyModal })));
 const ReadingGoalsModal = lazy(() => import('./components/modals/ReadingGoalsModal').then(m => ({ default: m.ReadingGoalsModal })));
 const MemorizationModal = lazy(() => import('./components/modals/MemorizationModal').then(m => ({ default: m.MemorizationModal })));
+const AchievementsModal = lazy(() => import('./components/modals/AchievementsModal').then(m => ({ default: m.AchievementsModal })));
+const StreakCelebration = lazy(() => import('./components/StreakCelebration').then(m => ({ default: m.StreakCelebration })));
+const ChallengesModal = lazy(() => import('./components/modals/ChallengesModal').then(m => ({ default: m.ChallengesModal })));
 
 function HomeContent() {
   // ==================== CONTEXTS ====================
@@ -99,6 +106,11 @@ function HomeContent() {
   const [showWordStudy, setShowWordStudy] = useState(false);
   const [showReadingGoals, setShowReadingGoals] = useState(false);
   const [showMemorization, setShowMemorization] = useState(false);
+  const [showAchievements, setShowAchievements] = useState(false);
+  const [showStreakCelebration, setShowStreakCelebration] = useState(false);
+  const [celebratingStreak, setCelebratingStreak] = useState(0);
+  const [showChallenges, setShowChallenges] = useState(false);
+  const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -129,10 +141,96 @@ function HomeContent() {
     [readingProgress.chaptersRead, volumeId]
   );
 
+  // Calculate chapters read this month for challenges
+  const chaptersReadThisMonth = useMemo(() => {
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const thisYear = now.getFullYear();
+
+    return Object.keys(readingProgress.chaptersRead).filter(key => {
+      const timestamp = readingProgress.chaptersRead[key];
+      if (!timestamp) return false;
+
+      const readDate = new Date(timestamp);
+      return readDate.getMonth() === thisMonth && readDate.getFullYear() === thisYear;
+    }).length;
+  }, [readingProgress.chaptersRead]);
+
   const completionPercentage = useMemo(() =>
     Math.round((chaptersReadInVolume / totalChapters) * 100),
     [chaptersReadInVolume, totalChapters]
   );
+
+  // ==================== ACHIEVEMENTS ====================
+  const achievementUserData = useMemo(() => ({
+    chaptersRead: Object.keys(readingProgress.chaptersRead).length,
+    currentStreak: readingProgress.currentStreak,
+    longestStreak: readingProgress.longestStreak,
+    notesCount: notes.length,
+    highlightsCount: highlights.length,
+    bookmarksCount: bookmarks.length,
+    coursesCompleted: 0, // TODO: Wire up when courses are implemented
+    studyPlansCompleted: studyPlan ? 1 : 0, // TODO: Track actual completions
+  }), [readingProgress, notes.length, highlights.length, bookmarks.length, studyPlan]);
+
+  const {
+    unlockedAchievements,
+    lockedAchievements,
+    newAchievements,
+    totalPoints,
+    completionPercentage: achievementCompletion,
+    markAsViewed,
+  } = useAchievements(achievementUserData);
+
+  // ==================== CHALLENGES ====================
+  const {
+    getActiveChallenges,
+    getAvailableChallenges,
+    getCompletedChallenges,
+    recommended: recommendedChallenges,
+    joinChallenge,
+  } = useChallenges(readingProgress.currentStreak, chaptersReadThisMonth);
+
+  const activeChallenges = getActiveChallenges();
+  const availableChallenges = getAvailableChallenges();
+  const completedChallenges = getCompletedChallenges();
+
+  // ==================== STREAK CELEBRATION ====================
+  useEffect(() => {
+    const milestones = [7, 30, 100, 365];
+    const currentStreak = readingProgress.currentStreak;
+
+    if (milestones.includes(currentStreak)) {
+      // Check if we've already celebrated this milestone
+      const lastCelebrated = parseInt(localStorage.getItem('coc-lastCelebratedStreak') || '0');
+
+      if (currentStreak > lastCelebrated) {
+        setCelebratingStreak(currentStreak);
+        setShowStreakCelebration(true);
+        localStorage.setItem('coc-lastCelebratedStreak', currentStreak.toString());
+      }
+    }
+  }, [readingProgress.currentStreak]);
+
+  // ==================== NOTIFICATION PROMPT ====================
+  useEffect(() => {
+    // Show notification prompt after 3-day streak if not already prompted
+    const currentStreak = readingProgress.currentStreak;
+    const hasPromptedBefore = localStorage.getItem('coc-notificationPrompted');
+
+    if (currentStreak >= 3 && !hasPromptedBefore) {
+      // Check if notifications are supported and not already granted
+      if ('Notification' in window && Notification.permission === 'default') {
+        // Delay prompt by 2 seconds to not overwhelm user
+        const timer = setTimeout(() => {
+          setShowNotificationPrompt(true);
+          localStorage.setItem('coc-notificationPrompted', 'true');
+        }, 2000);
+
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [readingProgress.currentStreak]);
 
   // ==================== EVENT HANDLERS ====================
   const handleVolumeChange = useCallback((newVolumeId: VolumeId) => {
@@ -215,6 +313,8 @@ function HomeContent() {
         setShowWordStudy={setShowWordStudy}
         setShowReadingGoals={setShowReadingGoals}
         setShowMemorization={setShowMemorization}
+        setShowAchievements={setShowAchievements}
+        setShowChallenges={setShowChallenges}
       />
 
       <VolumeTabs volumeId={volumeId} onVolumeChange={handleVolumeChange} />
@@ -325,7 +425,54 @@ function HomeContent() {
         {showMemorization && (
           <MemorizationModal show={showMemorization} onClose={() => setShowMemorization(false)} />
         )}
+
+        {showAchievements && (
+          <AchievementsModal
+            show={showAchievements}
+            onClose={() => setShowAchievements(false)}
+            unlockedAchievements={unlockedAchievements}
+            lockedAchievements={lockedAchievements}
+            totalPoints={totalPoints}
+            completionPercentage={achievementCompletion}
+            userData={achievementUserData}
+          />
+        )}
+
+        {showChallenges && (
+          <ChallengesModal
+            show={showChallenges}
+            onClose={() => setShowChallenges(false)}
+            activeChallenges={activeChallenges}
+            availableChallenges={availableChallenges}
+            completedChallenges={completedChallenges}
+            recommendedChallenges={recommendedChallenges}
+            onJoinChallenge={joinChallenge}
+          />
+        )}
       </Suspense>
+
+      {/* Achievement Notifications */}
+      <AchievementNotificationContainer
+        achievements={newAchievements}
+        onDismiss={markAsViewed}
+      />
+
+      {/* Streak Celebration */}
+      {showStreakCelebration && celebratingStreak > 0 && (
+        <Suspense fallback={null}>
+          <StreakCelebration
+            streak={celebratingStreak}
+            onClose={() => setShowStreakCelebration(false)}
+          />
+        </Suspense>
+      )}
+
+      {/* Notification Prompt */}
+      {showNotificationPrompt && (
+        <NotificationPromptModal
+          onClose={() => setShowNotificationPrompt(false)}
+        />
+      )}
 
       {/* Main Layout */}
       <div className="flex flex-1 overflow-hidden">

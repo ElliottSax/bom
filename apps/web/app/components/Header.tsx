@@ -15,6 +15,8 @@ import {
   WordStudyIcon,
   TargetIcon,
   BrainIcon,
+  TrophyIcon,
+  FlagIcon,
 } from './Icons';
 import { type Volume } from '../lib/types';
 import { useSettings } from '../contexts/SettingsContext';
@@ -35,6 +37,8 @@ interface HeaderProps {
   setShowWordStudy: React.Dispatch<React.SetStateAction<boolean>>;
   setShowReadingGoals: React.Dispatch<React.SetStateAction<boolean>>;
   setShowMemorization: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowAchievements: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowChallenges: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -52,6 +56,8 @@ const Header: React.FC<HeaderProps> = ({
   setShowWordStudy,
   setShowReadingGoals,
   setShowMemorization,
+  setShowAchievements,
+  setShowChallenges,
 }) => {
   const { theme, cycleTheme } = useSettings();
   const { readingProgress } = useUserData();
@@ -72,6 +78,8 @@ const Header: React.FC<HeaderProps> = ({
         </div>
         <div className="flex items-center gap-1">
           {readingProgress.currentStreak > 0 && <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-orange-500/10 rounded-lg text-orange-500 mr-2"><FireIcon /><span className="text-sm font-medium">{readingProgress.currentStreak}</span></div>}
+          <button onClick={() => setShowAchievements(true)} className="p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)]" title="Achievements"><TrophyIcon /></button>
+          <button onClick={() => setShowChallenges(true)} className="p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)]" title="Challenges"><FlagIcon /></button>
           <button onClick={() => setShowWordStudy(true)} className="p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)]" title="Word Study"><WordStudyIcon /></button>
           <button onClick={() => setShowMemorization(true)} className="p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)]" title="Memorization"><BrainIcon /></button>
           <button onClick={() => setShowReadingGoals(true)} className="p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)]" title="Reading Goals"><TargetIcon /></button>

@@ -3,7 +3,9 @@ import { type Volume } from '../lib/types';
 import { FireIcon, SparklesIcon } from './Icons';
 import { useDailyVerse } from '../hooks/useDailyVerse';
 import { ShareButton } from './ShareButton';
-import { createVerseShareData, createProgressShareData, createStreakShareData } from '../hooks/useShare';
+import { createProgressShareData, createVerseShareData } from '../hooks/useShare';
+import { ReferralWidget } from './ReferralWidget';
+import { CommunityStatsWidget } from './SocialProof';
 
 interface VolumeHomeScreenProps {
   currentVolume: Volume;
@@ -34,10 +36,6 @@ const VolumeHomeScreenComponent: React.FC<VolumeHomeScreenProps> = ({
 
   // Share data
   const progressShareData = createProgressShareData(chaptersRead, totalChapters, currentStreak);
-  const dailyVerseShareData = dailyVerse
-    ? createVerseShareData(dailyVerse.text, dailyVerse.reference)
-    : null;
-  const streakShareData = currentStreak > 0 ? createStreakShareData(currentStreak) : null;
 
   // Check if current streak is a milestone worth celebrating
   const streakMilestones = [7, 30, 100, 365];
@@ -144,6 +142,16 @@ const VolumeHomeScreenComponent: React.FC<VolumeHomeScreenProps> = ({
             </p>
           </div>
         )}
+
+        {/* Community Stats */}
+        <div className="mt-8 max-w-lg mx-auto">
+          <CommunityStatsWidget />
+        </div>
+
+        {/* Referral Widget */}
+        <div className="mt-8 max-w-lg mx-auto">
+          <ReferralWidget />
+        </div>
       </div>
     </div>
   );
