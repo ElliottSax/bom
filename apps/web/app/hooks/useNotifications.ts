@@ -34,6 +34,8 @@ export function useNotifications() {
 
   // Check if notifications are supported
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     setSupported('Notification' in window && 'serviceWorker' in navigator);
     if ('Notification' in window) {
       setPermission(Notification.permission);
@@ -54,9 +56,16 @@ export function useNotifications() {
         setSettings({ ...settings, enabled: true });
 
         // Register service worker for push notifications
-        if ('serviceWorker' in navigator) {
-          const registration = await navigator.serviceWorker.register('/sw.js');
-          console.log('Service Worker registered:', registration);
+        if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+          try {
+            const registration = await navigator.serviceWorker.register('/sw.js');
+            if (process.env.NODE_ENV === 'development') {
+              console.log('Service Worker registered:', registration);
+            }
+          } catch (error) {
+            console.error('Service Worker registration failed:', error);
+            // Continue anyway - notifications can work without service worker
+          }
         }
 
         return true;

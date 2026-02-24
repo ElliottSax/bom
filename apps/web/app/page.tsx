@@ -197,6 +197,8 @@ function HomeContent() {
 
   // ==================== STREAK CELEBRATION ====================
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     const milestones = [7, 30, 100, 365];
     const currentStreak = readingProgress.currentStreak;
 
@@ -214,6 +216,8 @@ function HomeContent() {
 
   // ==================== NOTIFICATION PROMPT ====================
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     // Show notification prompt after 3-day streak if not already prompted
     const currentStreak = readingProgress.currentStreak;
     const hasPromptedBefore = localStorage.getItem('coc-notificationPrompted');
@@ -221,13 +225,20 @@ function HomeContent() {
     if (currentStreak >= 3 && !hasPromptedBefore) {
       // Check if notifications are supported and not already granted
       if ('Notification' in window && Notification.permission === 'default') {
+        let isMounted = true;
+
         // Delay prompt by 2 seconds to not overwhelm user
         const timer = setTimeout(() => {
-          setShowNotificationPrompt(true);
-          localStorage.setItem('coc-notificationPrompted', 'true');
+          if (isMounted && typeof window !== 'undefined') {
+            setShowNotificationPrompt(true);
+            localStorage.setItem('coc-notificationPrompted', 'true');
+          }
         }, 2000);
 
-        return () => clearTimeout(timer);
+        return () => {
+          isMounted = false;
+          clearTimeout(timer);
+        };
       }
     }
   }, [readingProgress.currentStreak]);
@@ -320,7 +331,8 @@ function HomeContent() {
       <VolumeTabs volumeId={volumeId} onVolumeChange={handleVolumeChange} />
 
       {/* Modals - Lazy loaded for better performance */}
-      <Suspense fallback={null}>
+      <ErrorBoundary>
+        <Suspense fallback={null}>
         {showSettings && (
           <SettingsModal
             show={showSettings}
@@ -374,8 +386,11 @@ function HomeContent() {
             onStartPlan={startStudyPlan}
             onCompleteDayComplete={completeStudyPlanDay}
             onEndPlan={() => {
-              localStorage.removeItem('coc-studyPlan');
-              window.location.reload();
+              if (typeof window !== 'undefined') {
+                localStorage.removeItem('coc-studyPlan');
+                // Small delay to ensure localStorage is updated
+                setTimeout(() => window.location.reload(), 100);
+              }
             }}
           />
         )}
@@ -449,7 +464,8 @@ function HomeContent() {
             onJoinChallenge={joinChallenge}
           />
         )}
-      </Suspense>
+        </Suspense>
+      </ErrorBoundary>
 
       {/* Achievement Notifications */}
       <AchievementNotificationContainer
@@ -504,18 +520,18 @@ function HomeContent() {
               onStudyPlanClick={() => setShowStudyPlanModal(true)}
               hasStudyPlan={!!studyPlan}
             />
-          ) : !selectedChapter ? (
+          ) : !selectedChapter && currentBook ? (
             <BookChapterSelector
-              currentBook={currentBook!}
+              currentBook={currentBook}
               currentVolume={currentVolume}
               volumeId={volumeId}
               onBack={() => setSelectedBook(null)}
               onChapterSelect={setSelectedChapter}
               isChapterRead={isChapterRead}
             />
-          ) : (
+          ) : currentBook ? (
             <ChapterReader
-              currentBook={currentBook!}
+              currentBook={currentBook}
               currentVolume={currentVolume}
               selectedChapter={selectedChapter}
               verses={verses}
@@ -537,7 +553,7 @@ function HomeContent() {
               getNote={(verseNum) => getNote(verseNum, currentBook?.name, selectedChapter)}
               openNoteEditor={(verse) => openNoteEditor(verse, currentBook?.name, selectedChapter)}
             />
-          )}
+          ) : null}
         </main>
       </div>
     </div>
