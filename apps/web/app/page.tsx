@@ -6,6 +6,7 @@ import { useVerses } from './hooks/useVerses';
 import { useSearch } from './hooks/useSearch';
 import { useAchievements } from './hooks/useAchievements';
 import { useChallenges } from './hooks/useChallenges';
+import { useMemorization } from './hooks/useMemorization';
 import { useKeyboardShortcuts, COMMON_SHORTCUTS } from './hooks/useKeyboardShortcuts';
 import { VOLUMES, getBooksForVolume, getTotalChapters } from './lib/scriptures';
 import { type VolumeId } from './lib/types';
@@ -90,7 +91,8 @@ function HomeContent() {
     saveNote,
   } = useUserData();
 
-  const { courseProgress } = useCourseProgress();
+  const { courseProgress, quizScores } = useCourseProgress();
+  const memorization = useMemorization();
 
   // ==================== LOCAL STATE ====================
   const [volumeId, setVolumeId] = useLocalStorage<VolumeId>('coc-volumeId', 'bom');
@@ -174,22 +176,39 @@ function HomeContent() {
       course => course.completed === true
     ).length;
 
-    // Count completed study plans (track days with 100% completion)
-    const studyPlansCompletedCount = studyPlan && studyPlan.daysCompleted > 0
-      ? Math.floor(studyPlan.daysCompleted / studyPlan.duration)
-      : 0;
+    // Calculate books completed (estimate from chapters read)
+    const booksCompletedCount = Math.floor(Object.keys(readingProgress.chaptersRead).length / 7);
+
+    // Calculate days active (unique days with reading activity)
+    const daysActiveCount = Object.values(readingProgress.chaptersRead).reduce((uniqueDays, timestamp) => {
+      const dateKey = new Date(timestamp).toDateString();
+      uniqueDays.add(dateKey);
+      return uniqueDays;
+    }, new Set()).size;
+
+    // Count passed quizzes
+    const quizzesPassed = Object.values(quizScores).filter(quiz => quiz.passed).length;
+
+    // Get memorization stats
+    const memorizationStats = memorization.getStats();
 
     return {
       chaptersRead: Object.keys(readingProgress.chaptersRead).length,
+      booksCompleted: booksCompletedCount,
       currentStreak: readingProgress.currentStreak,
       longestStreak: readingProgress.longestStreak,
-      notesCount: notes.length,
-      highlightsCount: highlights.length,
-      bookmarksCount: bookmarks.length,
+      notesWritten: notes.length,
+      highlightsMade: highlights.length,
+      bookmarksCreated: bookmarks.length,
       coursesCompleted: completedCoursesCount,
-      studyPlansCompleted: studyPlansCompletedCount,
+      quizzesPassed: quizzesPassed,
+      totalScore: completedCoursesCount * 100 + Object.keys(readingProgress.chaptersRead).length * 10,
+      daysActive: daysActiveCount,
+      wordStudiesCompleted: 0, // TODO: Track word studies (requires new tracking system)
+      memorizationsCompleted: memorizationStats.mastered,
+      readingGoalsAchieved: studyPlan && studyPlan.completedDays.length > 0 ? 1 : 0,
     };
-  }, [readingProgress, notes.length, highlights.length, bookmarks.length, studyPlan, courseProgress]);
+  }, [readingProgress, notes.length, highlights.length, bookmarks.length, studyPlan, courseProgress, quizScores, memorization]);
 
   const {
     unlockedAchievements,

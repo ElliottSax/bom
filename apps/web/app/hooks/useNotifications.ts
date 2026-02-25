@@ -147,7 +147,6 @@ export function useNotifications() {
       icon: '/icon-192.png',
       tag: `achievement-${Date.now()}`,
       data: { type: 'achievement', name: achievementName },
-      vibrate: [200, 100, 200, 100, 200],
     });
   }, [permission, settings.achievementUnlocks]);
 
