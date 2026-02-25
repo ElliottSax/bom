@@ -7,6 +7,7 @@ import { useSearch } from './hooks/useSearch';
 import { useAchievements } from './hooks/useAchievements';
 import { useChallenges } from './hooks/useChallenges';
 import { useMemorization } from './hooks/useMemorization';
+import { useWordStudy } from './hooks/useWordStudy';
 import { useKeyboardShortcuts, COMMON_SHORTCUTS } from './hooks/useKeyboardShortcuts';
 import { VOLUMES, getBooksForVolume, getTotalChapters } from './lib/scriptures';
 import { type VolumeId } from './lib/types';
@@ -93,6 +94,7 @@ function HomeContent() {
 
   const { courseProgress, quizScores } = useCourseProgress();
   const memorization = useMemorization();
+  const wordStudy = useWordStudy();
 
   // ==================== LOCAL STATE ====================
   const [volumeId, setVolumeId] = useLocalStorage<VolumeId>('coc-volumeId', 'bom');
@@ -245,14 +247,14 @@ function HomeContent() {
       quizzesPassed: quizzesPassed,
       totalScore: completedCoursesCount * 100 + Object.keys(readingProgress.chaptersRead).length * 10,
       daysActive: daysActiveCount,
-      wordStudiesCompleted: 0, // TODO: Track word studies (requires new tracking system)
+      wordStudiesCompleted: wordStudy.getCompletedCount(),
       memorizationsCompleted: memorizationStats.mastered,
       readingGoalsAchieved: studyPlan && studyPlan.completedDays.length > 0 ? 1 : 0,
       hasEarlyMorningReading,
       hasLateNightReading,
       hasWeekendWarriorPattern,
     };
-  }, [readingProgress, notes.length, highlights.length, bookmarks.length, studyPlan, courseProgress, quizScores, memorization]);
+  }, [readingProgress, notes.length, highlights.length, bookmarks.length, studyPlan, courseProgress, quizScores, memorization, wordStudy]);
 
   const {
     unlockedAchievements,

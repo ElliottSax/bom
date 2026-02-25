@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { type VolumeId } from '../lib/types';
 import { logger } from '../utils/logger';
 
 const log = logger.scope('WordStudy');
+
+const WORD_STUDIES_KEY = 'coc-completed-word-studies';
 
 export interface WordOccurrence {
   verse: number;
@@ -22,10 +24,37 @@ export interface WordStudyResult {
   byBook: { book: string; count: number }[];
 }
 
+export interface CompletedWordStudy {
+  word: string;
+  volumeId: VolumeId;
+  completedAt: number;
+  totalOccurrences: number;
+}
+
+function loadCompletedStudies(): CompletedWordStudy[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const item = localStorage.getItem(WORD_STUDIES_KEY);
+    return item ? JSON.parse(item) : [];
+  } catch {
+    return [];
+  }
+}
+
 export function useWordStudy() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<WordStudyResult | null>(null);
+  const [completedStudies, setCompletedStudies] = useState<CompletedWordStudy[]>(loadCompletedStudies);
+
+  // Save to localStorage whenever completedStudies changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(WORD_STUDIES_KEY, JSON.stringify(completedStudies));
+    } catch (e) {
+      log.error('Failed to save completed word studies', e instanceof Error ? e : undefined);
+    }
+  }, [completedStudies]);
 
   const studyWord = useCallback(
     async (word: string, volumeId: VolumeId): Promise<WordStudyResult | null> => {
@@ -101,5 +130,41 @@ export function useWordStudy() {
     setError(null);
   }, []);
 
-  return { loading, error, result, studyWord, highlightWord, clearResult };
+  const completeStudy = useCallback((word: string, volumeId: VolumeId, totalOccurrences: number) => {
+    const studyKey = `${word.toLowerCase()}-${volumeId}`;
+    setCompletedStudies(prev => {
+      // Check if already completed
+      if (prev.some(s => `${s.word}-${s.volumeId}` === studyKey)) {
+        return prev;
+      }
+      return [...prev, {
+        word: word.toLowerCase(),
+        volumeId,
+        completedAt: Date.now(),
+        totalOccurrences,
+      }];
+    });
+  }, []);
+
+  const isStudyCompleted = useCallback((word: string, volumeId: VolumeId): boolean => {
+    const studyKey = `${word.toLowerCase()}-${volumeId}`;
+    return completedStudies.some(s => `${s.word}-${s.volumeId}` === studyKey);
+  }, [completedStudies]);
+
+  const getCompletedCount = useCallback((): number => {
+    return completedStudies.length;
+  }, [completedStudies]);
+
+  return {
+    loading,
+    error,
+    result,
+    studyWord,
+    highlightWord,
+    clearResult,
+    completeStudy,
+    isStudyCompleted,
+    getCompletedCount,
+    completedStudies,
+  };
 }
