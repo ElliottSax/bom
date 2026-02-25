@@ -24,7 +24,7 @@ export function useChallenges(currentStreak: number, chaptersReadThisMonth: numb
     return activeChallenges
       .map((progress) => {
         const challenge = CHALLENGES.find((c) => c.id === progress.challengeId);
-        if (!challenge) return null;
+        if (!challenge) return null as any;
 
         const calc = calculateChallengeProgress(challenge, progress);
 

@@ -31,6 +31,8 @@ export interface UserChallenge extends Challenge {
   daysRemaining: number;
   isActive: boolean;
   canComplete: boolean;
+  onPace: boolean;
+  requiredPace: number;
 }
 
 export const CHALLENGES: Challenge[] = [
@@ -75,14 +77,14 @@ export const CHALLENGES: Challenge[] = [
     badge: '🎯',
   },
 
-  // Doctrine & Covenants Challenges
+  // Doctrine & Covenants Challenges (Community of Christ - 167 sections)
   {
     id: 'dc-30-day',
     name: '30-Day D&C Challenge',
-    description: 'Read all 138 sections of D&C in 30 days',
+    description: 'Read all 167 sections of D&C in 30 days (Community of Christ edition)',
     icon: '📜',
     durationDays: 30,
-    targetChapters: 138,
+    targetChapters: 167,
     volume: 'dc',
     difficulty: 'medium',
     category: 'speed',
@@ -92,10 +94,10 @@ export const CHALLENGES: Challenge[] = [
   {
     id: 'dc-90-day',
     name: '90-Day D&C Challenge',
-    description: 'Read all 138 sections of D&C in 90 days',
+    description: 'Read all 167 sections of D&C in 90 days (Community of Christ edition)',
     icon: '📖',
     durationDays: 90,
-    targetChapters: 138,
+    targetChapters: 167,
     volume: 'dc',
     difficulty: 'easy',
     category: 'completion',

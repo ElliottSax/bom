@@ -92,7 +92,6 @@ export function useNotifications() {
         icon: '/icon-192.png',
         badge: '/badge-72.png',
         tag: 'test-notification',
-        vibrate: [200, 100, 200],
       });
 
       return true;

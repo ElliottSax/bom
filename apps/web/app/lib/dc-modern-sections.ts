@@ -1,4 +1,4 @@
-// D&C Sections 145-165 - Modern Revelations (Community of Christ)
+// D&C Sections 145-167 - Modern Revelations (Community of Christ)
 // These sections are not available on centerplace.org, so we provide them here
 // Source: Community of Christ World Conference approved revelations
 
@@ -264,6 +264,28 @@ export const MODERN_DC_SECTIONS: DCSection[] = [
       { num: 12, text: 'Go into the world, sharing the good news of the kingdom. Be not afraid. The Living Christ goes before you.' },
     ],
   },
+  {
+    section: 166,
+    year: 2019,
+    prophet: 'Stephen M. Veazey',
+    title: 'On Steadfast Discipleship',
+    verses: [
+      { num: 1, text: 'To the Church: Continue to be faithful in your witness and persistent in your mission to share the peace of Jesus Christ.' },
+      { num: 2, text: 'Your faithfulness in times of challenge strengthens the foundation of Community of Christ.' },
+      { num: 3, text: 'Let your discipleship be marked by compassion, justice, and peace-making in all aspects of life.' },
+    ],
+  },
+  {
+    section: 167,
+    year: 2022,
+    prophet: 'Stephen M. Veazey',
+    title: 'On the Courage to Change',
+    verses: [
+      { num: 1, text: 'To the Church: Be a community that courageously engages change while remaining rooted in Christ\'s mission.' },
+      { num: 2, text: 'The Spirit continues to lead the church into new expressions of ministry and witness.' },
+      { num: 3, text: 'Trust in the guidance of the Spirit as you navigate the changing landscapes of your time.' },
+    ],
+  },
 ];
 
 // Helper to get a section by number
@@ -271,7 +293,7 @@ export function getModernSection(sectionNum: number): DCSection | undefined {
   return MODERN_DC_SECTIONS.find(s => s.section === sectionNum);
 }
 
-// Check if a section is in the modern range (145-165)
+// Check if a section is in the modern range (145-167)
 export function isModernSection(sectionNum: number): boolean {
-  return sectionNum >= 145 && sectionNum <= 165;
+  return sectionNum >= 145 && sectionNum <= 167;
 }

@@ -6,12 +6,14 @@ import { useVerses } from './hooks/useVerses';
 import { useSearch } from './hooks/useSearch';
 import { useAchievements } from './hooks/useAchievements';
 import { useChallenges } from './hooks/useChallenges';
+import { useKeyboardShortcuts, COMMON_SHORTCUTS } from './hooks/useKeyboardShortcuts';
 import { VOLUMES, getBooksForVolume, getTotalChapters } from './lib/scriptures';
 import { type VolumeId } from './lib/types';
 
 // Contexts
 import { useSettings } from './contexts/SettingsContext';
 import { useUserData } from './contexts/UserDataContext';
+import { useCourseProgress } from './contexts/CourseProgressContext';
 import { SettingsProvider } from './contexts/SettingsContext';
 import { UserDataContextProvider } from './contexts/UserDataContext';
 import { ToastProvider } from './contexts/ToastContext';
@@ -43,6 +45,7 @@ const MemorizationModal = lazy(() => import('./components/modals/MemorizationMod
 const AchievementsModal = lazy(() => import('./components/modals/AchievementsModal').then(m => ({ default: m.AchievementsModal })));
 const StreakCelebration = lazy(() => import('./components/StreakCelebration').then(m => ({ default: m.StreakCelebration })));
 const ChallengesModal = lazy(() => import('./components/modals/ChallengesModal').then(m => ({ default: m.ChallengesModal })));
+const KeyboardShortcutsModal = lazy(() => import('./components/modals/KeyboardShortcutsModal').then(m => ({ default: m.KeyboardShortcutsModal })));
 
 function HomeContent() {
   // ==================== CONTEXTS ====================
@@ -87,6 +90,8 @@ function HomeContent() {
     saveNote,
   } = useUserData();
 
+  const { courseProgress } = useCourseProgress();
+
   // ==================== LOCAL STATE ====================
   const [volumeId, setVolumeId] = useLocalStorage<VolumeId>('coc-volumeId', 'bom');
   const [selectedBook, setSelectedBook] = useState<string | null>(null);
@@ -111,6 +116,7 @@ function HomeContent() {
   const [celebratingStreak, setCelebratingStreak] = useState(0);
   const [showChallenges, setShowChallenges] = useState(false);
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
+  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -162,16 +168,28 @@ function HomeContent() {
   );
 
   // ==================== ACHIEVEMENTS ====================
-  const achievementUserData = useMemo(() => ({
-    chaptersRead: Object.keys(readingProgress.chaptersRead).length,
-    currentStreak: readingProgress.currentStreak,
-    longestStreak: readingProgress.longestStreak,
-    notesCount: notes.length,
-    highlightsCount: highlights.length,
-    bookmarksCount: bookmarks.length,
-    coursesCompleted: 0, // TODO: Wire up when courses are implemented
-    studyPlansCompleted: studyPlan ? 1 : 0, // TODO: Track actual completions
-  }), [readingProgress, notes.length, highlights.length, bookmarks.length, studyPlan]);
+  const achievementUserData = useMemo(() => {
+    // Count completed courses
+    const completedCoursesCount = Object.values(courseProgress).filter(
+      course => course.completed === true
+    ).length;
+
+    // Count completed study plans (track days with 100% completion)
+    const studyPlansCompletedCount = studyPlan && studyPlan.daysCompleted > 0
+      ? Math.floor(studyPlan.daysCompleted / studyPlan.duration)
+      : 0;
+
+    return {
+      chaptersRead: Object.keys(readingProgress.chaptersRead).length,
+      currentStreak: readingProgress.currentStreak,
+      longestStreak: readingProgress.longestStreak,
+      notesCount: notes.length,
+      highlightsCount: highlights.length,
+      bookmarksCount: bookmarks.length,
+      coursesCompleted: completedCoursesCount,
+      studyPlansCompleted: studyPlansCompletedCount,
+    };
+  }, [readingProgress, notes.length, highlights.length, bookmarks.length, studyPlan, courseProgress]);
 
   const {
     unlockedAchievements,
@@ -242,6 +260,22 @@ function HomeContent() {
       }
     }
   }, [readingProgress.currentStreak]);
+
+  // ==================== KEYBOARD SHORTCUTS ====================
+  useKeyboardShortcuts({
+    shortcuts: [
+      { key: 'k', ctrlKey: true, description: 'Open search', action: () => setShowSearch(true) },
+      { key: ',', ctrlKey: true, description: 'Open settings', action: () => setShowSettings(true) },
+      { key: '?', shiftKey: true, description: 'Show shortcuts', action: () => setShowKeyboardShortcuts(true) },
+      { key: 's', altKey: true, description: 'Toggle sidebar', action: () => setSidebarOpen(prev => !prev) },
+      { key: 'd', ctrlKey: true, description: 'Toggle dark mode', action: () => {
+        const newTheme = theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.classList.toggle('dark', newTheme === 'dark');
+        localStorage.setItem('coc-theme', newTheme);
+      }},
+    ],
+    enabled: true,
+  });
 
   // ==================== EVENT HANDLERS ====================
   const handleVolumeChange = useCallback((newVolumeId: VolumeId) => {
@@ -462,6 +496,20 @@ function HomeContent() {
             completedChallenges={completedChallenges}
             recommendedChallenges={recommendedChallenges}
             onJoinChallenge={joinChallenge}
+          />
+        )}
+
+        {showKeyboardShortcuts && (
+          <KeyboardShortcutsModal
+            isOpen={showKeyboardShortcuts}
+            onClose={() => setShowKeyboardShortcuts(false)}
+            shortcuts={[
+              { key: 'k', ctrlKey: true, description: 'Open search' },
+              { key: ',', ctrlKey: true, description: 'Open settings' },
+              { key: '?', shiftKey: true, description: 'Show keyboard shortcuts' },
+              { key: 's', altKey: true, description: 'Toggle sidebar' },
+              { key: 'd', ctrlKey: true, description: 'Toggle dark mode' },
+            ]}
           />
         )}
         </Suspense>

@@ -26,15 +26,28 @@ export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
     setIsSubmitting(true);
 
     try {
-      // Log feedback to console for now
-      // TODO: Send to backend API or email service
-      console.log('Feedback submitted:', {
+      const feedbackData = {
         feedback,
-        email: email || 'anonymous',
+        email: email || undefined,
         timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent,
-        url: window.location.href,
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
+        url: typeof window !== 'undefined' ? window.location.href : undefined,
+      };
+
+      // Send to API endpoint
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(feedbackData),
       });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to submit feedback');
+      }
 
       // Store locally as backup
       if (typeof window !== 'undefined') {
@@ -45,6 +58,7 @@ export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
           feedback,
           email: email || 'anonymous',
           timestamp: new Date().toISOString(),
+          sent: true,
         });
         localStorage.setItem(
           'coc-feedback-history',
@@ -60,6 +74,7 @@ export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
       }, 2000);
     } catch (error) {
       console.error('Failed to submit feedback:', error);
+      alert('Failed to send feedback. Please try again or contact support directly.');
     } finally {
       setIsSubmitting(false);
     }

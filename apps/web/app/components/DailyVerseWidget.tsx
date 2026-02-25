@@ -18,21 +18,9 @@ export function DailyVerseWidget({
   showShare = true,
   className = '',
 }: DailyVerseWidgetProps) {
-  const { verse, loading, error } = useDailyVerse();
+  const { verse, refresh } = useDailyVerse();
 
-  if (loading) {
-    return (
-      <div className={`animate-pulse ${className}`}>
-        {variant === 'hero' ? (
-          <div className="h-48 bg-[var(--color-bg-secondary)] rounded-2xl" />
-        ) : (
-          <div className="h-32 bg-[var(--color-bg-secondary)] rounded-xl" />
-        )}
-      </div>
-    );
-  }
-
-  if (error || !verse) {
+  if (!verse) {
     return null;
   }
 
@@ -48,7 +36,7 @@ export function DailyVerseWidget({
       <div className={`bg-[var(--color-bg-secondary)] rounded-lg p-3 ${className}`}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1.5">
-            <SparklesIcon className="w-4 h-4" />
+            <span className="w-4 h-4">✨</span>
             <span className="text-xs font-medium text-[var(--color-text-secondary)]">
               Daily Verse
             </span>
@@ -87,7 +75,7 @@ export function DailyVerseWidget({
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
-                <SparklesIcon className="w-6 h-6 text-white" />
+                <span className="text-2xl">✨</span>
               </div>
               <div>
                 <h3 className="text-xl font-bold">Verse of the Day</h3>
@@ -130,7 +118,7 @@ export function DailyVerseWidget({
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
-            <SparklesIcon className="w-4 h-4 text-white" />
+            <span className="text-lg">✨</span>
           </div>
           <div>
             <h3 className="text-sm font-semibold">Verse of the Day</h3>
@@ -183,7 +171,7 @@ export function DailyVerseBanner() {
     <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-b border-purple-500/20 px-4 py-3">
       <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <SparklesIcon className="w-5 h-5 text-purple-500 flex-shrink-0" />
+          <span className="text-xl flex-shrink-0">✨</span>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-[var(--color-text-secondary)]">Today's Verse</p>
             <p className="text-sm text-[var(--color-text-primary)] truncate">
@@ -213,7 +201,7 @@ export function DailyVerseHomeScreenWidget() {
       <div className="flex flex-col h-full justify-between">
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <SparklesIcon className="w-6 h-6" />
+            <span className="text-2xl">✨</span>
             <span className="text-sm font-semibold">Daily Verse</span>
           </div>
           <p className="text-base leading-snug mb-2 line-clamp-4">

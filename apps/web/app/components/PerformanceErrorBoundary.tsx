@@ -58,10 +58,28 @@ export class PerformanceErrorBoundary extends Component<Props, State> {
       onError(error, errorInfo);
     }
 
-    // Log to external service in production
+    // Log to Sentry in production
     if (process.env.NODE_ENV === 'production') {
-      // TODO: Integrate with Sentry or other error tracking service
-      // Sentry.captureException(error, { contexts: { react: { componentStack: errorInfo.componentStack } } });
+      try {
+        // Dynamically import Sentry to avoid errors if not installed
+        import('@sentry/nextjs').then((Sentry) => {
+          Sentry.captureException(error, {
+            contexts: {
+              react: {
+                componentStack: errorInfo.componentStack,
+              },
+              performance: {
+                errorTime: `${errorTime.toFixed(2)}ms`,
+                componentName: componentName || 'Unknown',
+              },
+            },
+          });
+        }).catch(() => {
+          // Sentry not available, already logged to console
+        });
+      } catch (e) {
+        // Sentry not available, already logged to console
+      }
     }
   }
 
