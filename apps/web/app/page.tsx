@@ -192,6 +192,47 @@ function HomeContent() {
     // Get memorization stats
     const memorizationStats = memorization.getStats();
 
+    // Check time-based reading patterns
+    const timestamps = Object.values(readingProgress.chaptersRead);
+
+    // Early bird: any reading before 6 AM
+    const hasEarlyMorningReading = timestamps.some(timestamp => {
+      const date = new Date(timestamp);
+      const hour = date.getHours();
+      return hour < 6;
+    });
+
+    // Night owl: any reading after 10 PM
+    const hasLateNightReading = timestamps.some(timestamp => {
+      const date = new Date(timestamp);
+      const hour = date.getHours();
+      return hour >= 22; // 10 PM = 22:00
+    });
+
+    // Weekend warrior: reading on both Saturday and Sunday in the same weekend
+    const weekendReadings = new Map<string, Set<number>>(); // weekKey -> Set of day numbers (0=Sun, 6=Sat)
+    timestamps.forEach(timestamp => {
+      const date = new Date(timestamp);
+      const day = date.getDay();
+      if (day === 0 || day === 6) { // Sunday or Saturday
+        // Get the week key (use Sunday as week start for grouping)
+        const weekStart = new Date(date);
+        weekStart.setDate(date.getDate() - date.getDay()); // Go to Sunday
+        weekStart.setHours(0, 0, 0, 0);
+        const weekKey = weekStart.toISOString();
+
+        if (!weekendReadings.has(weekKey)) {
+          weekendReadings.set(weekKey, new Set());
+        }
+        weekendReadings.get(weekKey)!.add(day);
+      }
+    });
+
+    // Check if any weekend has both Saturday (6) and Sunday (0)
+    const hasWeekendWarriorPattern = Array.from(weekendReadings.values()).some(
+      days => days.has(0) && days.has(6)
+    );
+
     return {
       chaptersRead: Object.keys(readingProgress.chaptersRead).length,
       booksCompleted: booksCompletedCount,
@@ -207,6 +248,9 @@ function HomeContent() {
       wordStudiesCompleted: 0, // TODO: Track word studies (requires new tracking system)
       memorizationsCompleted: memorizationStats.mastered,
       readingGoalsAchieved: studyPlan && studyPlan.completedDays.length > 0 ? 1 : 0,
+      hasEarlyMorningReading,
+      hasLateNightReading,
+      hasWeekendWarriorPattern,
     };
   }, [readingProgress, notes.length, highlights.length, bookmarks.length, studyPlan, courseProgress, quizScores, memorization]);
 

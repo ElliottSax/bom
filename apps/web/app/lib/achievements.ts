@@ -26,6 +26,9 @@ export interface AchievementUserData {
   wordStudiesCompleted: number;
   memorizationsCompleted: number;
   readingGoalsAchieved: number;
+  hasEarlyMorningReading: boolean;
+  hasLateNightReading: boolean;
+  hasWeekendWarriorPattern: boolean;
 }
 
 export interface UnlockedAchievement {
@@ -250,7 +253,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     description: 'Study before 6 AM',
     icon: '🌅',
     category: 'milestone',
-    condition: () => false, // Would need time-based tracking
+    condition: (data) => data.hasEarlyMorningReading,
     points: 20,
     rarity: 'common',
   },
@@ -260,7 +263,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     description: 'Study after 10 PM',
     icon: '🦉',
     category: 'milestone',
-    condition: () => false, // Would need time-based tracking
+    condition: (data) => data.hasLateNightReading,
     points: 20,
     rarity: 'common',
   },
@@ -270,7 +273,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     description: 'Study on both Saturday and Sunday',
     icon: '⚔️',
     category: 'milestone',
-    condition: () => false, // Would need date tracking
+    condition: (data) => data.hasWeekendWarriorPattern,
     points: 15,
     rarity: 'common',
   },
