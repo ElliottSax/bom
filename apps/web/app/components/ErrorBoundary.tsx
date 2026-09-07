@@ -1,5 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { motion } from 'motion/react';
 import { logger } from '../utils/logger';
+import { fadeInUp, tapPress } from '../lib/motion';
 
 const log = logger.scope('ErrorBoundary');
 
@@ -44,7 +46,12 @@ export class ErrorBoundary extends Component<Props, State> {
 
       return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-[var(--color-bg-primary)]">
-          <div className="max-w-md text-center">
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            animate="visible"
+            className="max-w-md text-center"
+          >
             <div className="mb-6">
               <svg
                 className="w-16 h-16 mx-auto text-red-500"
@@ -66,7 +73,8 @@ export class ErrorBoundary extends Component<Props, State> {
             </h2>
 
             <p className="text-[var(--color-text-secondary)] mb-6">
-              We&apos;re sorry for the inconvenience. The application encountered an unexpected error.
+              We&apos;re sorry for the inconvenience. The application encountered an unexpected
+              error.
             </p>
 
             {process.env.NODE_ENV === 'development' && this.state.error && (
@@ -83,20 +91,22 @@ export class ErrorBoundary extends Component<Props, State> {
             )}
 
             <div className="flex gap-3 justify-center">
-              <button
+              <motion.button
                 onClick={this.handleReset}
+                whileTap={tapPress}
                 className="px-6 py-3 bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] font-semibold rounded-xl hover:bg-[var(--color-border)] transition"
               >
                 Try Again
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 onClick={() => window.location.reload()}
-                className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition"
+                whileTap={tapPress}
+                className="px-6 py-3 bg-[var(--color-accent)] text-white font-semibold rounded-xl hover:bg-[var(--color-accent-light)] transition"
               >
                 Reload Page
-              </button>
+              </motion.button>
             </div>
-          </div>
+          </motion.div>
         </div>
       );
     }

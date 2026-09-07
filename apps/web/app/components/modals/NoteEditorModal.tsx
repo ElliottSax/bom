@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { CloseIcon } from '../Icons';
 import { useAutoSave } from '../../hooks/useAutoSave';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { modalOverlay, modalContent, tapPress } from '../../lib/motion';
 
 interface NoteEditorModalProps {
   show: boolean;
@@ -75,82 +77,114 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
     }
   }, [show, onClose, handleSave]);
 
-  if (!show) return null;
-
   return (
-    <div
-      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 fade-in"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="note-title"
-    >
-      <div
-        ref={focusTrapRef}
-        className="bg-[var(--color-bg-primary)] rounded-2xl w-full max-w-lg shadow-2xl border border-[var(--color-border)]"
-      >
-        <div className="p-4 border-b border-[var(--color-border-light)] flex justify-between items-center">
-          <div>
-            <h3 id="note-title" className="font-semibold flex items-center gap-2">
-              Note
-              {isSaving && (
-                <span className="text-xs text-[var(--color-text-tertiary)] flex items-center gap-1">
-                  <svg className="animate-spin w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10" strokeWidth="3" stroke="currentColor" strokeOpacity="0.25" />
-                    <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" opacity="0.75" />
-                  </svg>
-                  Saving...
-                </span>
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          variants={modalOverlay}
+          initial="hidden"
+          animate="visible"
+          exit="hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="note-title"
+        >
+          <motion.div
+            ref={focusTrapRef}
+            variants={modalContent}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="bg-[var(--color-bg-primary)] rounded-2xl w-full max-w-lg shadow-2xl border border-[var(--color-border)]"
+          >
+            <div className="p-4 border-b border-[var(--color-border-light)] flex justify-between items-center">
+              <div>
+                <h3 id="note-title" className="text-lg font-semibold flex items-center gap-2">
+                  Note
+                  {isSaving && (
+                    <span className="text-xs text-[var(--color-text-tertiary)] flex items-center gap-1">
+                      <svg
+                        className="animate-spin w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          strokeWidth="3"
+                          stroke="currentColor"
+                          strokeOpacity="0.25"
+                        />
+                        <path
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          opacity="0.75"
+                        />
+                      </svg>
+                      Saving...
+                    </span>
+                  )}
+                </h3>
+                <p className="text-sm text-[var(--color-text-secondary)]">
+                  {bookName} {chapter}:{verse}
+                </p>
+              </div>
+              <motion.button
+                onClick={onClose}
+                whileTap={tapPress}
+                className="p-2 hover:bg-[var(--color-bg-tertiary)] rounded-lg transition-colors"
+                aria-label="Close note editor"
+              >
+                <CloseIcon />
+              </motion.button>
+            </div>
+            <div className="p-4">
+              <textarea
+                value={content}
+                onChange={(e) => handleContentChange(e.target.value)}
+                placeholder="Write your thoughts... (Auto-saves after 2 seconds)"
+                aria-label="Note content"
+                aria-invalid={!!validationError}
+                aria-describedby={validationError ? 'note-error' : undefined}
+                className={`w-full h-40 bg-[var(--color-bg-tertiary)] border rounded-xl p-4 focus:outline-none resize-none ${
+                  validationError
+                    ? 'border-red-500 focus:border-red-500'
+                    : 'border-[var(--color-border)] focus:border-[var(--color-accent)]'
+                }`}
+                autoFocus
+              />
+              {validationError && (
+                <p id="note-error" className="text-sm text-red-500 mt-2">
+                  {validationError}
+                </p>
               )}
-            </h3>
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              {bookName} {chapter}:{verse}
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-[var(--color-bg-tertiary)] rounded-lg"
-            aria-label="Close note editor"
-          >
-            <CloseIcon />
-          </button>
-        </div>
-        <div className="p-4">
-          <textarea
-            value={content}
-            onChange={e => handleContentChange(e.target.value)}
-            placeholder="Write your thoughts... (Auto-saves after 2 seconds)"
-            aria-label="Note content"
-            aria-invalid={!!validationError}
-            aria-describedby={validationError ? 'note-error' : undefined}
-            className={`w-full h-40 bg-[var(--color-bg-tertiary)] border rounded-xl p-4 focus:outline-none resize-none ${
-              validationError
-                ? 'border-red-500 focus:border-red-500'
-                : 'border-[var(--color-border)] focus:border-[var(--color-accent)]'
-            }`}
-            autoFocus
-          />
-          {validationError && (
-            <p id="note-error" className="text-sm text-red-500 mt-2">
-              {validationError}
-            </p>
-          )}
-          <p className="text-xs text-[var(--color-text-tertiary)] mt-2">
-            {content.length}/{MAX_NOTE_LENGTH} characters • Ctrl+Enter to save
-          </p>
-        </div>
-        <div className="p-4 border-t border-[var(--color-border-light)] flex justify-end gap-2">
-          <button onClick={onClose} className="px-4 py-2 text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] rounded-lg transition-colors">
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={!!validationError || content.trim().length === 0}
-            className="px-5 py-2 bg-[var(--color-accent)] text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
-          >
-            Save
-          </button>
-        </div>
-      </div>
-    </div>
+              <p className="text-xs text-[var(--color-text-tertiary)] mt-2">
+                {content.length}/{MAX_NOTE_LENGTH} characters • Ctrl+Enter to save
+              </p>
+            </div>
+            <div className="p-4 border-t border-[var(--color-border-light)] flex justify-end gap-2">
+              <motion.button
+                onClick={onClose}
+                whileTap={tapPress}
+                className="px-4 py-2 text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] rounded-lg transition-colors"
+              >
+                Cancel
+              </motion.button>
+              <motion.button
+                onClick={handleSave}
+                whileTap={tapPress}
+                disabled={!!validationError || content.trim().length === 0}
+                className="px-5 py-2 bg-[var(--color-accent)] text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
+              >
+                Save
+              </motion.button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };

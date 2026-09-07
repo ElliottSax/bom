@@ -1,8 +1,10 @@
 'use client';
 
 import React from 'react';
+import { motion } from 'motion/react';
 import { useCourseProgress } from '../contexts/CourseProgressContext';
 import { type Course } from '../hooks/useCoCCourses';
+import { fadeInUp, hoverLift, tapPress } from '../lib/motion';
 
 interface ContinueLearningProps {
   courses: Course[];
@@ -10,7 +12,11 @@ interface ContinueLearningProps {
   onLessonSelect?: (courseId: string, lessonIndex: number) => void;
 }
 
-export function ContinueLearning({ courses, onCourseSelect, onLessonSelect }: ContinueLearningProps) {
+export function ContinueLearning({
+  courses,
+  onCourseSelect,
+  onLessonSelect,
+}: ContinueLearningProps) {
   const { lastViewedLesson, calculateCourseCompletion } = useCourseProgress();
 
   if (!lastViewedLesson) {
@@ -18,7 +24,7 @@ export function ContinueLearning({ courses, onCourseSelect, onLessonSelect }: Co
   }
 
   // Check if the course still exists
-  const course = courses.find(c => c.id === lastViewedLesson.courseId);
+  const course = courses.find((c) => c.id === lastViewedLesson.courseId);
   if (!course) {
     return null;
   }
@@ -57,7 +63,12 @@ export function ContinueLearning({ courses, onCourseSelect, onLessonSelect }: Co
   };
 
   return (
-    <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg p-6 mb-6">
+    <motion.div
+      className="bg-gradient-to-r from-accent-500/10 to-gold-500/10 border border-accent-500/20 rounded-lg p-6 mb-6"
+      variants={fadeInUp}
+      initial="hidden"
+      animate="visible"
+    >
       <div className="flex items-start gap-4">
         {/* Course Icon */}
         <div className="text-4xl flex-shrink-0">{course.icon}</div>
@@ -65,12 +76,8 @@ export function ContinueLearning({ courses, onCourseSelect, onLessonSelect }: Co
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm font-medium text-blue-500 dark:text-blue-400">
-              Continue Learning
-            </span>
-            <span className="text-xs text-[var(--color-text-tertiary)]">
-              • {timeAgo}
-            </span>
+            <span className="text-sm font-medium text-accent">Continue Learning</span>
+            <span className="text-xs text-[var(--color-text-tertiary)]">• {timeAgo}</span>
           </div>
 
           <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-1 truncate">
@@ -79,9 +86,16 @@ export function ContinueLearning({ courses, onCourseSelect, onLessonSelect }: Co
 
           <p className="text-sm text-[var(--color-text-secondary)] mb-3">
             {isLastLesson ? (
-              <>Last lesson: <span className="font-medium">{lastViewedLesson.lessonTitle}</span></>
+              <>
+                Last lesson: <span className="font-medium">{lastViewedLesson.lessonTitle}</span>
+              </>
             ) : (
-              <>Up next: <span className="font-medium">{course.lessons[nextLessonIndex]?.title || lastViewedLesson.lessonTitle}</span></>
+              <>
+                Up next:{' '}
+                <span className="font-medium">
+                  {course.lessons[nextLessonIndex]?.title || lastViewedLesson.lessonTitle}
+                </span>
+              </>
             )}
           </p>
 
@@ -89,7 +103,7 @@ export function ContinueLearning({ courses, onCourseSelect, onLessonSelect }: Co
           <div className="flex items-center gap-3">
             <div className="flex-1 bg-[var(--color-bg-tertiary)] rounded-full h-2">
               <div
-                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                className="bg-accent h-2 rounded-full transition-all duration-300"
                 style={{ width: `${progressPercentage}%` }}
               />
             </div>
@@ -100,17 +114,23 @@ export function ContinueLearning({ courses, onCourseSelect, onLessonSelect }: Co
         </div>
 
         {/* Continue Button */}
-        <button
+        <motion.button
           onClick={handleContinue}
-          className="flex items-center gap-2 px-5 py-2.5 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors flex-shrink-0"
+          className="flex items-center gap-2 px-5 py-2.5 bg-accent-500 hover:bg-accent-600 text-white font-medium rounded-lg transition-colors flex-shrink-0"
+          whileHover={hoverLift}
+          whileTap={tapPress}
         >
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+            <path
+              fillRule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+              clipRule="evenodd"
+            />
           </svg>
           Continue
-        </button>
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

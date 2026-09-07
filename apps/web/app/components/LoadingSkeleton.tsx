@@ -15,11 +15,12 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
   height,
   count = 1,
 }) => {
-  const baseClasses = 'animate-pulse bg-gradient-to-r from-[var(--color-bg-tertiary)] via-[var(--color-border)] to-[var(--color-bg-tertiary)] bg-[length:200%_100%]';
+  const baseClasses =
+    'animate-pulse bg-gradient-to-r from-[var(--color-bg-tertiary)] via-[var(--color-border)] to-[var(--color-bg-tertiary)] bg-[length:200%_100%]';
 
   const variantClasses = {
     text: 'rounded h-4',
-    rect: 'rounded-lg',
+    rect: 'rounded-xl',
     circle: 'rounded-full',
   };
 

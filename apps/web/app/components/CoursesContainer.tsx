@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useCoCCourses, type Course } from '../hooks/useCoCCourses';
+import { motion, AnimatePresence } from 'motion/react';
+import { useCoCCourses } from '../hooks/useCoCCourses';
 import { CourseCatalog } from './CourseCatalog';
 import { CourseDetail } from './CourseDetail';
 import useLocalStorage from '../hooks/useLocalStorage';
+import { fadeIn } from '../lib/motion';
 
 interface CourseProgress {
   [courseId: string]: {
@@ -101,9 +103,7 @@ export function CoursesContainer() {
     const attempts = existingQuizData ? existingQuizData.attempts + 1 : 1;
 
     // Keep the best score across all attempts
-    const bestScore = existingQuizData
-      ? Math.max(existingQuizData.score, score)
-      : score;
+    const bestScore = existingQuizData ? Math.max(existingQuizData.score, score) : score;
     const everPassed = existingQuizData?.passed || passed;
 
     setCourseProgress({
@@ -113,8 +113,8 @@ export function CoursesContainer() {
         quizScores: {
           ...progress.quizScores,
           [lessonId]: {
-            score: bestScore,  // Store best score
-            passed: everPassed,  // True if ever passed
+            score: bestScore, // Store best score
+            passed: everPassed, // True if ever passed
             attempts,
             lastAttempt: new Date().toISOString(),
           },
@@ -131,20 +131,38 @@ export function CoursesContainer() {
     return courseProgress[courseId]?.quizScores || {};
   };
 
-  if (selectedCourse) {
-    return (
-      <CourseDetail
-        course={selectedCourse}
-        onBack={handleBack}
-        completedLessons={getCompletedLessons(selectedCourseId!)}
-        onLessonComplete={handleLessonComplete}
-        quizScores={getQuizScores(selectedCourseId!)}
-        onQuizComplete={handleQuizComplete}
-      />
-    );
-  }
-
-  return <CourseCatalog onCourseSelect={handleCourseSelect} />;
+  return (
+    <AnimatePresence mode="wait">
+      {selectedCourse ? (
+        <motion.div
+          key="course-detail"
+          variants={fadeIn}
+          initial="hidden"
+          animate="visible"
+          exit="hidden"
+        >
+          <CourseDetail
+            course={selectedCourse}
+            onBack={handleBack}
+            completedLessons={getCompletedLessons(selectedCourseId!)}
+            onLessonComplete={handleLessonComplete}
+            quizScores={getQuizScores(selectedCourseId!)}
+            onQuizComplete={handleQuizComplete}
+          />
+        </motion.div>
+      ) : (
+        <motion.div
+          key="course-catalog"
+          variants={fadeIn}
+          initial="hidden"
+          animate="visible"
+          exit="hidden"
+        >
+          <CourseCatalog onCourseSelect={handleCourseSelect} />
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 }
 
 export default CoursesContainer;

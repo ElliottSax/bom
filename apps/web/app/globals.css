@@ -11,10 +11,11 @@
   --color-text-primary: #1a1a1a;
   --color-text-secondary: #5f6368;
   --color-text-tertiary: #80868b;
-  --color-accent: #1a5276;
-  --color-accent-light: #2874a6;
-  --color-gold: #b8860b;
-  --color-gold-light: #daa520;
+  /* Community of Christ brand blue (#0075C9) + gold (#C5A96E) */
+  --color-accent: #0075c9;
+  --color-accent-light: #3391d4;
+  --color-gold: #c5a96e;
+  --color-gold-light: #d6c399;
   --color-border: #dadce0;
   --color-border-light: #e8eaed;
 
@@ -53,10 +54,11 @@
   --color-text-primary: rgba(255, 255, 255, 0.87);
   --color-text-secondary: rgba(255, 255, 255, 0.6);
   --color-text-tertiary: rgba(255, 255, 255, 0.38);
-  --color-accent: #5dade2;
-  --color-accent-light: #85c1e9;
-  --color-gold: #f4d03f;
-  --color-gold-light: #f7dc6f;
+  /* Community of Christ brand blue/gold, lightened to hold contrast on dark backgrounds */
+  --color-accent: #66acde;
+  --color-accent-light: #8cc1e7;
+  --color-gold: #ceb684;
+  --color-gold-light: #d9c7a1;
   --color-border: #3d3d3d;
   --color-border-light: #2d2d2d;
 

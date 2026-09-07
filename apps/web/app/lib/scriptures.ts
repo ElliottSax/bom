@@ -11,28 +11,28 @@ export const VOLUMES: Volume[] = [
     name: 'Book of Mormon',
     shortName: 'BoM',
     description: '1908 Authorized Edition',
-    color: '#1a5276',
+    color: '#004D71', // brand dark navy (flagship volume)
   },
   {
     id: 'ot',
     name: 'Old Testament',
     shortName: 'OT',
     description: 'Inspired Version',
-    color: '#7d3c98',
+    color: '#1B6E76', // deep teal, bridging navy -> green
   },
   {
     id: 'nt',
     name: 'New Testament',
     shortName: 'NT',
     description: 'Inspired Version',
-    color: '#1e8449',
+    color: '#2F7A4F', // muted forest green, bridging teal -> gold
   },
   {
     id: 'dc',
     name: 'Doctrine & Covenants',
     shortName: 'D&C',
     description: 'Community of Christ Edition',
-    color: '#b9770e',
+    color: '#9C7A3C', // antique gold, echoing the brand gold accent
   },
 ];
 
@@ -44,7 +44,13 @@ export const BOOK_OF_MORMON: Book[] = [
   { id: 'enos', name: 'Enos', shortName: 'Enos', chapters: 1, volumeId: 'bom' },
   { id: 'jarom', name: 'Jarom', shortName: 'Jarom', chapters: 1, volumeId: 'bom' },
   { id: 'omni', name: 'Omni', shortName: 'Omni', chapters: 1, volumeId: 'bom' },
-  { id: 'words-of-mormon', name: 'Words of Mormon', shortName: 'W of M', chapters: 1, volumeId: 'bom' },
+  {
+    id: 'words-of-mormon',
+    name: 'Words of Mormon',
+    shortName: 'W of M',
+    chapters: 1,
+    volumeId: 'bom',
+  },
   { id: 'mosiah', name: 'Mosiah', shortName: 'Mosiah', chapters: 13, volumeId: 'bom' },
   { id: 'alma', name: 'Alma', shortName: 'Alma', chapters: 30, volumeId: 'bom' },
   { id: 'helaman', name: 'Helaman', shortName: 'Hel.', chapters: 5, volumeId: 'bom' },
@@ -78,7 +84,13 @@ export const OLD_TESTAMENT: Book[] = [
   { id: 'psalms', name: 'Psalms', shortName: 'Ps.', chapters: 150, volumeId: 'ot' },
   { id: 'proverbs', name: 'Proverbs', shortName: 'Prov.', chapters: 31, volumeId: 'ot' },
   { id: 'ecclesiastes', name: 'Ecclesiastes', shortName: 'Eccl.', chapters: 12, volumeId: 'ot' },
-  { id: 'song-of-solomon', name: 'Song of Solomon', shortName: 'Song', chapters: 8, volumeId: 'ot' },
+  {
+    id: 'song-of-solomon',
+    name: 'Song of Solomon',
+    shortName: 'Song',
+    chapters: 8,
+    volumeId: 'ot',
+  },
   { id: 'isaiah', name: 'Isaiah', shortName: 'Isa.', chapters: 66, volumeId: 'ot' },
   { id: 'jeremiah', name: 'Jeremiah', shortName: 'Jer.', chapters: 52, volumeId: 'ot' },
   { id: 'lamentations', name: 'Lamentations', shortName: 'Lam.', chapters: 5, volumeId: 'ot' },
@@ -112,8 +124,20 @@ export const NEW_TESTAMENT: Book[] = [
   { id: 'ephesians', name: 'Ephesians', shortName: 'Eph.', chapters: 6, volumeId: 'nt' },
   { id: 'philippians', name: 'Philippians', shortName: 'Philip.', chapters: 4, volumeId: 'nt' },
   { id: 'colossians', name: 'Colossians', shortName: 'Col.', chapters: 4, volumeId: 'nt' },
-  { id: '1-thessalonians', name: '1 Thessalonians', shortName: '1 Thes.', chapters: 5, volumeId: 'nt' },
-  { id: '2-thessalonians', name: '2 Thessalonians', shortName: '2 Thes.', chapters: 3, volumeId: 'nt' },
+  {
+    id: '1-thessalonians',
+    name: '1 Thessalonians',
+    shortName: '1 Thes.',
+    chapters: 5,
+    volumeId: 'nt',
+  },
+  {
+    id: '2-thessalonians',
+    name: '2 Thessalonians',
+    shortName: '2 Thes.',
+    chapters: 3,
+    volumeId: 'nt',
+  },
   { id: '1-timothy', name: '1 Timothy', shortName: '1 Tim.', chapters: 6, volumeId: 'nt' },
   { id: '2-timothy', name: '2 Timothy', shortName: '2 Tim.', chapters: 4, volumeId: 'nt' },
   { id: 'titus', name: 'Titus', shortName: 'Titus', chapters: 3, volumeId: 'nt' },
@@ -174,17 +198,37 @@ export const COC_RESOURCES = [
   {
     category: 'Official Curriculum',
     items: [
-      { name: 'Community of Christ Lessons', url: 'https://www.heraldhouse.org/collections/cofc-lessons', description: 'Weekly lessons following the Revised Common Lectionary' },
-      { name: 'Herald House Scripture Resources', url: 'https://www.heraldhouse.org/collections/scripture', description: 'Official scripture study materials' },
-    ]
+      {
+        name: 'Community of Christ Lessons',
+        url: 'https://www.heraldhouse.org/collections/cofc-lessons',
+        description: 'Weekly lessons following the Revised Common Lectionary',
+      },
+      {
+        name: 'Herald House Scripture Resources',
+        url: 'https://www.heraldhouse.org/collections/scripture',
+        description: 'Official scripture study materials',
+      },
+    ],
   },
   {
     category: 'Scripture Study',
     items: [
-      { name: 'Book of Mormon Resources', url: 'https://www.heraldhouse.org/collections/scripture-study-book-of-mormon', description: 'Commentaries and study guides' },
-      { name: 'Inspired Version Online', url: 'https://www.centerplace.org/hs/iv/default.htm', description: 'Read the Inspired Version online' },
-      { name: 'D&C Commentary', url: 'https://www.heraldhouse.org/collections/scripture', description: 'Doctrine & Covenants resources' },
-    ]
+      {
+        name: 'Book of Mormon Resources',
+        url: 'https://www.heraldhouse.org/collections/scripture-study-book-of-mormon',
+        description: 'Commentaries and study guides',
+      },
+      {
+        name: 'Inspired Version Online',
+        url: 'https://www.centerplace.org/hs/iv/default.htm',
+        description: 'Read the Inspired Version online',
+      },
+      {
+        name: 'D&C Commentary',
+        url: 'https://www.heraldhouse.org/collections/scripture',
+        description: 'Doctrine & Covenants resources',
+      },
+    ],
   },
   {
     category: 'Enduring Principles',
@@ -198,7 +242,7 @@ export const COC_RESOURCES = [
       { name: 'Pursuit of Peace (Shalom)', description: 'God calls us to seek peace and justice' },
       { name: 'Unity in Diversity', description: 'Community of Christ embraces diversity' },
       { name: 'Blessings of Community', description: 'Life is meant to be lived in community' },
-    ]
+    ],
   },
 ];
 

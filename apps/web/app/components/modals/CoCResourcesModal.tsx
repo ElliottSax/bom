@@ -1,4 +1,6 @@
 import React from 'react';
+import { motion } from 'motion/react';
+import { modalOverlay, modalContent, tapPress } from '../../lib/motion';
 
 interface CoCResourcesModalProps {
   onClose: () => void;
@@ -6,28 +8,49 @@ interface CoCResourcesModalProps {
 
 export function CoCResourcesModal({ onClose }: CoCResourcesModalProps) {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            📚 Community of Christ Study Resources
+    <motion.div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      variants={modalOverlay}
+      initial="hidden"
+      animate="visible"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="coc-resources-title"
+    >
+      <motion.div
+        variants={modalContent}
+        initial="hidden"
+        animate="visible"
+        className="bg-[var(--color-bg-primary)] rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-[var(--color-border)]"
+      >
+        <div className="sticky top-0 bg-[var(--color-bg-primary)] border-b border-[var(--color-border-light)] px-6 py-4 flex justify-between items-center">
+          <h2
+            id="coc-resources-title"
+            className="text-2xl font-bold text-[var(--color-text-primary)]"
+          >
+            Community of Christ Study Resources
           </h2>
-          <button
+          <motion.button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            whileTap={tapPress}
+            className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)] transition-colors"
             aria-label="Close"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
-          </button>
+          </motion.button>
         </div>
 
         <div className="px-6 py-4 space-y-6">
           {/* Official CoC Resources */}
           <section>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-              <span className="mr-2">🌐</span>
+            <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-3">
               Official CoC Resources (Free/Purchase)
             </h3>
             <div className="space-y-3">
@@ -56,8 +79,7 @@ export function CoCResourcesModal({ onClose }: CoCResourcesModalProps) {
 
           {/* Historical RLDS Materials */}
           <section>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-              <span className="mr-2">📖</span>
+            <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-3">
               Historical RLDS Materials (Free - Public Domain)
             </h3>
             <div className="space-y-3">
@@ -91,31 +113,36 @@ export function CoCResourcesModal({ onClose }: CoCResourcesModalProps) {
 
           {/* Study Tools */}
           <section>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-              <span className="mr-2">🔍</span>
+            <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-3">
               D&C Sections 114-167 (CoC-Specific Revelations)
             </h3>
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <p className="text-gray-700 dark:text-gray-300 mb-2">
-                Community of Christ's Doctrine & Covenants includes <strong>54 additional sections (114-167)</strong> beyond
-                the 113 shared with LDS tradition. These contain revelations from:
+            <div className="bg-[var(--color-accent)]/10 border border-[var(--color-accent)]/30 rounded-lg p-4">
+              <p className="text-[var(--color-text-primary)] mb-2">
+                Community of Christ&apos;s Doctrine & Covenants includes{' '}
+                <strong>54 additional sections (114-167)</strong> beyond the 113 shared with LDS
+                tradition. These contain revelations from:
               </p>
-              <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 ml-4">
+              <ul className="list-disc list-inside space-y-1 text-[var(--color-text-secondary)] ml-4">
                 <li>Joseph Smith III (1860-1914)</li>
                 <li>Frederick M. Smith (1915-1946)</li>
                 <li>Israel A. Smith (1946-1958)</li>
-                <li>W. Wallace Smith (1958-1978, 1982-1984) - <em>Section 156: Women's Ordination</em></li>
+                <li>
+                  W. Wallace Smith (1958-1978, 1982-1984) -{' '}
+                  <em>Section 156: Women&apos;s Ordination</em>
+                </li>
                 <li>Wallace B. Smith (1978-1982, 1984-1996)</li>
                 <li>Grant McMurray (1996-2004)</li>
-                <li>Stephen M. Veazey (2005-present) - <em>Latest: Section 167 (2025)</em></li>
+                <li>
+                  Stephen M. Veazey (2005-present) - <em>Latest: Section 167 (2025)</em>
+                </li>
               </ul>
-              <p className="text-gray-700 dark:text-gray-300 mt-3">
+              <p className="text-[var(--color-text-secondary)] mt-3">
                 <strong>Access all 167 sections:</strong> Explore the full D&C in this app, or visit{' '}
                 <a
                   href="http://www.centerplace.org/dc/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 dark:text-blue-400 hover:underline"
+                  className="text-[var(--color-accent)] hover:underline"
                 >
                   Centerplace.org
                 </a>
@@ -125,53 +152,65 @@ export function CoCResourcesModal({ onClose }: CoCResourcesModalProps) {
 
           {/* Key Spotlight: Section 156 */}
           <section>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-              <span className="mr-2">⭐</span>
-              Spotlight: Section 156 (Women's Ordination, 1984)
+            <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-3">
+              Spotlight: Section 156 (Women&apos;s Ordination, 1984)
             </h3>
-            <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
-              <p className="text-gray-700 dark:text-gray-300 mb-2">
-                One of the most significant revelations in CoC history, Section 156 authorized women's ordination to priesthood:
+            <div className="bg-[var(--color-gold)]/10 border border-[var(--color-gold)]/40 rounded-lg p-4">
+              <p className="text-[var(--color-text-primary)] mb-2">
+                One of the most significant revelations in CoC history, Section 156 authorized
+                women&apos;s ordination to priesthood:
               </p>
-              <blockquote className="border-l-4 border-purple-500 pl-4 italic my-3 text-gray-800 dark:text-gray-200">
-                "The time has come for you to respond to the need for a broader participation of women in the life
-                of the church, including their ordination to priesthood."
+              <blockquote className="border-l-4 border-[var(--color-gold)] pl-4 italic my-3 text-[var(--color-text-primary)]">
+                &quot;The time has come for you to respond to the need for a broader participation
+                of women in the life of the church, including their ordination to priesthood.&quot;
               </blockquote>
-              <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 ml-4">
-                <li><strong>Received:</strong> April 1, 1984 (President W. Wallace Smith)</li>
-                <li><strong>Sustained:</strong> April 5, 1984 World Conference</li>
-                <li><strong>First women ordained:</strong> 1985 (Ginger Barfield, Linda L. Booth, and others)</li>
-                <li><strong>Impact:</strong> ~50,000 members left to form Restoration Branches</li>
-                <li><strong>Current:</strong> Approximately 25% of CoC priesthood are women (2024)</li>
+              <ul className="list-disc list-inside space-y-1 text-[var(--color-text-secondary)] ml-4">
+                <li>
+                  <strong>Received:</strong> April 1, 1984 (President W. Wallace Smith)
+                </li>
+                <li>
+                  <strong>Sustained:</strong> April 5, 1984 World Conference
+                </li>
+                <li>
+                  <strong>First women ordained:</strong> 1985 (Ginger Barfield, Linda L. Booth, and
+                  others)
+                </li>
+                <li>
+                  <strong>Impact:</strong> ~50,000 members left to form Restoration Branches
+                </li>
+                <li>
+                  <strong>Current:</strong> Approximately 25% of CoC priesthood are women (2024)
+                </li>
               </ul>
               <div className="mt-3">
                 <a
                   href="https://sites.smith.edu/womens-rites/season-1/background-essay-womens-ordination-in-community-of-christ/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-purple-600 dark:text-purple-400 hover:underline text-sm"
+                  className="text-[var(--color-accent)] hover:underline text-sm"
                 >
-                  → Read detailed historical essay on women's ordination in CoC
+                  → Read detailed historical essay on women&apos;s ordination in CoC
                 </a>
               </div>
             </div>
           </section>
 
           {/* About CoC Link */}
-          <section className="border-t border-gray-200 dark:border-gray-700 pt-4">
-            <button
+          <section className="border-t border-[var(--color-border-light)] pt-4">
+            <motion.button
               onClick={onClose}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+              whileTap={tapPress}
+              className="w-full bg-[var(--color-accent)] hover:opacity-90 text-white font-medium py-3 px-4 rounded-lg transition-opacity"
             >
-              ℹ️ Learn More: About Community of Christ
-            </button>
-            <p className="text-sm text-gray-600 dark:text-gray-400 text-center mt-2">
+              Learn More: About Community of Christ
+            </motion.button>
+            <p className="text-sm text-[var(--color-text-secondary)] text-center mt-2">
               Click to explore CoC identity, mission, beliefs, and key distinctions
             </p>
           </section>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -187,15 +226,25 @@ function ResourceLink({ href, title, description }: ResourceLinkProps) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="block p-4 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors border border-gray-200 dark:border-gray-600"
+      className="block p-4 bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-border)] rounded-lg transition-colors border border-[var(--color-border)]"
     >
-      <h4 className="font-semibold text-gray-900 dark:text-white mb-1 flex items-center">
+      <h4 className="font-semibold text-[var(--color-text-primary)] mb-1 flex items-center">
         {title}
-        <svg className="w-4 h-4 ml-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+        <svg
+          className="w-4 h-4 ml-2 text-[var(--color-text-tertiary)]"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+          />
         </svg>
       </h4>
-      <p className="text-sm text-gray-600 dark:text-gray-300">{description}</p>
+      <p className="text-sm text-[var(--color-text-secondary)]">{description}</p>
     </a>
   );
 }

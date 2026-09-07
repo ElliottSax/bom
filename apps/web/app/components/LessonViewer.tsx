@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { type Lesson } from '../hooks/useCoCCourses';
 import ReactMarkdown from 'react-markdown';
 import { CloseIcon, ChevronLeftIcon, ChevronRightIcon } from './Icons';
 import { Quiz } from './Quiz';
 import { useCourseProgress } from '../contexts/CourseProgressContext';
+import { modalOverlay, modalContent, fadeInUp, hoverLift, tapPress } from '../lib/motion';
 
 // Print-friendly HTML template
 const generatePrintHTML = (lesson: Lesson, courseTitle: string): string => {
@@ -139,14 +141,14 @@ const generatePrintHTML = (lesson: Lesson, courseTitle: string): string => {
       font-weight: bold;
     }
     .challenge {
-      background: #f0f7ff;
-      border-left: 4px solid #4a90d9;
+      background: #EAF3FB;
+      border-left: 4px solid #0075C9;
       padding: 20px;
       margin: 30px 0;
     }
     .challenge-title {
       font-weight: bold;
-      color: #4a90d9;
+      color: #0075C9;
       margin-bottom: 10px;
     }
     .resources {
@@ -155,7 +157,7 @@ const generatePrintHTML = (lesson: Lesson, courseTitle: string): string => {
       border-top: 1px solid #ddd;
     }
     .resources a {
-      color: #4a90d9;
+      color: #0075C9;
       text-decoration: none;
     }
     .footer {
@@ -181,61 +183,85 @@ const generatePrintHTML = (lesson: Lesson, courseTitle: string): string => {
 
   <div class="description">${lesson.description}</div>
 
-  ${lesson.objectives && lesson.objectives.length > 0 ? `
+  ${
+    lesson.objectives && lesson.objectives.length > 0
+      ? `
   <div class="section">
     <div class="section-title">Learning Objectives</div>
     <ul class="objectives-list">
-      ${lesson.objectives.map(obj => `<li>${obj}</li>`).join('')}
+      ${lesson.objectives.map((obj) => `<li>${obj}</li>`).join('')}
     </ul>
   </div>
-  ` : ''}
+  `
+      : ''
+  }
 
   <div class="section content">
     <div class="section-title">Lesson Content</div>
     ${lesson.content}
   </div>
 
-  ${lesson.keyTerms && lesson.keyTerms.length > 0 ? `
+  ${
+    lesson.keyTerms && lesson.keyTerms.length > 0
+      ? `
   <div class="section">
     <div class="section-title">Key Terms</div>
     <div class="terms-list">
-      ${lesson.keyTerms.map(term => `
+      ${lesson.keyTerms
+        .map(
+          (term) => `
         <div class="term">
           <div class="term-name">${term.term}</div>
           <div class="term-def">${term.definition}</div>
         </div>
-      `).join('')}
+      `
+        )
+        .join('')}
     </div>
   </div>
-  ` : ''}
+  `
+      : ''
+  }
 
-  ${lesson.discussionQuestions && lesson.discussionQuestions.length > 0 ? `
+  ${
+    lesson.discussionQuestions && lesson.discussionQuestions.length > 0
+      ? `
   <div class="section">
     <div class="section-title">Discussion Questions</div>
     <ul class="questions-list">
-      ${lesson.discussionQuestions.map(q => `<li>${q}</li>`).join('')}
+      ${lesson.discussionQuestions.map((q) => `<li>${q}</li>`).join('')}
     </ul>
   </div>
-  ` : ''}
+  `
+      : ''
+  }
 
-  ${lesson.applicationChallenge ? `
+  ${
+    lesson.applicationChallenge
+      ? `
   <div class="challenge">
     <div class="challenge-title">Application Challenge</div>
     <div>${lesson.applicationChallenge}</div>
   </div>
-  ` : ''}
+  `
+      : ''
+  }
 
-  ${lesson.historicalMaterials && lesson.historicalMaterials.length > 0 ? `
+  ${
+    lesson.historicalMaterials && lesson.historicalMaterials.length > 0
+      ? `
   <div class="section resources">
     <div class="section-title">Additional Resources</div>
     <ul>
-      ${lesson.historicalMaterials.map(m => `<li><a href="${m.url}">${m.title}</a></li>`).join('')}
+      ${lesson.historicalMaterials.map((m) => `<li><a href="${m.url}">${m.title}</a></li>`).join('')}
     </ul>
   </div>
-  ` : ''}
+  `
+      : ''
+  }
 
   <div class="footer">
-    Printed from Church of Christ Courses • ${new Date().toLocaleDateString()}
+    Printed from Community of Christ Courses • ${new Date().toLocaleDateString()}
   </div>
 </body>
 </html>
@@ -281,7 +307,8 @@ export function LessonViewer({
   const [noteContent, setNoteContent] = useState('');
   const [noteSaved, setNoteSaved] = useState(false);
 
-  const { isBookmarked, toggleBookmark, getNote, saveNote, setLastViewedLesson } = useCourseProgress();
+  const { isBookmarked, toggleBookmark, getNote, saveNote, setLastViewedLesson } =
+    useCourseProgress();
   const bookmarked = isBookmarked(courseId, lesson.id);
 
   // Track last viewed lesson
@@ -324,7 +351,11 @@ export function LessonViewer({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't handle keys when quiz is open or user is typing
-      if (showQuiz || e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+      if (
+        showQuiz ||
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) {
         return;
       }
 
@@ -369,7 +400,22 @@ export function LessonViewer({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showQuiz, onClose, hasPrevious, onPrevious, hasNext, onNext, handlePrint, toggleBookmark, courseId, lesson.id, lesson.title, courseTitle, onComplete, isCompleted]);
+  }, [
+    showQuiz,
+    onClose,
+    hasPrevious,
+    onPrevious,
+    hasNext,
+    onNext,
+    handlePrint,
+    toggleBookmark,
+    courseId,
+    lesson.id,
+    lesson.title,
+    courseTitle,
+    onComplete,
+    isCompleted,
+  ]);
 
   const handleQuizComplete = (score: number, passed: boolean) => {
     if (onQuizComplete) {
@@ -379,20 +425,30 @@ export function LessonViewer({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-[var(--color-bg-primary)] rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+    <motion.div
+      variants={modalOverlay}
+      initial="hidden"
+      animate="visible"
+      exit="hidden"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    >
+      <motion.div
+        variants={modalContent}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        className="bg-[var(--color-bg-primary)] rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col"
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-[var(--color-border-light)]">
           <div className="flex-1 min-w-0 mr-4">
-            <p className="text-sm text-[var(--color-text-secondary)] mb-1">
-              {courseTitle}
-            </p>
+            <p className="text-sm text-[var(--color-text-secondary)] mb-1">{courseTitle}</p>
             <h2 className="text-xl font-bold text-[var(--color-text-primary)] truncate">
               {lesson.title}
             </h2>
           </div>
           <div className="flex items-center gap-2">
-            <span className="px-2 py-1 text-xs bg-blue-500/10 text-blue-500 rounded">
+            <span className="px-2 py-1 text-xs bg-[var(--color-accent)]/10 text-[var(--color-accent)] rounded">
               {lesson.duration} min
             </span>
             <button
@@ -401,12 +457,7 @@ export function LessonViewer({
               aria-label="Print lesson"
               title="Print or export as PDF"
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -419,7 +470,7 @@ export function LessonViewer({
               onClick={() => toggleBookmark(courseId, lesson.id, lesson.title, courseTitle)}
               className={`p-2 rounded-lg transition-colors ${
                 bookmarked
-                  ? 'text-yellow-500 bg-yellow-500/10 hover:bg-yellow-500/20'
+                  ? 'text-gold-500 bg-gold-500/10 hover:bg-gold-500/20'
                   : 'text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-secondary)]'
               }`}
               aria-label={bookmarked ? 'Remove bookmark' : 'Add bookmark'}
@@ -452,9 +503,7 @@ export function LessonViewer({
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
           {/* Description */}
-          <p className="text-[var(--color-text-secondary)] mb-6">
-            {lesson.description}
-          </p>
+          <p className="text-[var(--color-text-secondary)] mb-6">{lesson.description}</p>
 
           {/* Objectives */}
           {lesson.objectives && lesson.objectives.length > 0 && (
@@ -472,16 +521,29 @@ export function LessonViewer({
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
-              {showObjectives && (
-                <ul className="list-disc list-inside space-y-2 text-[var(--color-text-secondary)] bg-[var(--color-bg-secondary)] p-4 rounded-lg">
-                  {lesson.objectives.map((objective, index) => (
-                    <li key={index}>{objective}</li>
-                  ))}
-                </ul>
-              )}
+              <AnimatePresence>
+                {showObjectives && (
+                  <motion.ul
+                    variants={fadeInUp}
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                    className="list-disc list-inside space-y-2 text-[var(--color-text-secondary)] bg-[var(--color-bg-secondary)] p-4 rounded-lg"
+                  >
+                    {lesson.objectives.map((objective, index) => (
+                      <li key={index}>{objective}</li>
+                    ))}
+                  </motion.ul>
+                )}
+              </AnimatePresence>
             </div>
           )}
 
@@ -520,7 +582,7 @@ export function LessonViewer({
                   </ol>
                 ),
                 blockquote: ({ children }) => (
-                  <blockquote className="border-l-4 border-blue-500 pl-4 italic text-[var(--color-text-secondary)] bg-[var(--color-bg-secondary)] p-4 my-4 rounded-r-lg">
+                  <blockquote className="border-l-4 border-[var(--color-accent)] pl-4 italic text-[var(--color-text-secondary)] bg-[var(--color-bg-secondary)] p-4 my-4 rounded-r-lg">
                     {children}
                   </blockquote>
                 ),
@@ -532,9 +594,7 @@ export function LessonViewer({
                   </div>
                 ),
                 thead: ({ children }) => (
-                  <thead className="bg-[var(--color-bg-secondary)]">
-                    {children}
-                  </thead>
+                  <thead className="bg-[var(--color-bg-secondary)]">{children}</thead>
                 ),
                 th: ({ children }) => (
                   <th className="px-4 py-2 text-left text-xs font-medium text-[var(--color-text-primary)] uppercase tracking-wider">
@@ -547,9 +607,7 @@ export function LessonViewer({
                   </td>
                 ),
                 strong: ({ children }) => (
-                  <strong className="font-bold text-[var(--color-text-primary)]">
-                    {children}
-                  </strong>
+                  <strong className="font-bold text-[var(--color-text-primary)]">{children}</strong>
                 ),
               }}
             >
@@ -573,23 +631,36 @@ export function LessonViewer({
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
-              {showKeyTerms && (
-                <div className="bg-[var(--color-bg-secondary)] p-4 rounded-lg space-y-3">
-                  {lesson.keyTerms.map((term, index) => (
-                    <div key={index}>
-                      <dt className="font-semibold text-[var(--color-text-primary)] mb-1">
-                        {term.term}
-                      </dt>
-                      <dd className="text-sm text-[var(--color-text-secondary)]">
-                        {term.definition}
-                      </dd>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <AnimatePresence>
+                {showKeyTerms && (
+                  <motion.div
+                    variants={fadeInUp}
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                    className="bg-[var(--color-bg-secondary)] p-4 rounded-lg space-y-3"
+                  >
+                    {lesson.keyTerms.map((term, index) => (
+                      <div key={index}>
+                        <dt className="font-semibold text-[var(--color-text-primary)] mb-1">
+                          {term.term}
+                        </dt>
+                        <dd className="text-sm text-[var(--color-text-secondary)]">
+                          {term.definition}
+                        </dd>
+                      </div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           )}
 
@@ -609,33 +680,47 @@ export function LessonViewer({
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
-              {showDiscussion && (
-                <ul className="bg-[var(--color-bg-secondary)] p-4 rounded-lg space-y-2">
-                  {lesson.discussionQuestions.map((question, index) => (
-                    <li key={index} className="text-[var(--color-text-secondary)] flex items-start gap-2">
-                      <span className="text-blue-500 font-semibold flex-shrink-0">
-                        {index + 1}.
-                      </span>
-                      <span>{question}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <AnimatePresence>
+                {showDiscussion && (
+                  <motion.ul
+                    variants={fadeInUp}
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                    className="bg-[var(--color-bg-secondary)] p-4 rounded-lg space-y-2"
+                  >
+                    {lesson.discussionQuestions.map((question, index) => (
+                      <li
+                        key={index}
+                        className="text-[var(--color-text-secondary)] flex items-start gap-2"
+                      >
+                        <span className="text-[var(--color-accent)] font-semibold flex-shrink-0">
+                          {index + 1}.
+                        </span>
+                        <span>{question}</span>
+                      </li>
+                    ))}
+                  </motion.ul>
+                )}
+              </AnimatePresence>
             </div>
           )}
 
           {/* Application Challenge */}
           {lesson.applicationChallenge && (
-            <div className="bg-blue-500/10 border-l-4 border-blue-500 p-4 rounded-r-lg mb-6">
-              <h3 className="text-lg font-semibold text-blue-500 mb-2">
+            <div className="bg-[var(--color-accent)]/10 border-l-4 border-[var(--color-accent)] p-4 rounded-r-lg mb-6">
+              <h3 className="text-lg font-semibold text-[var(--color-accent)] mb-2">
                 Application Challenge
               </h3>
-              <p className="text-[var(--color-text-secondary)]">
-                {lesson.applicationChallenge}
-              </p>
+              <p className="text-[var(--color-text-secondary)]">{lesson.applicationChallenge}</p>
             </div>
           )}
 
@@ -646,12 +731,20 @@ export function LessonViewer({
               className="flex items-center justify-between w-full text-left mb-2"
             >
               <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                <svg
+                  className="w-5 h-5 text-green-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  />
                 </svg>
-                <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
-                  My Notes
-                </h3>
+                <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">My Notes</h3>
                 {noteContent.trim() && (
                   <span className="text-xs px-2 py-0.5 bg-green-500/10 text-green-500 rounded">
                     {noteContent.split(/\s+/).filter(Boolean).length} words
@@ -664,7 +757,12 @@ export function LessonViewer({
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
               </svg>
             </button>
             {showNotes && (
@@ -683,7 +781,11 @@ export function LessonViewer({
                     {noteSaved && (
                       <span className="text-sm text-green-500 flex items-center gap-1">
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                         Saved!
                       </span>
@@ -702,12 +804,22 @@ export function LessonViewer({
 
           {/* Quiz Section */}
           {quiz && quiz.questions && quiz.questions.length > 0 && (
-            <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-2 border-purple-500/20 rounded-lg p-6 mb-6">
+            <div className="bg-gradient-to-r from-[var(--color-accent)]/10 to-[var(--color-accent-light)]/10 border-2 border-[var(--color-accent)]/20 rounded-lg p-6 mb-6">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <svg className="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    <svg
+                      className="w-6 h-6 text-[var(--color-accent)]"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
                     </svg>
                     <h3 className="text-xl font-bold text-[var(--color-text-primary)]">
                       Test Your Knowledge
@@ -721,26 +833,28 @@ export function LessonViewer({
                   </p>
 
                   {quizScore && (
-                    <div className={`mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg ${
-                      quizScore.passed
-                        ? 'bg-green-500/10 text-green-500'
-                        : 'bg-red-500/10 text-red-500'
-                    }`}>
+                    <div
+                      className={`mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg ${
+                        quizScore.passed
+                          ? 'bg-green-500/10 text-green-500'
+                          : 'bg-red-500/10 text-red-500'
+                      }`}
+                    >
                       <span className="font-semibold">
                         {quizScore.passed ? 'Passed' : 'Not Passed'}
                       </span>
-                      <span className="text-sm">
-                        ({quizScore.score}%)
-                      </span>
+                      <span className="text-sm">({quizScore.score}%)</span>
                     </div>
                   )}
                 </div>
-                <button
+                <motion.button
+                  whileHover={hoverLift}
+                  whileTap={tapPress}
                   onClick={() => setShowQuiz(true)}
-                  className="px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-lg transition-colors"
+                  className="px-6 py-3 bg-[var(--color-accent)] hover:bg-[var(--color-accent-light)] text-white font-semibold rounded-lg transition-colors"
                 >
                   {quizScore ? 'Retake Quiz' : 'Take Quiz'}
-                </button>
+                </motion.button>
               </div>
             </div>
           )}
@@ -758,10 +872,20 @@ export function LessonViewer({
                       href={material.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-500 hover:text-blue-600 hover:underline flex items-center gap-2"
+                      className="text-[var(--color-accent)] hover:text-[var(--color-accent-light)] hover:underline flex items-center gap-2"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                        />
                       </svg>
                       {material.title}
                     </a>
@@ -775,7 +899,9 @@ export function LessonViewer({
         {/* Footer */}
         <div className="border-t border-[var(--color-border-light)]">
           <div className="flex items-center justify-between p-4">
-            <button
+            <motion.button
+              whileHover={hasPrevious ? hoverLift : undefined}
+              whileTap={hasPrevious ? tapPress : undefined}
               onClick={onPrevious}
               disabled={!hasPrevious}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
@@ -786,64 +912,78 @@ export function LessonViewer({
             >
               <ChevronLeftIcon />
               Previous
-            </button>
+            </motion.button>
 
             <div className="flex items-center gap-3">
               {onComplete && (
-                <button
+                <motion.button
+                  whileHover={isCompleted ? undefined : hoverLift}
+                  whileTap={isCompleted ? undefined : tapPress}
                   onClick={onComplete}
                   className={`px-4 py-2 rounded-lg transition-colors ${
                     isCompleted
                       ? 'bg-green-500/10 text-green-500'
-                      : 'bg-blue-500 text-white hover:bg-blue-600'
+                      : 'bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-light)]'
                   }`}
                 >
                   {isCompleted ? '✓ Completed' : 'Mark Complete'}
-                </button>
+                </motion.button>
               )}
             </div>
 
-            <button
+            <motion.button
+              whileHover={hasNext ? hoverLift : undefined}
+              whileTap={hasNext ? tapPress : undefined}
               onClick={onNext}
               disabled={!hasNext}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                 hasNext
-                  ? 'bg-blue-500 hover:bg-blue-600 text-white'
+                  ? 'bg-[var(--color-accent)] hover:bg-[var(--color-accent-light)] text-white'
                   : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-tertiary)] cursor-not-allowed opacity-50'
               }`}
             >
               Next
               <ChevronRightIcon />
-            </button>
+            </motion.button>
           </div>
           {/* Keyboard shortcuts hint */}
           <div className="px-4 pb-3 text-center">
             <p className="text-xs text-[var(--color-text-tertiary)]">
               <span className="hidden sm:inline">Keyboard shortcuts: </span>
               <span className="inline-flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-[var(--color-bg-tertiary)] rounded text-[10px]">←</kbd>
-                <kbd className="px-1.5 py-0.5 bg-[var(--color-bg-tertiary)] rounded text-[10px]">→</kbd>
+                <kbd className="px-1.5 py-0.5 bg-[var(--color-bg-tertiary)] rounded text-[10px]">
+                  ←
+                </kbd>
+                <kbd className="px-1.5 py-0.5 bg-[var(--color-bg-tertiary)] rounded text-[10px]">
+                  →
+                </kbd>
                 <span className="mx-1">navigate</span>
               </span>
               <span className="mx-2 hidden sm:inline">•</span>
               <span className="inline-flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-[var(--color-bg-tertiary)] rounded text-[10px]">B</kbd>
+                <kbd className="px-1.5 py-0.5 bg-[var(--color-bg-tertiary)] rounded text-[10px]">
+                  B
+                </kbd>
                 <span className="mx-1">bookmark</span>
               </span>
               <span className="mx-2 hidden sm:inline">•</span>
               <span className="inline-flex items-center gap-1 hidden sm:inline-flex">
-                <kbd className="px-1.5 py-0.5 bg-[var(--color-bg-tertiary)] rounded text-[10px]">P</kbd>
+                <kbd className="px-1.5 py-0.5 bg-[var(--color-bg-tertiary)] rounded text-[10px]">
+                  P
+                </kbd>
                 <span className="mx-1">print</span>
               </span>
               <span className="mx-2 hidden md:inline">•</span>
               <span className="inline-flex items-center gap-1 hidden md:inline-flex">
-                <kbd className="px-1.5 py-0.5 bg-[var(--color-bg-tertiary)] rounded text-[10px]">Esc</kbd>
+                <kbd className="px-1.5 py-0.5 bg-[var(--color-bg-tertiary)] rounded text-[10px]">
+                  Esc
+                </kbd>
                 <span className="mx-1">close</span>
               </span>
             </p>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Quiz Modal */}
       {showQuiz && quiz && (
@@ -854,7 +994,7 @@ export function LessonViewer({
           onComplete={handleQuizComplete}
         />
       )}
-    </div>
+    </motion.div>
   );
 }
 

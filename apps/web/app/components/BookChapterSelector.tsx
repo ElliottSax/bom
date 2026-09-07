@@ -1,6 +1,8 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import { ChevronLeftIcon, CheckIcon } from './Icons';
 import { type Book, type Volume } from '../lib/types';
+import { fadeIn, tapPress, transitionFast } from '../lib/motion';
 
 interface BookChapterSelectorProps {
   currentBook: Book;
@@ -20,11 +22,15 @@ export const BookChapterSelector: React.FC<BookChapterSelectorProps> = ({
   isChapterRead,
 }) => {
   return (
-    <div className="reading-container slide-in">
+    <motion.div className="reading-container" variants={fadeIn} initial="hidden" animate="visible">
       <div className="flex items-center gap-4 mb-8">
-        <button onClick={onBack} className="p-2 hover:bg-[var(--color-bg-tertiary)] rounded-lg">
+        <motion.button
+          onClick={onBack}
+          whileTap={tapPress}
+          className="p-2 hover:bg-[var(--color-bg-tertiary)] rounded-lg transition-colors"
+        >
           <ChevronLeftIcon />
-        </button>
+        </motion.button>
         <div>
           <h2 className="chapter-heading border-0 pb-0 mb-0">{currentBook.name}</h2>
           <p className="text-[var(--color-text-tertiary)] text-sm">
@@ -38,10 +44,15 @@ export const BookChapterSelector: React.FC<BookChapterSelectorProps> = ({
           const isRead = isChapterRead(currentBook.id, chapter);
 
           return (
-            <button
+            <motion.button
               key={chapter}
               onClick={() => onChapterSelect(chapter)}
-              className={`aspect-square border rounded-xl flex items-center justify-center font-medium transition-colors relative ${
+              whileHover={
+                isRead ? { scale: 1.04 } : { backgroundColor: currentVolume.color, scale: 1.04 }
+              }
+              whileTap={tapPress}
+              transition={transitionFast}
+              className={`aspect-square border rounded-xl flex items-center justify-center font-medium relative ${
                 isRead
                   ? 'border-[var(--color-accent)]/30'
                   : 'bg-[var(--color-bg-secondary)] hover:text-white border-[var(--color-border-light)]'
@@ -51,16 +62,6 @@ export const BookChapterSelector: React.FC<BookChapterSelectorProps> = ({
                   ? { backgroundColor: currentVolume.color + '20', color: currentVolume.color }
                   : undefined
               }
-              onMouseEnter={(e) => {
-                if (!isRead) {
-                  e.currentTarget.style.backgroundColor = currentVolume.color;
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isRead) {
-                  e.currentTarget.style.backgroundColor = '';
-                }
-              }}
             >
               {chapter}
               {isRead && (
@@ -71,10 +72,10 @@ export const BookChapterSelector: React.FC<BookChapterSelectorProps> = ({
                   <CheckIcon />
                 </div>
               )}
-            </button>
+            </motion.button>
           );
         })}
       </div>
-    </div>
+    </motion.div>
   );
 };
