@@ -9,21 +9,21 @@ import type { StudyPlan, Verse, SearchResult } from '../types';
 /**
  * Optimized search with debouncing
  */
-export function useDebouncedSearch(
-  searchFn: (query: string) => void,
-  delay: number = 500
-) {
+export function useDebouncedSearch(searchFn: (query: string) => void, delay: number = 500) {
   const timeoutRef = useRef<NodeJS.Timeout>();
 
-  const debouncedSearch = useCallback((query: string) => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+  const debouncedSearch = useCallback(
+    (query: string) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
 
-    timeoutRef.current = setTimeout(() => {
-      searchFn(query);
-    }, delay);
-  }, [searchFn, delay]);
+      timeoutRef.current = setTimeout(() => {
+        searchFn(query);
+      }, delay);
+    },
+    [searchFn, delay]
+  );
 
   // Cleanup on unmount
   useEffect(() => {
@@ -47,9 +47,7 @@ export function useStudyPlanProgress(plan: StudyPlan | null) {
     const totalDays = Object.keys(plan.progress).length;
     if (totalDays === 0) return 0;
 
-    const completedDays = Object.values(plan.progress).filter(
-      p => p.completed
-    ).length;
+    const completedDays = Object.values(plan.progress).filter((p) => p.completed).length;
 
     return Math.round((completedDays / totalDays) * 100);
   }, [plan]);
@@ -109,9 +107,9 @@ export function useFilteredVerses(
     if (!searchQuery) return verses;
 
     const query = searchQuery.toLowerCase();
-    return verses.filter(verse =>
-      verse.text.toLowerCase().includes(query) ||
-      verse.book.toLowerCase().includes(query)
+    return verses.filter(
+      (verse) =>
+        verse.text.toLowerCase().includes(query) || verse.book.toLowerCase().includes(query)
     );
   }, [verses, searchQuery]);
 
@@ -139,7 +137,7 @@ export function useGroupedSearchResults(results: SearchResult[]) {
   const groupedResults = useMemo(() => {
     const groups = new Map<string, SearchResult[]>();
 
-    results.forEach(result => {
+    results.forEach((result) => {
       const key = `${result.book} ${result.chapter}`;
       if (!groups.has(key)) {
         groups.set(key, []);
@@ -159,10 +157,7 @@ export function useGroupedSearchResults(results: SearchResult[]) {
 /**
  * Optimized infinite scroll hook
  */
-export function useInfiniteScroll<T>(
-  items: T[],
-  pageSize: number = 20
-) {
+export function useInfiniteScroll<T>(items: T[], pageSize: number = 20) {
   const [displayedItems, setDisplayedItems] = useState<T[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -175,7 +170,7 @@ export function useInfiniteScroll<T>(
 
   const loadMore = useCallback(() => {
     if (hasMore) {
-      setPage(prev => prev + 1);
+      setPage((prev) => prev + 1);
     }
   }, [hasMore]);
 
@@ -203,7 +198,7 @@ export function useCachedStorage<T>(
 
   useEffect(() => {
     // Load from storage on mount
-    AsyncStorage.getItem(key).then(stored => {
+    AsyncStorage.getItem(key).then((stored) => {
       if (stored) {
         const parsed = JSON.parse(stored) as T;
         setCachedValue(parsed);
@@ -212,11 +207,14 @@ export function useCachedStorage<T>(
     });
   }, [key]);
 
-  const setValue = useCallback((value: T) => {
-    setCachedValue(value);
-    cacheRef.current = value;
-    AsyncStorage.setItem(key, JSON.stringify(value));
-  }, [key]);
+  const setValue = useCallback(
+    (value: T) => {
+      setCachedValue(value);
+      cacheRef.current = value;
+      AsyncStorage.setItem(key, JSON.stringify(value));
+    },
+    [key]
+  );
 
   const clearValue = useCallback(() => {
     setCachedValue(initialValue);
@@ -230,15 +228,20 @@ export function useCachedStorage<T>(
 /**
  * Optimized scroll position restoration
  */
+import { NativeSyntheticEvent, NativeScrollEvent, ScrollView } from 'react-native';
+
 export function useScrollPosition(key: string) {
-  const scrollViewRef = useRef<any>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
   const positionRef = useRef(0);
 
-  const savePosition = useCallback((event: any) => {
-    const position = event.nativeEvent.contentOffset.y;
-    positionRef.current = position;
-    AsyncStorage.setItem(`scroll_${key}`, position.toString());
-  }, [key]);
+  const savePosition = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const position = event.nativeEvent.contentOffset.y;
+      positionRef.current = position;
+      AsyncStorage.setItem(`scroll_${key}`, position.toString());
+    },
+    [key]
+  );
 
   const restorePosition = useCallback(async () => {
     const saved = await AsyncStorage.getItem(`scroll_${key}`);
@@ -275,7 +278,7 @@ export function useFormValidation<T extends Record<string, any>>(
 
   const visibleErrors = useMemo(() => {
     const visible: Record<string, string> = {};
-    Object.keys(errors).forEach(key => {
+    Object.keys(errors).forEach((key) => {
       if (touched[key]) {
         visible[key] = errors[key];
       }
@@ -287,12 +290,12 @@ export function useFormValidation<T extends Record<string, any>>(
     return Object.keys(errors).length === 0;
   }, [errors]);
 
-  const setFieldValue = useCallback((field: keyof T, value: any) => {
-    setValues(prev => ({ ...prev, [field]: value }));
+  const setFieldValue = useCallback(<K extends keyof T>(field: K, value: T[K]) => {
+    setValues((prev) => ({ ...prev, [field]: value }));
   }, []);
 
   const setFieldTouched = useCallback((field: string, isTouched: boolean = true) => {
-    setTouched(prev => ({ ...prev, [field]: isTouched }));
+    setTouched((prev) => ({ ...prev, [field]: isTouched }));
   }, []);
 
   const resetForm = useCallback(() => {

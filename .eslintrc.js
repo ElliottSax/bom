@@ -35,12 +35,16 @@ module.exports = {
       version: 'detect',
     },
   },
-  ignorePatterns: [
-    'node_modules/',
-    'dist/',
-    'build/',
-    '.next/',
-    'coverage/',
-    '*.config.js',
+  ignorePatterns: ['node_modules/', 'dist/', 'build/', '.next/', 'coverage/', '*.config.js'],
+  overrides: [
+    {
+      // Jest's idiomatic mock-access pattern is `jest.mock(x); const y = require(x)`,
+      // which needs a real require() call after the hoisted jest.mock() -- an ESM
+      // import would be hoisted above the mock and get the un-mocked module.
+      files: ['**/__tests__/**', '**/*.test.ts', '**/*.test.tsx'],
+      rules: {
+        '@typescript-eslint/no-var-requires': 'off',
+      },
+    },
   ],
 };

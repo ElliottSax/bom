@@ -13,6 +13,11 @@ import {
   InfoIcon,
   LibraryIcon,
   AcademicCapIcon,
+  WordStudyIcon,
+  TargetIcon,
+  BrainIcon,
+  TrophyIcon,
+  FlagIcon,
 } from './Icons';
 import { type Volume } from '../lib/types';
 import { useSettings } from '../contexts/SettingsContext';
@@ -34,6 +39,11 @@ interface HeaderProps {
   setShowCoCResources: React.Dispatch<React.SetStateAction<boolean>>;
   setShowAboutCoC: React.Dispatch<React.SetStateAction<boolean>>;
   setShowCourses: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowWordStudy: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowReadingGoals: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowMemorization: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowAchievements: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowChallenges: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -48,6 +58,11 @@ const Header: React.FC<HeaderProps> = ({
   setShowCoCResources,
   setShowAboutCoC,
   setShowCourses,
+  setShowWordStudy,
+  setShowReadingGoals,
+  setShowMemorization,
+  setShowAchievements,
+  setShowChallenges,
 }) => {
   const { theme, cycleTheme } = useSettings();
   const { readingProgress } = useUserData();
@@ -83,6 +98,46 @@ const Header: React.FC<HeaderProps> = ({
               <span className="text-sm font-medium">{readingProgress.currentStreak}</span>
             </div>
           )}
+          <motion.button
+            whileTap={tapPress}
+            onClick={() => setShowAchievements(true)}
+            className={iconButtonClass}
+            title="Achievements"
+          >
+            <TrophyIcon />
+          </motion.button>
+          <motion.button
+            whileTap={tapPress}
+            onClick={() => setShowChallenges(true)}
+            className={iconButtonClass}
+            title="Challenges"
+          >
+            <FlagIcon />
+          </motion.button>
+          <motion.button
+            whileTap={tapPress}
+            onClick={() => setShowWordStudy(true)}
+            className={iconButtonClass}
+            title="Word Study"
+          >
+            <WordStudyIcon />
+          </motion.button>
+          <motion.button
+            whileTap={tapPress}
+            onClick={() => setShowMemorization(true)}
+            className={iconButtonClass}
+            title="Memorization"
+          >
+            <BrainIcon />
+          </motion.button>
+          <motion.button
+            whileTap={tapPress}
+            onClick={() => setShowReadingGoals(true)}
+            className={iconButtonClass}
+            title="Reading Goals"
+          >
+            <TargetIcon />
+          </motion.button>
           <motion.button
             whileTap={tapPress}
             onClick={() => setShowCourses(true)}

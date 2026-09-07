@@ -22,6 +22,7 @@ import { useNotes } from '../hooks/useNotes';
 import { useBookmarks } from '../hooks/useBookmarks';
 import { useCrossReferences } from '../hooks/useCrossReferences';
 import { estimateVerseReadingTime } from '../hooks/useReadingProgress';
+import type { ThemeColors } from '../types';
 
 interface ScriptureReaderProps {
   editionId: string;
@@ -45,12 +46,8 @@ export function ScriptureReader({
   const { settings } = useSettings();
   const { colors } = useTheme();
   const { fontSize, lineHeight, fontFamily, showVerseNumbers } = settings.reading;
-  const fontFamilyStyle = FONT_FAMILIES.find(f => f.id === fontFamily)?.fontFamily || 'System';
-  const { verses, loading, error, isOffline, refetch } = useChapter(
-    editionId,
-    book,
-    chapter
-  );
+  const fontFamilyStyle = FONT_FAMILIES.find((f) => f.id === fontFamily)?.fontFamily || 'System';
+  const { verses, loading, error, isOffline, refetch } = useChapter(editionId, book, chapter);
 
   // Get annotations for this chapter
   const { getHighlight } = useHighlights();
@@ -80,12 +77,15 @@ export function ScriptureReader({
 
   // Build annotations map for efficient lookup
   const annotations = useMemo(() => {
-    const map = new Map<string, {
-      highlightColor?: string;
-      hasNote: boolean;
-      isBookmarked: boolean;
-      hasCrossRefs: boolean;
-    }>();
+    const map = new Map<
+      string,
+      {
+        highlightColor?: string;
+        hasNote: boolean;
+        isBookmarked: boolean;
+        hasCrossRefs: boolean;
+      }
+    >();
 
     verses.forEach((verse) => {
       const highlight = getHighlight(verse.id);
@@ -157,12 +157,19 @@ export function ScriptureReader({
       )}
 
       {/* Chapter title */}
-      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+      <View
+        style={[
+          styles.header,
+          { backgroundColor: colors.surface, borderBottomColor: colors.border },
+        ]}
+      >
         <Text style={[styles.chapterTitle, { color: colors.text }]}>
           {book} {chapter}
         </Text>
         <View style={styles.headerStats}>
-          <Text style={[styles.verseCount, { color: colors.textSecondary }]}>{verses.length} verses</Text>
+          <Text style={[styles.verseCount, { color: colors.textSecondary }]}>
+            {verses.length} verses
+          </Text>
           {readingTime && (
             <Text style={[styles.readingTime, { color: colors.textSecondary }]}>
               · {readingTime.formatted}
@@ -177,11 +184,7 @@ export function ScriptureReader({
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl
-            refreshing={loading}
-            onRefresh={() => refetch()}
-            enabled={!isOffline}
-          />
+          <RefreshControl refreshing={loading} onRefresh={() => refetch()} enabled={!isOffline} />
         }
       >
         {verses.map((verse, index) => {
@@ -230,7 +233,7 @@ interface VerseItemProps {
   onPress?: (verseId: string, verseNumber: number) => void;
   onLongPress?: (verseId: string, verseNumber: number, text: string) => void;
   isFirst: boolean;
-  colors: any;
+  colors: ThemeColors;
   highlightColor?: string;
   hasNote?: boolean;
   isBookmarked?: boolean;
@@ -272,8 +275,8 @@ function VerseItem({
   const backgroundColor = highlightColor
     ? highlightColor + '30' // 30% opacity
     : isHighlighted
-    ? colors.primary + '15'
-    : colors.surface;
+      ? colors.primary + '15'
+      : colors.surface;
 
   const handleLayout = (event: any) => {
     if (onLayout) {
@@ -299,21 +302,13 @@ function VerseItem({
       {/* Verse number with indicators */}
       <View style={styles.verseNumberContainer}>
         {showVerseNumbers && (
-          <Text style={[styles.verseNumber, { color: colors.primary }]}>
-            {verse.verse}
-          </Text>
+          <Text style={[styles.verseNumber, { color: colors.primary }]}>{verse.verse}</Text>
         )}
         {/* Annotation indicators */}
         <View style={styles.indicators}>
-          {isBookmarked && (
-            <Text style={styles.indicator}>🔖</Text>
-          )}
-          {hasNote && (
-            <Text style={styles.indicator}>📝</Text>
-          )}
-          {hasCrossRefs && (
-            <Text style={styles.indicatorSmall}>↗</Text>
-          )}
+          {isBookmarked && <Text style={styles.indicator}>🔖</Text>}
+          {hasNote && <Text style={styles.indicator}>📝</Text>}
+          {hasCrossRefs && <Text style={styles.indicatorSmall}>↗</Text>}
         </View>
       </View>
 

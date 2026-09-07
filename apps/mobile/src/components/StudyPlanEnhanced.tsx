@@ -11,8 +11,6 @@ import {
   StyleSheet,
   ScrollView,
   Pressable,
-  TextInput,
-  Switch,
   Alert,
   Modal,
   Platform,
@@ -20,10 +18,9 @@ import {
   Animated,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import PushNotification from 'react-native-push-notification';
 import { useTheme } from '../contexts/ThemeContext';
-import type { StudyPlan as BaseStudyPlan, StudyPlanContent } from '../types';
+import type { StudyPlan as BaseStudyPlan, ThemeColors } from '../types';
 import { logger } from '../utils/logger';
 
 const log = logger.scope('StudyPlanEnhanced');
@@ -59,18 +56,14 @@ const PLAN_TEMPLATES = [
     name: 'Doctrine & Covenants in One Year',
     description: 'Study all D&C sections over the course of a year',
     duration: 365,
-    content: [
-      { editionId: 'coc-dc-2017', startSection: 1, endSection: 167 },
-    ],
+    content: [{ editionId: 'coc-dc-2017', startSection: 1, endSection: 167 }],
   },
   {
     id: 'moroni-promise',
     name: "Moroni's Promise Challenge",
     description: 'Focus on Moroni 10 with deep study and prayer',
     duration: 30,
-    content: [
-      { editionId: 'coc-bom-1908', book: 'Moroni', startChapter: 10, endChapter: 10 },
-    ],
+    content: [{ editionId: 'coc-bom-1908', book: 'Moroni', startChapter: 10, endChapter: 10 }],
   },
   {
     id: 'christ-words',
@@ -95,23 +88,6 @@ interface StudyPlan extends BaseStudyPlan {
   endSection?: number;
 }
 
-// Extend StudyPlanContent for additional properties
-interface StudyContent extends StudyPlanContent {
-  versesPerDay?: number;
-  startSection?: number;
-  endSection?: number;
-}
-
-interface StudyProgress {
-  completed: boolean;
-  completedAt?: string;
-  notes?: string;
-  versesRead?: number;
-  timeSpent?: number; // in minutes
-  highlights?: number;
-  insights?: string[];
-}
-
 interface StudyStats {
   totalPlansCreated: number;
   totalPlansCompleted: number;
@@ -134,23 +110,60 @@ interface Achievement {
 }
 
 const ACHIEVEMENTS = [
-  { id: 'first-day', name: 'First Day', description: 'Complete your first day of study', icon: '🌟', target: 1 },
-  { id: 'week-warrior', name: 'Week Warrior', description: 'Study for 7 consecutive days', icon: '💪', target: 7 },
-  { id: 'month-master', name: 'Month Master', description: 'Study for 30 consecutive days', icon: '🏆', target: 30 },
-  { id: 'century-club', name: 'Century Club', description: 'Study for 100 days total', icon: '💯', target: 100 },
-  { id: 'scripture-scholar', name: 'Scripture Scholar', description: 'Read 1000 verses', icon: '📚', target: 1000 },
+  {
+    id: 'first-day',
+    name: 'First Day',
+    description: 'Complete your first day of study',
+    icon: '🌟',
+    target: 1,
+  },
+  {
+    id: 'week-warrior',
+    name: 'Week Warrior',
+    description: 'Study for 7 consecutive days',
+    icon: '💪',
+    target: 7,
+  },
+  {
+    id: 'month-master',
+    name: 'Month Master',
+    description: 'Study for 30 consecutive days',
+    icon: '🏆',
+    target: 30,
+  },
+  {
+    id: 'century-club',
+    name: 'Century Club',
+    description: 'Study for 100 days total',
+    icon: '💯',
+    target: 100,
+  },
+  {
+    id: 'scripture-scholar',
+    name: 'Scripture Scholar',
+    description: 'Read 1000 verses',
+    icon: '📚',
+    target: 1000,
+  },
   { id: 'early-bird', name: 'Early Bird', description: 'Study before 7 AM', icon: '🌅' },
   { id: 'night-owl', name: 'Night Owl', description: 'Study after 10 PM', icon: '🦉' },
-  { id: 'perfect-week', name: 'Perfect Week', description: 'Complete all planned days in a week', icon: '✨' },
+  {
+    id: 'perfect-week',
+    name: 'Perfect Week',
+    description: 'Complete all planned days in a week',
+    icon: '✨',
+  },
 ];
 
 export function EnhancedStudyPlanManager() {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const [plans, setPlans] = useState<StudyPlan[]>([]);
   const [activePlan, setActivePlan] = useState<StudyPlan | null>(null);
-  const [showCreatePlan, setShowCreatePlan] = useState(false);
+  const [_showCreatePlan, _setShowCreatePlan] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<typeof PLAN_TEMPLATES[0] | null>(null);
+  const [_selectedTemplate, _setSelectedTemplate] = useState<(typeof PLAN_TEMPLATES)[0] | null>(
+    null
+  );
   const [stats, setStats] = useState<StudyStats | null>(null);
   const [loading, setLoading] = useState(false);
   const progressAnimation = useRef(new Animated.Value(0)).current;
@@ -223,7 +236,7 @@ export function EnhancedStudyPlanManager() {
           totalVersesRead: 0,
           totalTimeSpent: 0,
           bestStreak: 0,
-          achievements: ACHIEVEMENTS.map(a => ({ ...a, progress: 0 })),
+          achievements: ACHIEVEMENTS.map((a) => ({ ...a, progress: 0 })),
         };
         setStats(initialStats);
         await AsyncStorage.setItem(STUDY_STATS_KEY, JSON.stringify(initialStats));
@@ -236,9 +249,10 @@ export function EnhancedStudyPlanManager() {
   };
 
   const updatePlanStats = (plan: StudyPlan): StudyPlan => {
-    const completedDays = Object.values(plan.progress).filter(p => p.completed).length;
+    const completedDays = Object.values(plan.progress).filter((p) => p.completed).length;
     const totalDays = Math.floor(
-      (new Date(plan.endDate).getTime() - new Date(plan.startDate).getTime()) / (1000 * 60 * 60 * 24)
+      (new Date(plan.endDate).getTime() - new Date(plan.startDate).getTime()) /
+        (1000 * 60 * 60 * 24)
     );
     const elapsedDays = Math.floor(
       (new Date().getTime() - new Date(plan.startDate).getTime()) / (1000 * 60 * 60 * 24)
@@ -291,13 +305,13 @@ export function EnhancedStudyPlanManager() {
     });
   };
 
-  const cancelReminder = (planId: string) => {
+  const _cancelReminder = (planId: string) => {
     if (Platform.OS !== 'web') {
       PushNotification.cancelLocalNotifications({ id: planId });
     }
   };
 
-  const createPlanFromTemplate = async (template: typeof PLAN_TEMPLATES[0]) => {
+  const createPlanFromTemplate = async (template: (typeof PLAN_TEMPLATES)[0]) => {
     const startDate = new Date();
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + template.duration);
@@ -369,9 +383,7 @@ export function EnhancedStudyPlanManager() {
       },
     });
 
-    const updatedPlans = plans.map(p =>
-      p.id === activePlan.id ? updatedPlan : p
-    );
+    const updatedPlans = plans.map((p) => (p.id === activePlan.id ? updatedPlan : p));
 
     await savePlans(updatedPlans);
     setActivePlan(updatedPlan);
@@ -392,7 +404,7 @@ export function EnhancedStudyPlanManager() {
 
     // Celebrate milestone streaks
     if (updatedPlan.streak === 7) {
-      Alert.alert('🎉 Week Warrior!', 'You\'ve studied for 7 consecutive days!');
+      Alert.alert('🎉 Week Warrior!', "You've studied for 7 consecutive days!");
     } else if (updatedPlan.streak === 30) {
       Alert.alert('🏆 Month Master!', 'Amazing! 30 days of consistent study!');
     } else if (updatedPlan.streak === 100) {
@@ -407,17 +419,26 @@ export function EnhancedStudyPlanManager() {
     let newUnlocks = false;
 
     // Check streak achievements
-    if (stats.totalDaysStudied >= 1 && !updatedAchievements.find(a => a.id === 'first-day')?.unlockedAt) {
-      const achievement = updatedAchievements.find(a => a.id === 'first-day');
+    if (
+      stats.totalDaysStudied >= 1 &&
+      !updatedAchievements.find((a) => a.id === 'first-day')?.unlockedAt
+    ) {
+      const achievement = updatedAchievements.find((a) => a.id === 'first-day');
       if (achievement) {
         achievement.unlockedAt = new Date().toISOString();
         newUnlocks = true;
-        Alert.alert('🌟 Achievement Unlocked!', 'First Day - You\'ve started your scripture journey!');
+        Alert.alert(
+          '🌟 Achievement Unlocked!',
+          "First Day - You've started your scripture journey!"
+        );
       }
     }
 
-    if (stats.bestStreak >= 7 && !updatedAchievements.find(a => a.id === 'week-warrior')?.unlockedAt) {
-      const achievement = updatedAchievements.find(a => a.id === 'week-warrior');
+    if (
+      stats.bestStreak >= 7 &&
+      !updatedAchievements.find((a) => a.id === 'week-warrior')?.unlockedAt
+    ) {
+      const achievement = updatedAchievements.find((a) => a.id === 'week-warrior');
       if (achievement) {
         achievement.unlockedAt = new Date().toISOString();
         newUnlocks = true;
@@ -436,12 +457,13 @@ export function EnhancedStudyPlanManager() {
 
     const startDate = new Date(activePlan.startDate);
     const today = new Date();
-    const daysSinceStart = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    const daysSinceStart = Math.floor(
+      (today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
 
     const content = activePlan.content[0];
     if (!content) return null;
 
-    const totalChapters = (content.endChapter || 0) - (content.startChapter || 0) + 1;
     const currentChapter = Math.min(
       (content.startChapter || 0) + daysSinceStart,
       content.endChapter || 0
@@ -462,7 +484,9 @@ export function EnhancedStudyPlanManager() {
     );
   }
 
-  const todayProgress = activePlan ? activePlan.progress[new Date().toISOString().split('T')[0]] : null;
+  const todayProgress = activePlan
+    ? activePlan.progress[new Date().toISOString().split('T')[0]]
+    : null;
   const todayReading = getReadingForToday();
 
   return (
@@ -473,7 +497,9 @@ export function EnhancedStudyPlanManager() {
           <Text style={[styles.statsTitle, { color: colors.text }]}>Your Journey</Text>
           <View style={styles.statsGrid}>
             <View style={styles.statItem}>
-              <Text style={[styles.statValue, { color: colors.primary }]}>{stats.totalDaysStudied}</Text>
+              <Text style={[styles.statValue, { color: colors.primary }]}>
+                {stats.totalDaysStudied}
+              </Text>
               <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Days Studied</Text>
             </View>
             <View style={styles.statItem}>
@@ -481,12 +507,14 @@ export function EnhancedStudyPlanManager() {
               <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Best Streak</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={[styles.statValue, { color: colors.primary }]}>{Math.floor(stats.totalTimeSpent / 60)}h</Text>
+              <Text style={[styles.statValue, { color: colors.primary }]}>
+                {Math.floor(stats.totalTimeSpent / 60)}h
+              </Text>
               <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Time Spent</Text>
             </View>
             <View style={styles.statItem}>
               <Text style={[styles.statValue, { color: colors.primary }]}>
-                {stats.achievements.filter(a => a.unlockedAt).length}
+                {stats.achievements.filter((a) => a.unlockedAt).length}
               </Text>
               <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Achievements</Text>
             </View>
@@ -527,7 +555,9 @@ export function EnhancedStudyPlanManager() {
 
           {todayReading && (
             <View style={styles.todaySection}>
-              <Text style={[styles.todayLabel, { color: colors.textSecondary }]}>Today's Reading</Text>
+              <Text style={[styles.todayLabel, { color: colors.textSecondary }]}>
+                Today&apos;s Reading
+              </Text>
               <Pressable style={[styles.readingCard, { backgroundColor: colors.primaryLight }]}>
                 <Text style={[styles.todayContent, { color: colors.primary }]}>
                   {todayReading.book} {todayReading.chapter}
@@ -540,7 +570,9 @@ export function EnhancedStudyPlanManager() {
           <View style={styles.actionButtons}>
             {todayProgress?.completed ? (
               <View style={[styles.completedBadge, { backgroundColor: colors.successLight }]}>
-                <Text style={[styles.completedText, { color: colors.success }]}>✓ Completed Today</Text>
+                <Text style={[styles.completedText, { color: colors.success }]}>
+                  ✓ Completed Today
+                </Text>
               </View>
             ) : (
               <Pressable
@@ -580,7 +612,7 @@ export function EnhancedStudyPlanManager() {
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
             <Text style={[styles.modalTitle, { color: colors.text }]}>Choose a Study Plan</Text>
             <ScrollView style={styles.templateList}>
-              {PLAN_TEMPLATES.map(template => (
+              {PLAN_TEMPLATES.map((template) => (
                 <Pressable
                   key={template.id}
                   style={[styles.templateCard, { backgroundColor: colors.background }]}
@@ -607,16 +639,21 @@ export function EnhancedStudyPlanManager() {
       </Modal>
 
       {/* Achievements Section */}
-      {stats && stats.achievements.filter(a => a.unlockedAt).length > 0 && (
+      {stats && stats.achievements.filter((a) => a.unlockedAt).length > 0 && (
         <View style={[styles.achievementsSection, { backgroundColor: colors.card }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Achievements</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {stats.achievements
-              .filter(a => a.unlockedAt)
-              .map(achievement => (
-                <View key={achievement.id} style={[styles.achievementBadge, { backgroundColor: colors.primaryLight }]}>
+              .filter((a) => a.unlockedAt)
+              .map((achievement) => (
+                <View
+                  key={achievement.id}
+                  style={[styles.achievementBadge, { backgroundColor: colors.primaryLight }]}
+                >
                   <Text style={styles.achievementIcon}>{achievement.icon}</Text>
-                  <Text style={[styles.achievementName, { color: colors.text }]}>{achievement.name}</Text>
+                  <Text style={[styles.achievementName, { color: colors.text }]}>
+                    {achievement.name}
+                  </Text>
                 </View>
               ))}
           </ScrollView>
@@ -627,9 +664,9 @@ export function EnhancedStudyPlanManager() {
 }
 
 // Mini Calendar Component
-function MiniProgressCalendar({ plan, colors }: { plan: StudyPlan; colors: any }) {
+function MiniProgressCalendar({ plan, colors }: { plan: StudyPlan; colors: ThemeColors }) {
   const today = new Date();
-  const startDate = new Date(plan.startDate);
+  // const startDate = new Date(plan.startDate); // Reserved for future date range calculation
   const currentWeek = [];
 
   for (let i = -3; i <= 3; i++) {
@@ -660,10 +697,21 @@ function MiniProgressCalendar({ plan, colors }: { plan: StudyPlan; colors: any }
               day.isCompleted && [styles.completedCircle, { backgroundColor: colors.success }],
             ]}
           >
-            <Text style={[styles.dayNumber, day.isCompleted && styles.completedDayText, { color: day.isCompleted ? 'white' : colors.text }]}>
+            <Text
+              style={[
+                styles.dayNumber,
+                day.isCompleted && styles.completedDayText,
+                { color: day.isCompleted ? 'white' : colors.text },
+              ]}
+            >
               {day.date.getDate()}
             </Text>
-            <Text style={[styles.dayName, { color: day.isToday ? colors.primary : colors.textSecondary }]}>
+            <Text
+              style={[
+                styles.dayName,
+                { color: day.isToday ? colors.primary : colors.textSecondary },
+              ]}
+            >
               {day.date.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0)}
             </Text>
           </View>

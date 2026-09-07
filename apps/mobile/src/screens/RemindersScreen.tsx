@@ -67,7 +67,7 @@ export function RemindersScreen() {
     }
   };
 
-  const handleTimeChange = (event: any, selectedDate?: Date) => {
+  const handleTimeChange = (_event: unknown, selectedDate?: Date) => {
     setShowTimePicker(Platform.OS === 'ios');
     if (selectedDate) {
       updateTime(selectedDate.getHours(), selectedDate.getMinutes());
@@ -99,9 +99,7 @@ export function RemindersScreen() {
       <View style={[styles.card, { backgroundColor: colors.surface }]}>
         <View style={styles.toggleRow}>
           <View style={styles.toggleContent}>
-            <Text style={[styles.toggleLabel, { color: colors.text }]}>
-              Daily Reminders
-            </Text>
+            <Text style={[styles.toggleLabel, { color: colors.text }]}>Daily Reminders</Text>
             <Text style={[styles.toggleDescription, { color: colors.textSecondary }]}>
               {settings.enabled
                 ? `Reminding you at ${formatTime(settings.time.hour, settings.time.minute)}`
@@ -118,7 +116,12 @@ export function RemindersScreen() {
       </View>
 
       {/* Time Picker */}
-      <View style={[styles.card, { backgroundColor: colors.surface, opacity: settings.enabled ? 1 : 0.5 }]}>
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: colors.surface, opacity: settings.enabled ? 1 : 0.5 },
+        ]}
+      >
         <Text style={[styles.cardTitle, { color: colors.text }]}>Reminder Time</Text>
         <Pressable
           style={[styles.timeButton, { backgroundColor: colors.background }]}
@@ -128,9 +131,7 @@ export function RemindersScreen() {
           <Text style={[styles.timeText, { color: colors.primary }]}>
             {formatTime(settings.time.hour, settings.time.minute)}
           </Text>
-          <Text style={[styles.timeHint, { color: colors.textSecondary }]}>
-            Tap to change
-          </Text>
+          <Text style={[styles.timeHint, { color: colors.textSecondary }]}>Tap to change</Text>
         </Pressable>
 
         {showTimePicker && (
@@ -145,7 +146,12 @@ export function RemindersScreen() {
       </View>
 
       {/* Days of Week */}
-      <View style={[styles.card, { backgroundColor: colors.surface, opacity: settings.enabled ? 1 : 0.5 }]}>
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: colors.surface, opacity: settings.enabled ? 1 : 0.5 },
+        ]}
+      >
         <Text style={[styles.cardTitle, { color: colors.text }]}>Remind Me On</Text>
 
         {/* Quick Presets */}
@@ -158,12 +164,7 @@ export function RemindersScreen() {
             onPress={() => settings.enabled && setEveryDay()}
             disabled={!settings.enabled}
           >
-            <Text
-              style={[
-                styles.presetText,
-                { color: isEveryDay ? '#ffffff' : colors.text },
-              ]}
-            >
+            <Text style={[styles.presetText, { color: isEveryDay ? '#ffffff' : colors.text }]}>
               Every Day
             </Text>
           </Pressable>
@@ -176,12 +177,7 @@ export function RemindersScreen() {
             onPress={() => settings.enabled && setWeekdaysOnly()}
             disabled={!settings.enabled}
           >
-            <Text
-              style={[
-                styles.presetText,
-                { color: isWeekdaysOnly ? '#ffffff' : colors.text },
-              ]}
-            >
+            <Text style={[styles.presetText, { color: isWeekdaysOnly ? '#ffffff' : colors.text }]}>
               Weekdays
             </Text>
           </Pressable>
@@ -236,12 +232,7 @@ export function RemindersScreen() {
                 onPress={() => settings.enabled && toggleDay(day)}
                 disabled={!settings.enabled}
               >
-                <Text
-                  style={[
-                    styles.dayText,
-                    { color: isSelected ? '#ffffff' : colors.text },
-                  ]}
-                >
+                <Text style={[styles.dayText, { color: isSelected ? '#ffffff' : colors.text }]}>
                   {getDayName(day, true)}
                 </Text>
               </Pressable>
@@ -274,9 +265,7 @@ export function RemindersScreen() {
         <View style={[styles.statusCard, { backgroundColor: colors.success + '15' }]}>
           <Text style={[styles.statusIcon]}>✓</Text>
           <View style={styles.statusContent}>
-            <Text style={[styles.statusTitle, { color: colors.success }]}>
-              Reminders Active
-            </Text>
+            <Text style={[styles.statusTitle, { color: colors.success }]}>Reminders Active</Text>
             <Text style={[styles.statusText, { color: colors.textSecondary }]}>
               {settings.daysOfWeek.length === 7
                 ? `Every day at ${formatTime(settings.time.hour, settings.time.minute)}`

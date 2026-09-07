@@ -5,16 +5,7 @@
  */
 
 import React, { useState, useRef, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Pressable,
-  Animated,
-  PanResponder,
-  Dimensions,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Dimensions, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../contexts/ThemeContext';
 import type { StudyTabData } from '../types';
@@ -41,7 +32,7 @@ interface TabsNavigatorProps {
 }
 
 export function TabsNavigator({ onTabChange, currentContent }: TabsNavigatorProps) {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const [tabs, setTabs] = useState<StudyTab[]>([
     {
       id: 'tab_1',
@@ -55,7 +46,7 @@ export function TabsNavigator({ onTabChange, currentContent }: TabsNavigatorProp
   const [showTabsOverview, setShowTabsOverview] = useState(false);
 
   const scrollViewRef = useRef<ScrollView>(null);
-  const tabWidthAnimation = useRef(new Animated.Value(100)).current;
+  // const tabWidthAnimation = useRef(new Animated.Value(100)).current; // Reserved for tab width animations
 
   // Load tabs from storage
   React.useEffect(() => {
@@ -83,10 +74,7 @@ export function TabsNavigator({ onTabChange, currentContent }: TabsNavigatorProp
 
   const saveTabs = async (newTabs: StudyTab[], activeId: string) => {
     try {
-      await AsyncStorage.setItem(
-        TABS_KEY,
-        JSON.stringify({ tabs: newTabs, activeId })
-      );
+      await AsyncStorage.setItem(TABS_KEY, JSON.stringify({ tabs: newTabs, activeId }));
     } catch (error) {
       log.error('Error saving tabs:', error);
     }
@@ -94,7 +82,7 @@ export function TabsNavigator({ onTabChange, currentContent }: TabsNavigatorProp
 
   const addTab = (type: StudyTab['type'] = 'books', data: StudyTabData = {}) => {
     if (tabs.length >= MAX_TABS) {
-      alert(`Maximum ${MAX_TABS} tabs allowed`);
+      Alert.alert('Maximum Tabs', `Maximum ${MAX_TABS} tabs allowed`);
       return;
     }
 
@@ -119,8 +107,8 @@ export function TabsNavigator({ onTabChange, currentContent }: TabsNavigatorProp
       return;
     }
 
-    const tabIndex = tabs.findIndex(t => t.id === tabId);
-    const newTabs = tabs.filter(t => t.id !== tabId);
+    const tabIndex = tabs.findIndex((t) => t.id === tabId);
+    const newTabs = tabs.filter((t) => t.id !== tabId);
 
     let newActiveId = activeTabId;
     if (tabId === activeTabId) {
@@ -132,22 +120,20 @@ export function TabsNavigator({ onTabChange, currentContent }: TabsNavigatorProp
     setActiveTabId(newActiveId);
     saveTabs(newTabs, newActiveId);
 
-    const newActiveTab = newTabs.find(t => t.id === newActiveId);
+    const newActiveTab = newTabs.find((t) => t.id === newActiveId);
     if (newActiveTab) {
       onTabChange(newActiveTab);
     }
   };
 
   const switchTab = (tabId: string) => {
-    const tab = tabs.find(t => t.id === tabId);
+    const tab = tabs.find((t) => t.id === tabId);
     if (tab) {
       setActiveTabId(tabId);
 
       // Update last accessed
-      const updatedTabs = tabs.map(t =>
-        t.id === tabId
-          ? { ...t, lastAccessed: new Date().toISOString() }
-          : t
+      const updatedTabs = tabs.map((t) =>
+        t.id === tabId ? { ...t, lastAccessed: new Date().toISOString() } : t
       );
       setTabs(updatedTabs);
       saveTabs(updatedTabs, tabId);
@@ -172,11 +158,16 @@ export function TabsNavigator({ onTabChange, currentContent }: TabsNavigatorProp
 
   const getTabIcon = (type: StudyTab['type']): string => {
     switch (type) {
-      case 'verse': return '📖';
-      case 'search': return '🔍';
-      case 'notes': return '📝';
-      case 'books': return '📚';
-      default: return '📄';
+      case 'verse':
+        return '📖';
+      case 'search':
+        return '🔍';
+      case 'notes':
+        return '📝';
+      case 'books':
+        return '📚';
+      default:
+        return '📄';
     }
   };
 
@@ -337,10 +328,7 @@ export function TabsNavigator({ onTabChange, currentContent }: TabsNavigatorProp
           {tabs.map((tab) => (
             <Pressable
               key={tab.id}
-              style={[
-                dynamicStyles.tab,
-                tab.id === activeTabId && dynamicStyles.activeTab,
-              ]}
+              style={[dynamicStyles.tab, tab.id === activeTabId && dynamicStyles.activeTab]}
               onPress={() => switchTab(tab.id)}
             >
               <Text style={dynamicStyles.tabIcon}>{getTabIcon(tab.type)}</Text>
@@ -354,20 +342,14 @@ export function TabsNavigator({ onTabChange, currentContent }: TabsNavigatorProp
                 {tab.title}
               </Text>
               {tabs.length > 1 && (
-                <Pressable
-                  style={dynamicStyles.closeButton}
-                  onPress={() => closeTab(tab.id)}
-                >
+                <Pressable style={dynamicStyles.closeButton} onPress={() => closeTab(tab.id)}>
                   <Text style={dynamicStyles.closeButtonText}>×</Text>
                 </Pressable>
               )}
             </Pressable>
           ))}
 
-          <Pressable
-            style={dynamicStyles.addTabButton}
-            onPress={() => addTab()}
-          >
+          <Pressable style={dynamicStyles.addTabButton} onPress={() => addTab()}>
             <Text style={dynamicStyles.addTabButtonText}>+</Text>
           </Pressable>
         </ScrollView>
@@ -376,16 +358,12 @@ export function TabsNavigator({ onTabChange, currentContent }: TabsNavigatorProp
           style={dynamicStyles.tabsOverviewButton}
           onPress={() => setShowTabsOverview(true)}
         >
-          <Text style={dynamicStyles.tabsOverviewButtonText}>
-            {tabs.length} ▼
-          </Text>
+          <Text style={dynamicStyles.tabsOverviewButtonText}>{tabs.length} ▼</Text>
         </Pressable>
       </View>
 
       {/* Content */}
-      <View style={dynamicStyles.content}>
-        {currentContent}
-      </View>
+      <View style={dynamicStyles.content}>{currentContent}</View>
 
       {/* Tabs Overview */}
       {showTabsOverview && (
@@ -412,9 +390,7 @@ export function TabsNavigator({ onTabChange, currentContent }: TabsNavigatorProp
                   }}
                 >
                   <View style={dynamicStyles.overviewTabHeader}>
-                    <Text style={dynamicStyles.overviewTabIcon}>
-                      {getTabIcon(tab.type)}
-                    </Text>
+                    <Text style={dynamicStyles.overviewTabIcon}>{getTabIcon(tab.type)}</Text>
                     {tabs.length > 1 && (
                       <Pressable
                         style={dynamicStyles.overviewTabClose}
@@ -438,7 +414,10 @@ export function TabsNavigator({ onTabChange, currentContent }: TabsNavigatorProp
               {/* Add new tab card */}
               {tabs.length < MAX_TABS && (
                 <Pressable
-                  style={[dynamicStyles.overviewTab, { justifyContent: 'center', alignItems: 'center' }]}
+                  style={[
+                    dynamicStyles.overviewTab,
+                    { justifyContent: 'center', alignItems: 'center' },
+                  ]}
                   onPress={() => {
                     addTab();
                     setShowTabsOverview(false);
@@ -465,11 +444,14 @@ export function useTabs() {
     log.debug('Opening in new tab:', { type, data });
   }, []);
 
-  const updateCurrentTab = useCallback((updates: Partial<StudyTab>) => {
-    if (currentTab) {
-      setCurrentTab({ ...currentTab, ...updates });
-    }
-  }, [currentTab]);
+  const updateCurrentTab = useCallback(
+    (updates: Partial<StudyTab>) => {
+      if (currentTab) {
+        setCurrentTab({ ...currentTab, ...updates });
+      }
+    },
+    [currentTab]
+  );
 
   return {
     currentTab,

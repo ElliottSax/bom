@@ -24,6 +24,7 @@ import {
   getCrossRefTypeColor,
 } from '../hooks/useCrossReferences';
 import type { CrossReference } from '../hooks/useCrossReferences';
+import type { ThemeColors } from '../types';
 import { logger } from '../utils/logger';
 
 const log = logger.scope('VerseActionMenu');
@@ -103,12 +104,7 @@ export function VerseActionMenu({
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.overlay} onPress={onClose}>
         <View style={styles.overlayBackground} />
       </Pressable>
@@ -119,13 +115,8 @@ export function VerseActionMenu({
 
         {/* Verse Reference */}
         <View style={styles.header}>
-          <Text style={[styles.reference, { color: colors.primary }]}>
-            {reference}
-          </Text>
-          <Text
-            style={[styles.versePreview, { color: colors.textSecondary }]}
-            numberOfLines={2}
-          >
+          <Text style={[styles.reference, { color: colors.primary }]}>{reference}</Text>
+          <Text style={[styles.versePreview, { color: colors.textSecondary }]} numberOfLines={2}>
             {verse.text}
           </Text>
         </View>
@@ -151,18 +142,8 @@ export function VerseActionMenu({
             }}
             colors={colors}
           />
-          <ActionButton
-            icon="📋"
-            label="Copy"
-            onPress={handleCopy}
-            colors={colors}
-          />
-          <ActionButton
-            icon="📤"
-            label="Share"
-            onPress={handleShare}
-            colors={colors}
-          />
+          <ActionButton icon="📋" label="Copy" onPress={handleCopy} colors={colors} />
+          <ActionButton icon="📤" label="Share" onPress={handleShare} colors={colors} />
           {onMemorize && (
             <ActionButton
               icon={isMemorizing ? '🧠' : '💭'}
@@ -179,9 +160,7 @@ export function VerseActionMenu({
 
         {/* Highlight Colors */}
         <View style={styles.highlightSection}>
-          <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
-            Highlight
-          </Text>
+          <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Highlight</Text>
           <View style={styles.colorRow}>
             {HIGHLIGHT_COLORS.map((item) => (
               <Pressable
@@ -200,19 +179,13 @@ export function VerseActionMenu({
               </Pressable>
             ))}
             <Pressable
-              style={[
-                styles.colorButton,
-                styles.clearButton,
-                { borderColor: colors.border },
-              ]}
+              style={[styles.colorButton, styles.clearButton, { borderColor: colors.border }]}
               onPress={() => {
                 onHighlight('');
                 onClose();
               }}
             >
-              <Text style={[styles.clearButtonText, { color: colors.textSecondary }]}>
-                ✕
-              </Text>
+              <Text style={[styles.clearButtonText, { color: colors.textSecondary }]}>✕</Text>
             </Pressable>
           </View>
         </View>
@@ -239,12 +212,7 @@ export function VerseActionMenu({
                       }
                     }}
                   >
-                    <Text
-                      style={[
-                        styles.crossRefType,
-                        { color: getCrossRefTypeColor(ref.type) },
-                      ]}
-                    >
+                    <Text style={[styles.crossRefType, { color: getCrossRefTypeColor(ref.type) }]}>
                       {getCrossRefTypeLabel(ref.type)}
                     </Text>
                     <Text style={[styles.crossRefText, { color: colors.text }]}>
@@ -270,9 +238,7 @@ export function VerseActionMenu({
           style={[styles.cancelButton, { backgroundColor: colors.background }]}
           onPress={onClose}
         >
-          <Text style={[styles.cancelButtonText, { color: colors.text }]}>
-            Cancel
-          </Text>
+          <Text style={[styles.cancelButtonText, { color: colors.text }]}>Cancel</Text>
         </Pressable>
       </View>
     </Modal>
@@ -283,12 +249,19 @@ interface ActionButtonProps {
   icon: string;
   label: string;
   onPress: () => void;
-  colors: any;
+  colors: ThemeColors;
   active?: boolean;
   accessibilityHint?: string;
 }
 
-function ActionButton({ icon, label, onPress, colors, active, accessibilityHint }: ActionButtonProps) {
+function ActionButton({
+  icon,
+  label,
+  onPress,
+  colors,
+  active,
+  accessibilityHint,
+}: ActionButtonProps) {
   return (
     <Pressable
       style={[
@@ -306,11 +279,7 @@ function ActionButton({ icon, label, onPress, colors, active, accessibilityHint 
         {icon}
       </Text>
       <Text
-        style={[
-          styles.actionLabel,
-          { color: colors.text },
-          active && { color: colors.primary },
-        ]}
+        style={[styles.actionLabel, { color: colors.text }, active && { color: colors.primary }]}
         importantForAccessibility="no"
       >
         {label}

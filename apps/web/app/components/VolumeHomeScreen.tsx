@@ -1,8 +1,13 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { type Volume } from '../lib/types';
-import { FireIcon } from './Icons';
+import { FireIcon, SparklesIcon } from './Icons';
 import { fadeInUp, staggerChildren, hoverLift, tapPress, transitionFast } from '../lib/motion';
+import { useDailyVerse } from '../hooks/useDailyVerse';
+import { ShareButton } from './ShareButton';
+import { createProgressShareData, createVerseShareData } from '../hooks/useShare';
+import { ReferralWidget } from './ReferralWidget';
+import { CommunityStatsWidget } from './SocialProof';
 
 interface VolumeHomeScreenProps {
   currentVolume: Volume;
@@ -10,6 +15,8 @@ interface VolumeHomeScreenProps {
   completionPercentage: number;
   booksCount: number;
   currentStreak: number;
+  chaptersRead?: number;
+  totalChapters?: number;
   onSearchClick: () => void;
   onStudyPlanClick: () => void;
   hasStudyPlan: boolean;
@@ -21,10 +28,21 @@ const VolumeHomeScreenComponent: React.FC<VolumeHomeScreenProps> = ({
   completionPercentage,
   booksCount,
   currentStreak,
+  chaptersRead = 0,
+  totalChapters = 1,
   onSearchClick,
   onStudyPlanClick,
   hasStudyPlan,
 }) => {
+  const { verse: dailyVerse } = useDailyVerse();
+
+  // Share data
+  const progressShareData = createProgressShareData(chaptersRead, totalChapters, currentStreak);
+
+  // Check if current streak is a milestone worth celebrating
+  const streakMilestones = [7, 30, 100, 365];
+  const isStreakMilestone = streakMilestones.includes(currentStreak);
+
   return (
     <motion.div
       className="h-full flex flex-col items-center justify-center p-8"
@@ -76,7 +94,7 @@ const VolumeHomeScreenComponent: React.FC<VolumeHomeScreenProps> = ({
           {currentStreak > 0 && (
             <motion.div className="text-center" variants={fadeInUp}>
               <p
-                className="text-2xl font-bold flex items-center justify-center gap-1"
+                className={`text-2xl font-bold flex items-center justify-center gap-1 ${isStreakMilestone ? 'animate-pulse' : ''}`}
                 style={{ color: 'var(--color-gold)' }}
               >
                 <FireIcon /> {currentStreak}
@@ -85,6 +103,19 @@ const VolumeHomeScreenComponent: React.FC<VolumeHomeScreenProps> = ({
             </motion.div>
           )}
         </motion.div>
+
+        {/* Share Progress */}
+        {(completionPercentage > 10 || currentStreak >= 7) && (
+          <div className="mb-4 flex justify-center">
+            <ShareButton
+              data={progressShareData}
+              variant="secondary"
+              size="sm"
+              showMenu={true}
+              className="text-sm"
+            />
+          </div>
+        )}
 
         <div className="flex gap-3 justify-center">
           <motion.button
@@ -107,6 +138,51 @@ const VolumeHomeScreenComponent: React.FC<VolumeHomeScreenProps> = ({
               Start a Plan
             </motion.button>
           )}
+        </div>
+
+        {/* Daily Verse */}
+        {dailyVerse && (
+          <div className="mt-8 bg-[var(--color-bg-secondary)] rounded-2xl p-6 border border-[var(--color-border-light)] text-left max-w-lg mx-auto">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <SparklesIcon />
+                <span className="text-sm font-medium text-[var(--color-text-secondary)]">
+                  Daily Verse
+                </span>
+              </div>
+              <ShareButton
+                data={createVerseShareData(
+                  dailyVerse.text.length > 200
+                    ? dailyVerse.text.slice(0, 200) + '...'
+                    : dailyVerse.text,
+                  dailyVerse.reference
+                )}
+                variant="icon-only"
+                size="sm"
+                showMenu={true}
+              />
+            </div>
+            <p className="text-sm leading-relaxed italic text-[var(--color-text-secondary)] mb-2">
+              &ldquo;
+              {dailyVerse.text.length > 200
+                ? dailyVerse.text.slice(0, 200) + '...'
+                : dailyVerse.text}
+              &rdquo;
+            </p>
+            <p className="text-xs font-medium" style={{ color: currentVolume.color }}>
+              {dailyVerse.reference}
+            </p>
+          </div>
+        )}
+
+        {/* Community Stats */}
+        <div className="mt-8 max-w-lg mx-auto">
+          <CommunityStatsWidget />
+        </div>
+
+        {/* Referral Widget */}
+        <div className="mt-8 max-w-lg mx-auto">
+          <ReferralWidget />
         </div>
       </div>
     </motion.div>

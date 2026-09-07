@@ -1,0 +1,159 @@
+/**
+ * Mobile-First Responsive Optimizations
+ * Touch-friendly UI improvements for mobile devices
+ */
+
+/* Touch-friendly minimum sizes */
+@media (max-width: 768px) {
+  /* Larger tap targets for mobile (min 44x44px per Apple HIG) */
+  button,
+  a,
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Comfortable padding for mobile */
+  .modal-content,
+  .card {
+    padding: 1rem;
+  }
+
+  /* Larger text for readability */
+  body {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  /* Stack navigation horizontally on mobile */
+  .nav-stack {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  /* Full-width modals on mobile */
+  .modal {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  /* Responsive grid */
+  .grid-auto {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+
+  /* Hide sidebar by default on mobile */
+  .sidebar {
+    position: fixed;
+    left: -100%;
+    transition: left 0.3s ease;
+    z-index: 40;
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  /* Overlay for sidebar */
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 39;
+  }
+}
+
+/* Tablet (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .container {
+    max-width: 90%;
+  }
+
+  .grid-cols-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop (1024px+) - Optimizations */
+@media (min-width: 1024px) {
+  /* Hover effects only on desktop */
+  .hover-effect:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Landscape mode optimizations */
+@media (max-width: 768px) and (orientation: landscape) {
+  .modal {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .header {
+    height: auto;
+    padding: 0.5rem 1rem;
+  }
+}
+
+/* Touch gestures */
+@media (hover: none) and (pointer: coarse) {
+  /* Remove hover states on touch devices */
+  *:hover {
+    /* Disable hover effects */
+  }
+
+  /* Larger tap areas */
+  .icon-button {
+    padding: 12px;
+  }
+
+  /* Smooth scrolling for touch */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Safe area insets for iPhone X+ */
+@supports (padding: max(0px)) {
+  .safe-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+
+  .safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .safe-left {
+    padding-left: max(1rem, env(safe-area-inset-left));
+  }
+
+  .safe-right {
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+}
+
+/* Prevent text selection on buttons (mobile) */
+button, .button {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+/* Improve scrolling performance */
+.scroll-container {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* PWA fullscreen */
+@media (display-mode: standalone) {
+  .pwa-only {
+    display: block;
+  }
+
+  .web-only {
+    display: none;
+  }
+}

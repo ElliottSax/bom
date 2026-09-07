@@ -1,3 +1,4 @@
+import React from 'react';
 import { Bookmark, Highlight, Note, Verse } from '../lib/types';
 import { VolumeId } from '../lib/scriptures';
 
@@ -26,7 +27,7 @@ export const useVerseOperations = ({
 }: UseVerseOperationsProps) => {
   const isBookmarked = (verseNum: number): boolean => {
     return bookmarks.some(
-      b =>
+      (b) =>
         b.volumeId === volumeId &&
         b.book === currentBook?.name &&
         b.chapter === selectedChapter &&
@@ -36,7 +37,7 @@ export const useVerseOperations = ({
 
   const toggleBookmark = (verse: Verse) => {
     const existing = bookmarks.find(
-      b =>
+      (b) =>
         b.volumeId === volumeId &&
         b.book === currentBook?.name &&
         b.chapter === selectedChapter &&
@@ -44,7 +45,7 @@ export const useVerseOperations = ({
     );
 
     if (existing) {
-      setBookmarks(bookmarks.filter(b => b.id !== existing.id));
+      setBookmarks(bookmarks.filter((b) => b.id !== existing.id));
     } else {
       setBookmarks([
         ...bookmarks,
@@ -64,7 +65,7 @@ export const useVerseOperations = ({
 
   const getHighlight = (verseNum: number): Highlight | undefined => {
     return highlights.find(
-      h =>
+      (h) =>
         h.volumeId === volumeId &&
         h.book === currentBook?.name &&
         h.chapter === selectedChapter &&
@@ -78,10 +79,10 @@ export const useVerseOperations = ({
     if (existing) {
       if (color) {
         // Update color
-        setHighlights(highlights.map(h => (h.id === existing.id ? { ...h, color } : h)));
+        setHighlights(highlights.map((h) => (h.id === existing.id ? { ...h, color } : h)));
       } else {
         // Remove highlight
-        setHighlights(highlights.filter(h => h.id !== existing.id));
+        setHighlights(highlights.filter((h) => h.id !== existing.id));
       }
     } else if (color) {
       // Add new highlight
@@ -102,7 +103,7 @@ export const useVerseOperations = ({
 
   const getNote = (verseNum: number): Note | undefined => {
     return notes.find(
-      n =>
+      (n) =>
         n.volumeId === volumeId &&
         n.book === currentBook?.name &&
         n.chapter === selectedChapter &&
@@ -117,7 +118,7 @@ export const useVerseOperations = ({
 
     if (existing) {
       setNotes(
-        notes.map(n => (n.id === existing.id ? { ...n, content, updatedAt: Date.now() } : n))
+        notes.map((n) => (n.id === existing.id ? { ...n, content, updatedAt: Date.now() } : n))
       );
     } else {
       setNotes([
@@ -137,7 +138,7 @@ export const useVerseOperations = ({
   };
 
   const deleteNote = (noteId: string) => {
-    setNotes(notes.filter(n => n.id !== noteId));
+    setNotes(notes.filter((n) => n.id !== noteId));
   };
 
   return {

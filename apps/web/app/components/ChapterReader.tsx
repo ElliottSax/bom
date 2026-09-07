@@ -205,6 +205,8 @@ export const ChapterReader: React.FC<ChapterReaderProps> = ({
                 fontFamily={fontFamily}
                 showVerseNumbers={showVerseNumbers}
                 crossReferences={chapterCrossReferences?.get(verse.num)}
+                bookName={currentBook.name}
+                chapter={selectedChapter}
                 onVerseClick={() =>
                   setSelectedVerse(selectedVerse === verse.num ? null : verse.num)
                 }

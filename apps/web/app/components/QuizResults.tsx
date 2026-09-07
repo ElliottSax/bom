@@ -40,11 +40,13 @@ export function QuizResults({
   return (
     <div className="flex flex-col h-full">
       {/* Score Card */}
-      <div className={`rounded-xl p-8 mb-6 text-center ${
-        passed
-          ? 'bg-gradient-to-br from-green-500/20 to-green-600/10 border border-green-500/30'
-          : 'bg-gradient-to-br from-red-500/20 to-red-600/10 border border-red-500/30'
-      }`}>
+      <div
+        className={`rounded-xl p-8 mb-6 text-center ${
+          passed
+            ? 'bg-gradient-to-br from-green-500/20 to-green-600/10 border border-green-500/30'
+            : 'bg-gradient-to-br from-red-500/20 to-red-600/10 border border-red-500/30'
+        }`}
+      >
         {/* Score Circle */}
         <div className="relative w-32 h-32 mx-auto mb-4">
           <svg className="w-full h-full transform -rotate-90">
@@ -77,22 +79,30 @@ export function QuizResults({
         </div>
 
         {/* Pass/Fail Badge */}
-        <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-lg font-semibold mb-2 ${
-          passed
-            ? 'bg-green-500/20 text-green-500'
-            : 'bg-red-500/20 text-red-500'
-        }`}>
+        <div
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-lg font-semibold mb-2 ${
+            passed ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'
+          }`}
+        >
           {passed ? (
             <>
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
               </svg>
               Passed!
             </>
           ) : (
             <>
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
               </svg>
               Not Passed
             </>
@@ -132,7 +142,7 @@ export function QuizResults({
 
         {/* Questions Review */}
         <div className="flex-1 overflow-y-auto space-y-4 pr-2">
-          {questionsToShow.map((question, displayIndex) => {
+          {questionsToShow.map((question) => {
             const originalIndex = questions.indexOf(question);
             const userAnswer = answers[originalIndex];
             const isCorrect = userAnswer === question.correctAnswer;
@@ -148,16 +158,26 @@ export function QuizResults({
               >
                 <div className="flex items-start gap-3">
                   {/* Status Icon */}
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    isCorrect ? 'bg-green-500' : 'bg-red-500'
-                  }`}>
+                  <div
+                    className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      isCorrect ? 'bg-green-500' : 'bg-red-500'
+                    }`}
+                  >
                     {isCorrect ? (
                       <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     ) : (
                       <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                        <path
+                          fillRule="evenodd"
+                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     )}
                   </div>
@@ -172,7 +192,9 @@ export function QuizResults({
                     <div className="space-y-1 mb-3">
                       <p className="text-sm text-[var(--color-text-secondary)]">
                         Your answer:{' '}
-                        <span className={`font-medium ${isCorrect ? 'text-green-500' : 'text-red-500'}`}>
+                        <span
+                          className={`font-medium ${isCorrect ? 'text-green-500' : 'text-red-500'}`}
+                        >
                           {userAnswer !== null ? question.options[userAnswer] : 'Not answered'}
                         </span>
                       </p>
@@ -189,7 +211,9 @@ export function QuizResults({
                     {/* Explanation */}
                     <div className="bg-[var(--color-bg-secondary)] rounded-lg p-3">
                       <p className="text-sm text-[var(--color-text-tertiary)]">
-                        <span className="font-medium text-[var(--color-text-secondary)]">Explanation:</span>{' '}
+                        <span className="font-medium text-[var(--color-text-secondary)]">
+                          Explanation:
+                        </span>{' '}
                         {question.explanation}
                       </p>
                     </div>

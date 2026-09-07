@@ -5,7 +5,7 @@
  * and modern CoC resources from Herald House, Gathering Resources, etc.
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 
 export type CourseLevel = 'beginner' | 'intermediate' | 'advanced';
 export type LessonType = 'reading' | 'study' | 'quiz' | 'reflection';
@@ -78,7 +78,8 @@ const COC_COURSES: Course[] = [
     id: 'intro-coc',
     title: 'Introduction to Community of Christ',
     subtitle: 'Understanding Our Identity, Mission, and Beliefs',
-    description: 'A foundational course exploring Community of Christ origins, the 1860 reorganization under Joseph Smith III, CoC theology, and key distinctions from LDS tradition. Uses authentic RLDS historical materials.',
+    description:
+      'A foundational course exploring Community of Christ origins, the 1860 reorganization under Joseph Smith III, CoC theology, and key distinctions from LDS tradition. Uses authentic RLDS historical materials.',
     level: 'beginner',
     duration: '2 weeks',
     lessonsCount: 6,
@@ -89,7 +90,7 @@ const COC_COURSES: Course[] = [
       'Learn about Joseph Smith III and RLDS development',
       'Identify the eight sacraments and their meaning',
       'Recognize CoC enduring principles',
-      'Understand women\'s ordination (Section 156, 1984)',
+      "Understand women's ordination (Section 156, 1984)",
       'Distinguish CoC theology from LDS tradition',
     ],
     lessons: [
@@ -97,17 +98,16 @@ const COC_COURSES: Course[] = [
         id: 'intro-coc-1',
         title: 'Origins and History (1860-2001)',
         type: 'study',
-        description: 'Explore the 1844 succession crisis and the 1860 reorganization under Joseph Smith III using RLDS historical documents.',
+        description:
+          'Explore the 1844 succession crisis and the 1860 reorganization under Joseph Smith III using RLDS historical documents.',
         duration: 25,
         objectives: [
           'Understand the 1844 succession crisis',
-          'Learn about Emma Smith\'s role in RLDS formation',
-          'Study Joseph Smith III\'s reluctant acceptance of leadership',
+          "Learn about Emma Smith's role in RLDS formation",
+          "Study Joseph Smith III's reluctant acceptance of leadership",
           'Identify key theological differences from beginning',
         ],
-        scriptures: [
-          { book: 'D&C', chapter: 114, verseStart: 1 },
-        ],
+        scriptures: [{ book: 'D&C', chapter: 114, verseStart: 1 }],
         content: `# Origins and History of Community of Christ
 
 ## The 1844 Succession Crisis
@@ -242,14 +242,30 @@ In 2001, the RLDS Church became "Community of Christ":
 5. **Democratic, progressive** emphasis throughout history
 6. **2001 name change** to Community of Christ reflected evolution`,
         keyTerms: [
-          { term: 'Succession Crisis', definition: 'The 1844-1860 period of competing claims to lead the Latter Day Saint movement after Joseph Smith Jr.\'s death' },
-          { term: 'Reorganization', definition: 'The 1860 formation of RLDS Church under Joseph Smith III, claiming to restore the original church' },
-          { term: 'Lineal Succession', definition: 'RLDS doctrine that presidency should pass through Joseph Smith Jr.\'s direct descendants' },
-          { term: 'Inspired Version', definition: 'Joseph Smith Translation of the Bible, preserved by Emma Smith and published by RLDS (1867)' },
+          {
+            term: 'Succession Crisis',
+            definition:
+              "The 1844-1860 period of competing claims to lead the Latter Day Saint movement after Joseph Smith Jr.'s death",
+          },
+          {
+            term: 'Reorganization',
+            definition:
+              'The 1860 formation of RLDS Church under Joseph Smith III, claiming to restore the original church',
+          },
+          {
+            term: 'Lineal Succession',
+            definition:
+              "RLDS doctrine that presidency should pass through Joseph Smith Jr.'s direct descendants",
+          },
+          {
+            term: 'Inspired Version',
+            definition:
+              'Joseph Smith Translation of the Bible, preserved by Emma Smith and published by RLDS (1867)',
+          },
         ],
         discussionQuestions: [
           'Why do you think Joseph Smith III waited 16 years to accept leadership?',
-          'How did Emma Smith\'s role shape the early RLDS Church?',
+          "How did Emma Smith's role shape the early RLDS Church?",
           'What were the most significant theological differences between RLDS and LDS from the beginning?',
           'Why was the name change to "Community of Christ" important in 2001?',
         ],
@@ -262,7 +278,7 @@ In 2001, the RLDS Church became "Community of Christ":
             type: 'joseph_smith_iii',
           },
           {
-            title: 'Saints\' Herald, Volume 1 (1860)',
+            title: "Saints' Herald, Volume 1 (1860)",
             url: 'https://archive.org/details/saintsheraldvol01unkngoog',
             type: 'saints_herald',
           },
@@ -272,7 +288,8 @@ In 2001, the RLDS Church became "Community of Christ":
             type: 'modern',
           },
         ],
-        applicationChallenge: 'Research your own family\'s religious history. Were there moments of crisis or transition? How were they navigated?',
+        applicationChallenge:
+          "Research your own family's religious history. Were there moments of crisis or transition? How were they navigated?",
         quiz: {
           questions: [
             {
@@ -280,14 +297,16 @@ In 2001, the RLDS Church became "Community of Christ":
               question: 'What year did Joseph Smith Jr. die, leading to the succession crisis?',
               options: ['1830', '1844', '1860', '1884'],
               correctAnswer: 1,
-              explanation: 'Joseph Smith Jr. was martyred on June 27, 1844, creating a leadership crisis in the early Latter Day Saint movement.',
+              explanation:
+                'Joseph Smith Jr. was martyred on June 27, 1844, creating a leadership crisis in the early Latter Day Saint movement.',
             },
             {
               id: 2,
               question: 'Who led the majority of Latter Day Saints to Utah?',
               options: ['Sidney Rigdon', 'James Strang', 'Brigham Young', 'Joseph Smith III'],
               correctAnswer: 2,
-              explanation: 'Brigham Young, as president of the Quorum of the Twelve Apostles, led about 70% of members to Utah, forming what became the LDS Church.',
+              explanation:
+                'Brigham Young, as president of the Quorum of the Twelve Apostles, led about 70% of members to Utah, forming what became the LDS Church.',
             },
             {
               id: 3,
@@ -296,24 +315,27 @@ In 2001, the RLDS Church became "Community of Christ":
                 'She became the first prophet',
                 'She opposed polygamy and preserved the Joseph Smith Translation',
                 'She joined Brigham Young in Utah',
-                'She had no involvement'
+                'She had no involvement',
               ],
               correctAnswer: 1,
-              explanation: 'Emma Smith firmly opposed polygamy, refused to go to Utah, and preserved the Joseph Smith Translation manuscript, which she gave to the RLDS Church in 1866.',
+              explanation:
+                'Emma Smith firmly opposed polygamy, refused to go to Utah, and preserved the Joseph Smith Translation manuscript, which she gave to the RLDS Church in 1866.',
             },
             {
               id: 4,
               question: 'When was the RLDS Church formally organized?',
               options: ['1844', '1850', '1860', '1870'],
               correctAnswer: 2,
-              explanation: 'The RLDS Church was formally reorganized at the Amboy Conference on April 6, 1860, with Joseph Smith III as president.',
+              explanation:
+                'The RLDS Church was formally reorganized at the Amboy Conference on April 6, 1860, with Joseph Smith III as president.',
             },
             {
               id: 5,
               question: 'When did RLDS change its name to Community of Christ?',
               options: ['1984', '1994', '2001', '2010'],
               correctAnswer: 2,
-              explanation: 'The church officially changed its name from Reorganized Church of Jesus Christ of Latter Day Saints to Community of Christ in 2001.',
+              explanation:
+                'The church officially changed its name from Reorganized Church of Jesus Christ of Latter Day Saints to Community of Christ in 2001.',
             },
           ],
           passingScore: 70,
@@ -324,13 +346,14 @@ In 2001, the RLDS Church became "Community of Christ":
         id: 'intro-coc-2',
         title: 'Eight Sacraments (Not Temple Ordinances)',
         type: 'study',
-        description: 'Learn about Community of Christ\'s eight sacraments and how they differ from LDS temple ordinances.',
+        description:
+          "Learn about Community of Christ's eight sacraments and how they differ from LDS temple ordinances.",
         duration: 20,
         objectives: [
           'Identify the eight sacraments of Community of Christ',
           'Understand the meaning and practice of each',
           'Recognize differences from LDS ordinances',
-          'Learn why CoC doesn\'t practice temple work',
+          "Learn why CoC doesn't practice temple work",
         ],
         scriptures: [
           { book: 'D&C', chapter: 17, verseStart: 8 }, // Baptism
@@ -537,19 +560,36 @@ How do sacraments help us experience God's grace?
 What's the difference between "required for salvation" and "means of grace"?
 How does open communion reflect CoC values?`,
         keyTerms: [
-          { term: 'Sacrament', definition: 'Sacred act that mediates God\'s grace; means of experiencing divine presence, not requirement for salvation' },
-          { term: 'Ordinance', definition: 'In LDS theology, required ritual for salvation; CoC uses "sacrament" instead to emphasize grace' },
-          { term: 'Open Communion', definition: 'Lord\'s Supper offered to all Christians, not just members in good standing' },
-          { term: 'Evangelist Blessing', definition: 'Personal blessing given once by an Evangelist (similar to LDS Patriarchal Blessing but without lineage declaration)' },
+          {
+            term: 'Sacrament',
+            definition:
+              "Sacred act that mediates God's grace; means of experiencing divine presence, not requirement for salvation",
+          },
+          {
+            term: 'Ordinance',
+            definition:
+              'In LDS theology, required ritual for salvation; CoC uses "sacrament" instead to emphasize grace',
+          },
+          {
+            term: 'Open Communion',
+            definition:
+              "Lord's Supper offered to all Christians, not just members in good standing",
+          },
+          {
+            term: 'Evangelist Blessing',
+            definition:
+              'Personal blessing given once by an Evangelist (similar to LDS Patriarchal Blessing but without lineage declaration)',
+          },
         ],
         discussionQuestions: [
           'How does "means of grace" differ from "required for salvation"?',
           'Why might CoC have rejected temple ordinances for the dead?',
-          'What does open communion communicate about God\'s love?',
-          'How does women\'s ordination affect understanding of priesthood?',
+          "What does open communion communicate about God's love?",
+          "How does women's ordination affect understanding of priesthood?",
         ],
         cocPerspective: `Community of Christ sees sacraments as **participatory** rather than **performative**. The focus is on experiencing God's grace and community, not checking boxes for salvation. This reflects CoC's broader progressive Christianity, which emphasizes relationship with Christ over ritual correctness. The eight sacraments are sufficient; no hidden temple ordinances are needed.`,
-        applicationChallenge: 'Reflect on a time when you experienced God\'s presence in community worship. How did that sacramental moment shape your faith?',
+        applicationChallenge:
+          "Reflect on a time when you experienced God's presence in community worship. How did that sacramental moment shape your faith?",
         quiz: {
           questions: [
             {
@@ -557,19 +597,22 @@ How does open communion reflect CoC values?`,
               question: 'How many sacraments does Community of Christ practice?',
               options: ['Two', 'Five', 'Seven', 'Eight'],
               correctAnswer: 3,
-              explanation: 'Community of Christ practices eight sacraments: Baptism, Confirmation, Lord\'s Supper, Laying on of Hands for the Sick, Ordination, Marriage, Child Blessing, and Evangelist Blessing.',
+              explanation:
+                "Community of Christ practices eight sacraments: Baptism, Confirmation, Lord's Supper, Laying on of Hands for the Sick, Ordination, Marriage, Child Blessing, and Evangelist Blessing.",
             },
             {
               id: 2,
-              question: 'What is the key theological difference between CoC sacraments and LDS ordinances?',
+              question:
+                'What is the key theological difference between CoC sacraments and LDS ordinances?',
               options: [
                 'CoC has more sacraments',
                 'CoC sees them as means of grace, not requirements for salvation',
                 'CoC only allows adults to participate',
-                'CoC performs them in temples only'
+                'CoC performs them in temples only',
               ],
               correctAnswer: 1,
-              explanation: 'CoC teaches that sacraments are means of grace that help us experience God\'s presence, not requirements for salvation. This reflects grace-based theology rather than ordinance-based salvation.',
+              explanation:
+                "CoC teaches that sacraments are means of grace that help us experience God's presence, not requirements for salvation. This reflects grace-based theology rather than ordinance-based salvation.",
             },
             {
               id: 3,
@@ -578,29 +621,32 @@ How does open communion reflect CoC values?`,
                 'Communion is held outdoors',
                 'Anyone can administer communion',
                 'All Christians are welcome to partake, regardless of membership',
-                'Communion is optional'
+                'Communion is optional',
               ],
               correctAnswer: 2,
-              explanation: 'Open communion means the Lord\'s Supper is offered to all Christians, not just CoC members in good standing. No worthiness interview is required.',
+              explanation:
+                "Open communion means the Lord's Supper is offered to all Christians, not just CoC members in good standing. No worthiness interview is required.",
             },
             {
               id: 4,
-              question: 'Why doesn\'t Community of Christ practice temple ordinances for the dead?',
+              question: "Why doesn't Community of Christ practice temple ordinances for the dead?",
               options: [
-                'They don\'t have temples',
-                'They believe God\'s grace is sufficient for all beyond death',
-                'It\'s against the law',
-                'They haven\'t decided yet'
+                "They don't have temples",
+                "They believe God's grace is sufficient for all beyond death",
+                "It's against the law",
+                "They haven't decided yet",
               ],
               correctAnswer: 1,
-              explanation: 'CoC believes God\'s love and grace extend beyond death, and salvation is by grace rather than required rituals. They trust God\'s justice and mercy for all people.',
+              explanation:
+                "CoC believes God's love and grace extend beyond death, and salvation is by grace rather than required rituals. They trust God's justice and mercy for all people.",
             },
             {
               id: 5,
               question: 'When were women first ordained to priesthood in Community of Christ?',
               options: ['1960', '1974', '1985', '2001'],
               correctAnswer: 2,
-              explanation: 'Following the 1984 revelation in Section 156, the first women were ordained to priesthood in Community of Christ in 1985.',
+              explanation:
+                'Following the 1984 revelation in Section 156, the first women were ordained to priesthood in Community of Christ in 1985.',
             },
           ],
           passingScore: 70,
@@ -611,7 +657,8 @@ How does open communion reflect CoC values?`,
         id: 'intro-coc-3',
         title: 'Enduring Principles: CoC Core Values',
         type: 'study',
-        description: 'Explore the nine Enduring Principles that guide Community of Christ faith and practice.',
+        description:
+          'Explore the nine Enduring Principles that guide Community of Christ faith and practice.',
         duration: 20,
         objectives: [
           'Learn the nine Enduring Principles',
@@ -858,10 +905,26 @@ The Enduring Principles explain many CoC distinctives:
 4. **Continuing Revelation:** Listen for God's voice in unexpected places
 5. **Pursuit of Peace:** Practice conflict resolution, advocate for justice`,
         keyTerms: [
-          { term: 'Enduring Principles', definition: 'Nine core values that guide Community of Christ faith and practice, adopted in 2007' },
-          { term: 'Shalom', definition: 'Hebrew word for peace meaning wholeness, justice, right relationships - more than absence of conflict' },
-          { term: 'Continuing Revelation', definition: 'Belief that God continues to reveal truth through the Holy Spirit, not limited to past scripture' },
-          { term: 'Worth of All Persons', definition: 'Core CoC belief that every human being has inherent dignity and value as God\'s creation' },
+          {
+            term: 'Enduring Principles',
+            definition:
+              'Nine core values that guide Community of Christ faith and practice, adopted in 2007',
+          },
+          {
+            term: 'Shalom',
+            definition:
+              'Hebrew word for peace meaning wholeness, justice, right relationships - more than absence of conflict',
+          },
+          {
+            term: 'Continuing Revelation',
+            definition:
+              'Belief that God continues to reveal truth through the Holy Spirit, not limited to past scripture',
+          },
+          {
+            term: 'Worth of All Persons',
+            definition:
+              "Core CoC belief that every human being has inherent dignity and value as God's creation",
+          },
         ],
         discussionQuestions: [
           'How do the Enduring Principles differ from creedal statements?',
@@ -882,7 +945,8 @@ The Enduring Principles explain many CoC distinctives:
           },
         ],
         cocPerspective: `The Enduring Principles represent a shift from rigid doctrine to **guiding values**. Rather than saying "you must believe X, Y, Z," CoC says "we are called to embody these principles." This allows for diversity of belief while maintaining unity in mission. The principles are **descriptive** (this is who we are) and **prescriptive** (this is who we're called to become). They're rooted in scripture but open to ongoing interpretation through the Spirit.`,
-        applicationChallenge: 'Choose one Enduring Principle to focus on this week. Each day, identify one way to embody that principle. Journal about what you discover.',
+        applicationChallenge:
+          'Choose one Enduring Principle to focus on this week. Each day, identify one way to embody that principle. Journal about what you discover.',
         quiz: {
           questions: [
             {
@@ -890,7 +954,8 @@ The Enduring Principles explain many CoC distinctives:
               question: 'How many Enduring Principles guide Community of Christ?',
               options: ['Six', 'Eight', 'Nine', 'Twelve'],
               correctAnswer: 2,
-              explanation: 'Community of Christ has nine Enduring Principles that were identified in 2007 at World Conference.',
+              explanation:
+                'Community of Christ has nine Enduring Principles that were identified in 2007 at World Conference.',
             },
             {
               id: 2,
@@ -899,10 +964,11 @@ The Enduring Principles explain many CoC distinctives:
                 'Grace and Generosity',
                 'Sacredness of Creation',
                 'Worth of All Persons',
-                'Blessings of Community'
+                'Blessings of Community',
               ],
               correctAnswer: 1,
-              explanation: 'The "Sacredness of Creation" principle teaches that all creation has worth because of God\'s nature, making environmental stewardship a spiritual practice.',
+              explanation:
+                'The "Sacredness of Creation" principle teaches that all creation has worth because of God\'s nature, making environmental stewardship a spiritual practice.',
             },
             {
               id: 3,
@@ -911,10 +977,11 @@ The Enduring Principles explain many CoC distinctives:
                 'Absence of conflict',
                 'Wholeness, justice, and right relationships',
                 'Military peace',
-                'Silence'
+                'Silence',
               ],
               correctAnswer: 1,
-              explanation: 'Shalom is a Hebrew word meaning wholeness, justice, and right relationships - much more than just the absence of conflict. It\'s active peacemaking.',
+              explanation:
+                "Shalom is a Hebrew word meaning wholeness, justice, and right relationships - much more than just the absence of conflict. It's active peacemaking.",
             },
             {
               id: 4,
@@ -923,17 +990,19 @@ The Enduring Principles explain many CoC distinctives:
                 'The Bible is still being written',
                 'God continues to reveal truth through the Holy Spirit',
                 'Only prophets receive revelation',
-                'Revelation ended with Joseph Smith Jr.'
+                'Revelation ended with Joseph Smith Jr.',
               ],
               correctAnswer: 1,
-              explanation: 'Continuing Revelation means God didn\'t stop revealing truth after scripture was written. The Spirit continues to guide the church, as seen in D&C Section 167 (2023).',
+              explanation:
+                "Continuing Revelation means God didn't stop revealing truth after scripture was written. The Spirit continues to guide the church, as seen in D&C Section 167 (2023).",
             },
             {
               id: 5,
               question: 'In what year were the Enduring Principles first identified?',
               options: ['1984', '2001', '2007', '2015'],
               correctAnswer: 2,
-              explanation: 'The nine Enduring Principles were identified at the 2007 World Conference and were mentioned in D&C Section 163.',
+              explanation:
+                'The nine Enduring Principles were identified at the 2007 World Conference and were mentioned in D&C Section 163.',
             },
           ],
           passingScore: 70,
@@ -942,16 +1011,17 @@ The Enduring Principles explain many CoC distinctives:
 
       {
         id: 'intro-coc-4',
-        title: 'Section 156: Women\'s Ordination (1984)',
+        title: "Section 156: Women's Ordination (1984)",
         type: 'study',
-        description: 'Study the controversial 1984 revelation that opened all priesthood offices to women, including historical context and impact.',
+        description:
+          'Study the controversial 1984 revelation that opened all priesthood offices to women, including historical context and impact.',
         duration: 30,
         objectives: [
           'Understand the context of Section 156',
-          'Learn about W. Wallace Smith\'s prophetic ministry',
+          "Learn about W. Wallace Smith's prophetic ministry",
           'Examine the controversy and schism it caused',
-          'Appreciate the significance for women\'s equality',
-          'Connect to broader women\'s ordination movement',
+          "Appreciate the significance for women's equality",
+          "Connect to broader women's ordination movement",
         ],
         scriptures: [
           { book: 'D&C', chapter: 156, verseStart: 1, verseEnd: 10 },
@@ -1214,17 +1284,32 @@ Section 156 was **controversial** but **transformative**. It cost the church mem
 The question Section 156 poses to every generation:
 **"What is God calling us to do, even if it's costly?"**`,
         keyTerms: [
-          { term: 'Section 156', definition: '1984 revelation from W. Wallace Smith opening all priesthood offices to women, causing schism' },
-          { term: 'Restoration Branches', definition: 'Independent congregations that rejected Section 156 and maintain pre-1984 RLDS practices' },
-          { term: 'Schism', definition: 'Split in religious community; ~50,000 members left RLDS Church over women\'s ordination' },
-          { term: 'Prophetic Witness', definition: 'Church speaking/acting on God\'s truth even when unpopular or costly' },
+          {
+            term: 'Section 156',
+            definition:
+              '1984 revelation from W. Wallace Smith opening all priesthood offices to women, causing schism',
+          },
+          {
+            term: 'Restoration Branches',
+            definition:
+              'Independent congregations that rejected Section 156 and maintain pre-1984 RLDS practices',
+          },
+          {
+            term: 'Schism',
+            definition:
+              "Split in religious community; ~50,000 members left RLDS Church over women's ordination",
+          },
+          {
+            term: 'Prophetic Witness',
+            definition: "Church speaking/acting on God's truth even when unpopular or costly",
+          },
         ],
         discussionQuestions: [
-          'Why was women\'s ordination so controversial in 1984?',
+          "Why was women's ordination so controversial in 1984?",
           'How do we respect those who disagreed with Section 156?',
           'What does it cost to follow revelation that challenges tradition?',
-          'How does women\'s ordination change understanding of priesthood?',
-          'What contemporary justice issues parallel 1984 women\'s ordination?',
+          "How does women's ordination change understanding of priesthood?",
+          "What contemporary justice issues parallel 1984 women's ordination?",
         ],
         historicalMaterials: [
           {
@@ -1233,13 +1318,14 @@ The question Section 156 poses to every generation:
             type: 'modern',
           },
           {
-            title: 'Women\'s Ordination in Community of Christ',
+            title: "Women's Ordination in Community of Christ",
             url: 'https://www.cofchrist.org/priesthood',
             type: 'modern',
           },
         ],
         cocPerspective: `Section 156 represents **continuing revelation** in action. God didn't reveal everything at once but continues to guide the church toward fuller understanding of justice and equality. The revelation wasn't about women's ordination alone - it was about the church becoming "people of the Temple" who embody God's shalom. Women's full participation is essential to that vision. The schism was painful, but the church chose faithfulness to revelation over institutional unity. This prophetic witness continues to shape CoC identity as a justice-oriented, progressive Christian community.`,
-        applicationChallenge: 'Research women leaders in Community of Christ history and today. Choose one woman\'s story to learn about. How has women\'s ordination shaped the church\'s ministry?',
+        applicationChallenge:
+          "Research women leaders in Community of Christ history and today. Choose one woman's story to learn about. How has women's ordination shaped the church's ministry?",
         quiz: {
           questions: [
             {
@@ -1249,24 +1335,27 @@ The question Section 156 poses to every generation:
                 'Joseph Smith III',
                 'Frederick M. Smith',
                 'W. Wallace Smith',
-                'Wallace B. Smith'
+                'Wallace B. Smith',
               ],
               correctAnswer: 2,
-              explanation: 'Section 156 was received by W. Wallace Smith, who served as Prophet-President from 1958-1978 and remained prophet until 1989.',
+              explanation:
+                'Section 156 was received by W. Wallace Smith, who served as Prophet-President from 1958-1978 and remained prophet until 1989.',
             },
             {
               id: 2,
               question: 'When was Section 156 presented to World Conference?',
               options: ['April 1, 1984', 'April 5, 1984', 'April 1, 1985', 'April 5, 1985'],
               correctAnswer: 1,
-              explanation: 'Section 156 was received on April 1, 1984, and presented to World Conference on April 5, 1984, where it was sustained by vote.',
+              explanation:
+                'Section 156 was received on April 1, 1984, and presented to World Conference on April 5, 1984, where it was sustained by vote.',
             },
             {
               id: 3,
-              question: 'Approximately how many members left RLDS Church over women\'s ordination?',
+              question: "Approximately how many members left RLDS Church over women's ordination?",
               options: ['5,000', '15,000', '50,000', '100,000'],
               correctAnswer: 2,
-              explanation: 'About 50,000 members (out of ~250,000) left the RLDS Church over Section 156, forming independent Restoration Branches.',
+              explanation:
+                'About 50,000 members (out of ~250,000) left the RLDS Church over Section 156, forming independent Restoration Branches.',
             },
             {
               id: 4,
@@ -1275,22 +1364,19 @@ The question Section 156 poses to every generation:
                 'A new CoC program',
                 'Groups that rejected Section 156 and maintain pre-1984 practices',
                 'International CoC congregations',
-                'A type of priesthood office'
+                'A type of priesthood office',
               ],
               correctAnswer: 1,
-              explanation: 'Restoration Branches are independent congregations that rejected Section 156 and women\'s ordination, maintaining pre-1984 RLDS practices.',
+              explanation:
+                "Restoration Branches are independent congregations that rejected Section 156 and women's ordination, maintaining pre-1984 RLDS practices.",
             },
             {
               id: 5,
-              question: 'What biblical passage is often cited in support of women\'s ordination?',
-              options: [
-                '1 Timothy 2:12',
-                'Galatians 3:28',
-                'Genesis 1:1',
-                'John 3:16'
-              ],
+              question: "What biblical passage is often cited in support of women's ordination?",
+              options: ['1 Timothy 2:12', 'Galatians 3:28', 'Genesis 1:1', 'John 3:16'],
               correctAnswer: 1,
-              explanation: 'Galatians 3:28 states "There is no longer Jew or Greek, slave or free, male and female; for all of you are one in Christ Jesus," supporting equality.',
+              explanation:
+                'Galatians 3:28 states "There is no longer Jew or Greek, slave or free, male and female; for all of you are one in Christ Jesus," supporting equality.',
             },
           ],
           passingScore: 70,
@@ -1301,7 +1387,8 @@ The question Section 156 poses to every generation:
         id: 'intro-coc-5',
         title: 'Temple Theology: Kirtland & Independence',
         type: 'study',
-        description: 'Explore Community of Christ\'s understanding of temples as places of worship, peace, and community rather than exclusive ordinance work.',
+        description:
+          "Explore Community of Christ's understanding of temples as places of worship, peace, and community rather than exclusive ordinance work.",
         duration: 20,
         objectives: [
           'Learn about Kirtland Temple history',
@@ -1611,10 +1698,25 @@ This is **active ministry**, not passive ritual.
 **The Temple calls us:**
 Not to perform rituals for salvation, but to **be God's peace presence in a violent world**.`,
         keyTerms: [
-          { term: 'Kirtland Temple', definition: 'First Restoration temple (1836), owned by CoC since 1880, open for worship and tours' },
-          { term: 'Independence Temple', definition: 'CoC temple dedicated 1994 for worship, peace, and reconciliation, open to all' },
-          { term: 'People of the Temple', definition: 'D&C 164 phrase: those who see violence but proclaim peace, extend reconciliation, find healing' },
-          { term: 'Temple Recommend', definition: 'LDS requirement for temple entry based on worthiness; NOT used in CoC' },
+          {
+            term: 'Kirtland Temple',
+            definition:
+              'First Restoration temple (1836), owned by CoC since 1880, open for worship and tours',
+          },
+          {
+            term: 'Independence Temple',
+            definition:
+              'CoC temple dedicated 1994 for worship, peace, and reconciliation, open to all',
+          },
+          {
+            term: 'People of the Temple',
+            definition:
+              'D&C 164 phrase: those who see violence but proclaim peace, extend reconciliation, find healing',
+          },
+          {
+            term: 'Temple Recommend',
+            definition: 'LDS requirement for temple entry based on worthiness; NOT used in CoC',
+          },
         ],
         discussionQuestions: [
           'How does open temple access reflect CoC theology of grace?',
@@ -1636,7 +1738,8 @@ Not to perform rituals for salvation, but to **be God's peace presence in a viol
           },
         ],
         cocPerspective: `CoC temple theology emphasizes **presence over performance**. Temples aren't about checking boxes for salvation, but encountering God's peace and being sent into the world. The open architecture of Independence Temple reflects this: transparent, light-filled, welcoming all. Contrast this with LDS temples' closed rooms and secret rituals. CoC says God's grace is sufficient; we don't need special ordinances to save our ancestors or ourselves. Instead, temples equip us to be "people of peace"—living shalom in a broken world. This reflects CoC's broader shift from ritual religion to justice-oriented faith.`,
-        applicationChallenge: 'This week, practice being a "person of the Temple" in one specific way: Where you see violence, proclaim peace; where you feel conflict, extend reconciliation; where you encounter broken spirits, find pathways for healing. Journal about the experience.',
+        applicationChallenge:
+          'This week, practice being a "person of the Temple" in one specific way: Where you see violence, proclaim peace; where you feel conflict, extend reconciliation; where you encounter broken spirits, find pathways for healing. Journal about the experience.',
         quiz: {
           questions: [
             {
@@ -1644,14 +1747,16 @@ Not to perform rituals for salvation, but to **be God's peace presence in a viol
               question: 'How many temples does Community of Christ own?',
               options: ['None', 'One', 'Two', 'Five'],
               correctAnswer: 2,
-              explanation: 'Community of Christ owns two temples: the Kirtland Temple (acquired 1880) and the Independence Temple (dedicated 1994).',
+              explanation:
+                'Community of Christ owns two temples: the Kirtland Temple (acquired 1880) and the Independence Temple (dedicated 1994).',
             },
             {
               id: 2,
               question: 'When was the Kirtland Temple dedicated?',
               options: ['1830', '1836', '1844', '1860'],
               correctAnswer: 1,
-              explanation: 'The Kirtland Temple was dedicated on March 27, 1836, and featured spectacular Pentecostal experiences including visions and speaking in tongues.',
+              explanation:
+                'The Kirtland Temple was dedicated on March 27, 1836, and featured spectacular Pentecostal experiences including visions and speaking in tongues.',
             },
             {
               id: 3,
@@ -1660,10 +1765,11 @@ Not to perform rituals for salvation, but to **be God's peace presence in a viol
                 'Secret ordinances for salvation',
                 'Proxy baptisms for the dead',
                 'Worship, peace, reconciliation, and community gathering',
-                'Only for priesthood meetings'
+                'Only for priesthood meetings',
               ],
               correctAnswer: 2,
-              explanation: 'CoC temples are for worship, peace work, reconciliation, and community gathering - not for exclusive saving ordinances.',
+              explanation:
+                'CoC temples are for worship, peace work, reconciliation, and community gathering - not for exclusive saving ordinances.',
             },
             {
               id: 4,
@@ -1671,11 +1777,12 @@ Not to perform rituals for salvation, but to **be God's peace presence in a viol
               options: [
                 'Only CoC members with temple recommends',
                 'Only priesthood holders',
-                'Anyone - it\'s open to all',
-                'Only those who have been through the endowment'
+                "Anyone - it's open to all",
+                'Only those who have been through the endowment',
               ],
               correctAnswer: 2,
-              explanation: 'Independence Temple is open to all people - no temple recommend, membership, or worthiness interview required. This reflects CoC\'s emphasis on grace and inclusion.',
+              explanation:
+                "Independence Temple is open to all people - no temple recommend, membership, or worthiness interview required. This reflects CoC's emphasis on grace and inclusion.",
             },
             {
               id: 5,
@@ -1684,10 +1791,11 @@ Not to perform rituals for salvation, but to **be God's peace presence in a viol
                 'People who attend temple regularly',
                 'Those who see violence but proclaim peace, extend reconciliation, find healing',
                 'Temple workers only',
-                'Those who live near temples'
+                'Those who live near temples',
               ],
               correctAnswer: 1,
-              explanation: 'Being "people of the Temple" means actively pursuing peace in a violent world, reconciliation amid conflict, and healing for broken spirits.',
+              explanation:
+                'Being "people of the Temple" means actively pursuing peace in a violent world, reconciliation amid conflict, and healing for broken spirits.',
             },
           ],
           passingScore: 70,
@@ -1698,10 +1806,11 @@ Not to perform rituals for salvation, but to **be God's peace presence in a viol
         id: 'intro-coc-6',
         title: 'Book of Mormon in CoC Perspective',
         type: 'study',
-        description: 'Understand how Community of Christ approaches the Book of Mormon differently than the LDS tradition, including historicity questions and spiritual value.',
+        description:
+          'Understand how Community of Christ approaches the Book of Mormon differently than the LDS tradition, including historicity questions and spiritual value.',
         duration: 25,
         objectives: [
-          'Learn CoC\'s approach to Book of Mormon',
+          "Learn CoC's approach to Book of Mormon",
           'Understand historicity debates within CoC',
           'Recognize theological emphases CoC draws from BoM',
           'Compare CoC and LDS interpretations',
@@ -2107,16 +2216,32 @@ Not in historical accuracy, but in **pointing to Christ** and calling us to **pe
 
 That's something CoC members can affirm together, regardless of how they view its origins.`,
         keyTerms: [
-          { term: 'Historicity', definition: 'Whether Book of Mormon is ancient historical record; CoC doesn\'t require belief either way' },
-          { term: 'Inspired Fiction', definition: 'View that BoM is 19th century creation with spiritual value, held by many CoC members' },
-          { term: '1908 Authorized Edition', definition: 'RLDS edition of Book of Mormon with different verse numbering and footnotes' },
-          { term: 'Hermeneutical Key', definition: 'Interpretive principle; CoC uses Christ as lens to interpret all scripture' },
+          {
+            term: 'Historicity',
+            definition:
+              "Whether Book of Mormon is ancient historical record; CoC doesn't require belief either way",
+          },
+          {
+            term: 'Inspired Fiction',
+            definition:
+              'View that BoM is 19th century creation with spiritual value, held by many CoC members',
+          },
+          {
+            term: '1908 Authorized Edition',
+            definition:
+              'RLDS edition of Book of Mormon with different verse numbering and footnotes',
+          },
+          {
+            term: 'Hermeneutical Key',
+            definition:
+              'Interpretive principle; CoC uses Christ as lens to interpret all scripture',
+          },
         ],
         discussionQuestions: [
           'Why does CoC allow diverse views on Book of Mormon historicity?',
           'How can scripture be valuable even if origins are uncertain?',
           'What themes from Book of Mormon resonate most with you?',
-          'How does CoC\'s approach to BoM differ from fundamentalism?',
+          "How does CoC's approach to BoM differ from fundamentalism?",
           'What\'s the difference between "true history" and "true spiritually"?',
         ],
         historicalMaterials: [
@@ -2132,32 +2257,36 @@ That's something CoC members can affirm together, regardless of how they view it
           },
         ],
         cocPerspective: `Community of Christ's approach to the Book of Mormon reflects **mature faith** that can hold complexity. Rather than requiring uniform belief about origins, CoC trusts members to engage scripture honestly. This parallels how mainstream Christians read Bible—not requiring literal six-day creation or Jonah's fish as history, but valuing spiritual truths. CoC says: **Focus on the message, not the messenger; on transformation, not information**. The book's value is in how it points to Christ and calls us to justice and peace. Whether ancient record or inspired parable, those truths remain. This approach honors intellectual integrity while maintaining spiritual depth.`,
-        applicationChallenge: 'Read 3 Nephi 11 (Christ\'s appearance) and 4 Nephi 1 (peace after Christ). Without worrying about historicity, ask: What vision of peace and Christ\'s presence does this offer? How can I embody that vision today?',
+        applicationChallenge:
+          "Read 3 Nephi 11 (Christ's appearance) and 4 Nephi 1 (peace after Christ). Without worrying about historicity, ask: What vision of peace and Christ's presence does this offer? How can I embody that vision today?",
         quiz: {
           questions: [
             {
               id: 1,
-              question: 'Does Community of Christ require members to believe in Book of Mormon historicity?',
+              question:
+                'Does Community of Christ require members to believe in Book of Mormon historicity?',
               options: [
-                'Yes, it\'s required',
+                "Yes, it's required",
                 'No, diverse views are welcomed',
                 'Only new members must believe',
-                'It\'s under discussion'
+                "It's under discussion",
               ],
               correctAnswer: 1,
-              explanation: 'CoC does not require belief in Book of Mormon historicity. Some view it as ancient record, others as inspired fiction with spiritual truths. Both perspectives are welcomed.',
+              explanation:
+                'CoC does not require belief in Book of Mormon historicity. Some view it as ancient record, others as inspired fiction with spiritual truths. Both perspectives are welcomed.',
             },
             {
               id: 2,
-              question: 'How does CoC\'s use of the Book of Mormon compare to LDS Church?',
+              question: "How does CoC's use of the Book of Mormon compare to LDS Church?",
               options: [
                 'CoC uses it more frequently',
                 'CoC uses it occasionally; LDS uses it centrally',
                 'Both use it equally',
-                'CoC doesn\'t use it at all'
+                "CoC doesn't use it at all",
               ],
               correctAnswer: 1,
-              explanation: 'CoC uses the Book of Mormon occasionally in worship and study, while the LDS Church studies it extensively and considers it the "most correct book on earth."',
+              explanation:
+                'CoC uses the Book of Mormon occasionally in worship and study, while the LDS Church studies it extensively and considers it the "most correct book on earth."',
             },
             {
               id: 3,
@@ -2166,34 +2295,37 @@ That's something CoC members can affirm together, regardless of how they view it
                 'Lamanite ancestry of Native Americans',
                 'Temple ordinances foreshadowed',
                 'Christ, grace, peace, justice, social ethics',
-                'Pre-existence and plan of salvation'
+                'Pre-existence and plan of salvation',
               ],
               correctAnswer: 2,
-              explanation: 'CoC emphasizes Christ\'s teachings, grace over works, peace (Anti-Nephi-Lehies), social justice (care for poor), and inclusion ("all are alike unto God").',
+              explanation:
+                'CoC emphasizes Christ\'s teachings, grace over works, peace (Anti-Nephi-Lehies), social justice (care for poor), and inclusion ("all are alike unto God").',
             },
             {
               id: 4,
               question: 'What does CoC use as a "hermeneutical key" to interpret scripture?',
               options: [
-                'Joseph Smith\'s teachings',
+                "Joseph Smith's teachings",
                 'Church tradition',
                 'Jesus Christ',
-                'Historical context only'
+                'Historical context only',
               ],
               correctAnswer: 2,
-              explanation: 'CoC uses Christ as the interpretive lens (hermeneutical key) for all scripture, accepting what aligns with Christ\'s love and critiquing what doesn\'t.',
+              explanation:
+                "CoC uses Christ as the interpretive lens (hermeneutical key) for all scripture, accepting what aligns with Christ's love and critiquing what doesn't.",
             },
             {
               id: 5,
               question: 'What is the "inspired fiction" view of the Book of Mormon?',
               options: [
-                'It\'s completely made up without value',
-                'It\'s a 19th century creation with profound spiritual truths',
-                'It\'s fiction mixed with true history',
-                'It\'s only for entertainment'
+                "It's completely made up without value",
+                "It's a 19th century creation with profound spiritual truths",
+                "It's fiction mixed with true history",
+                "It's only for entertainment",
               ],
               correctAnswer: 1,
-              explanation: 'The "inspired fiction" view held by many CoC members sees the Book of Mormon as Joseph Smith\'s inspired 19th century creation containing valuable spiritual truths.',
+              explanation:
+                'The "inspired fiction" view held by many CoC members sees the Book of Mormon as Joseph Smith\'s inspired 19th century creation containing valuable spiritual truths.',
             },
           ],
           passingScore: 70,
@@ -2213,14 +2345,20 @@ export function useCoCCourses() {
 
   const courses = COC_COURSES;
 
-  const getCourse = useCallback((courseId: string): Course | undefined => {
-    return courses.find((c) => c.id === courseId);
-  }, [courses]);
+  const getCourse = useCallback(
+    (courseId: string): Course | undefined => {
+      return courses.find((c) => c.id === courseId);
+    },
+    [courses]
+  );
 
-  const getLesson = useCallback((courseId: string, lessonId: string): Lesson | undefined => {
-    const course = getCourse(courseId);
-    return course?.lessons.find((l) => l.id === lessonId);
-  }, [getCourse]);
+  const getLesson = useCallback(
+    (courseId: string, lessonId: string): Lesson | undefined => {
+      const course = getCourse(courseId);
+      return course?.lessons.find((l) => l.id === lessonId);
+    },
+    [getCourse]
+  );
 
   return {
     courses,

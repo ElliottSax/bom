@@ -1,7 +1,55 @@
 /**
  * Memorization Hook
  *
- * Manage verse memorization with spaced repetition
+ * Implements a spaced repetition system (SRS) for scripture memorization.
+ * Uses graduated intervals (1, 2, 4, 7, 14, 30 days) based on performance.
+ *
+ * Features:
+ * - Add verses to memorization queue
+ * - Track mastery level (0-5)
+ * - Spaced repetition scheduling
+ * - Practice modes with hints
+ * - Statistics and progress tracking
+ *
+ * Algorithm:
+ * - Correct answer: Increase level, longer interval
+ * - Incorrect answer: Decrease level, shorter interval
+ * - Level 5: Mastered (30-day intervals)
+ *
+ * @module useMemorization
+ *
+ * @example
+ * ```typescript
+ * const {
+ *   verses,
+ *   addVerse,
+ *   getDueVerses,
+ *   recordReview,
+ *   getStats,
+ *   generateHint
+ * } = useMemorization();
+ *
+ * // Add verse to memorization
+ * await addVerse({
+ *   verseId: 'coc-bom-1908:I Nephi:3:7',
+ *   book: 'I Nephi',
+ *   chapter: 3,
+ *   verse: 7,
+ *   text: 'I will go and do...',
+ *   editionId: 'coc-bom-1908'
+ * });
+ *
+ * // Get verses due for review
+ * const dueVerses = getDueVerses();
+ *
+ * // Record review result
+ * await recordReview(verseId, true); // correct
+ * await recordReview(verseId, false); // incorrect
+ *
+ * // Get statistics
+ * const stats = getStats();
+ * // { total: 10, mastered: 2, learning: 5, new: 3, dueForReview: 4 }
+ * ```
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -39,6 +87,34 @@ export interface MemorizationStats {
 // Spaced repetition intervals in days based on level
 const REVIEW_INTERVALS = [1, 2, 4, 7, 14, 30]; // days
 
+/**
+ * React hook for verse memorization with spaced repetition.
+ *
+ * @returns Object with memorization methods and state
+ *
+ * @example
+ * ```typescript
+ * function MemorizationScreen() {
+ *   const { verses, getDueVerses, recordReview } = useMemorization();
+ *
+ *   const dueVerses = getDueVerses();
+ *
+ *   const handleReview = async (verseId: string, correct: boolean) => {
+ *     await recordReview(verseId, correct);
+ *     // Next review date automatically calculated
+ *   };
+ *
+ *   return (
+ *     <View>
+ *       <Text>Due for review: {dueVerses.length}</Text>
+ *       {dueVerses.map(v => (
+ *         <VerseCard key={v.id} verse={v} onReview={handleReview} />
+ *       ))}
+ *     </View>
+ *   );
+ * }
+ * ```
+ */
 export function useMemorization() {
   const [verses, setVerses] = useState<MemorizationVerse[]>([]);
   const [loading, setLoading] = useState(true);

@@ -1,10 +1,35 @@
 /**
  * Daily Verse Hook
  *
- * Provides a rotating daily verse from curated Book of Mormon passages
+ * Provides a rotating daily inspirational verse from curated Book of Mormon passages.
+ * The same verse is shown to all users on the same day using a deterministic algorithm.
+ *
+ * Features:
+ * - 31 curated inspirational verses
+ * - Deterministic daily rotation (same verse for everyone)
+ * - Local caching for performance
+ * - Navigate directly to verse in reader
+ *
+ * @module useDailyVerse
+ *
+ * @example
+ * ```typescript
+ * const { verse, loading, refresh, navigateToVerse } = useDailyVerse();
+ *
+ * // Display daily verse
+ * <Text>{verse.text}</Text>
+ * <Text>{verse.reference}</Text>
+ *
+ * // Navigate to verse
+ * const { editionId, book, chapter } = navigateToVerse();
+ * navigation.navigate('Reader', { editionId, book, chapter });
+ *
+ * // Manually refresh (useful for testing)
+ * <Button onPress={refresh}>Refresh</Button>
+ * ```
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { logger } from '../utils/logger';
 
@@ -104,7 +129,7 @@ const CURATED_VERSES: Omit<DailyVerse, 'reference'>[] = [
     book: 'Mosiah',
     chapter: 18,
     verse: 8,
-    text: 'And now, as ye are desirous to come into the fold of God, and to be called his people, and are willing to bear one another\'s burdens, that they may be light.',
+    text: "And now, as ye are desirous to come into the fold of God, and to be called his people, and are willing to bear one another's burdens, that they may be light.",
     editionId: 'coc-bom-1908',
   },
   {
@@ -279,6 +304,31 @@ interface UseDailyVerseResult {
   navigateToVerse: () => { editionId: string; book: string; chapter: number };
 }
 
+/**
+ * React hook providing daily verse functionality.
+ *
+ * @returns Object with verse data and control methods
+ * @returns {DailyVerse} verse - Today's verse (or cached verse while loading)
+ * @returns {boolean} loading - Loading state
+ * @returns {Function} refresh - Manually refresh the verse
+ * @returns {Function} navigateToVerse - Get navigation params for the verse
+ *
+ * @example
+ * ```typescript
+ * function HomeScreen() {
+ *   const { verse, loading } = useDailyVerse();
+ *
+ *   if (loading) return <ActivityIndicator />;
+ *
+ *   return (
+ *     <View>
+ *       <Text style={styles.verse}>{verse.text}</Text>
+ *       <Text style={styles.reference}>{verse.reference}</Text>
+ *     </View>
+ *   );
+ * }
+ * ```
+ */
 export function useDailyVerse(): UseDailyVerseResult {
   const [verse, setVerse] = useState<DailyVerse | null>(null);
   const [loading, setLoading] = useState(true);

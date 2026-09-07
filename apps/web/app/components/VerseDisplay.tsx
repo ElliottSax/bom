@@ -5,6 +5,7 @@ import { BookmarkIcon, NoteIcon, ExternalLinkIcon } from './Icons';
 import { HIGHLIGHT_COLORS } from '../lib/types';
 import { fadeInUp, transitionFast, tapPress } from '../lib/motion';
 import { type CrossReference, formatCrossReference } from '../hooks/useCrossReferences';
+import { ShareVerseButton } from './ShareButton';
 
 interface VerseDisplayProps {
   verse: Verse;
@@ -17,6 +18,8 @@ interface VerseDisplayProps {
   fontFamily: string;
   showVerseNumbers: boolean;
   crossReferences?: CrossReference[];
+  bookName?: string;
+  chapter?: number;
   onVerseClick: () => void;
   onToggleBookmark: () => void;
   onOpenNoteEditor: () => void;
@@ -34,11 +37,15 @@ const VerseDisplayComponent: React.FC<VerseDisplayProps> = ({
   fontFamily,
   showVerseNumbers,
   crossReferences,
+  bookName,
+  chapter,
   onVerseClick,
   onToggleBookmark,
   onOpenNoteEditor,
   onSetHighlightColor,
 }) => {
+  const reference =
+    bookName && chapter ? `${bookName} ${chapter}:${verse.num}` : `Verse ${verse.num}`;
   return (
     <div>
       <div
@@ -115,6 +122,13 @@ const VerseDisplayComponent: React.FC<VerseDisplayProps> = ({
             >
               <NoteIcon /> {note ? 'Edit' : 'Note'}
             </motion.button>
+
+            <ShareVerseButton
+              verse={verse.text}
+              reference={reference}
+              variant="secondary"
+              size="sm"
+            />
 
             <div className="flex items-center gap-1 ml-auto">
               <span className="text-xs text-[var(--color-text-tertiary)] mr-2">Highlight:</span>

@@ -5,7 +5,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { Platform, Alert } from 'react-native';
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as RNFS from 'react-native-fs';
 import Share from 'react-native-share';
@@ -30,13 +30,13 @@ export interface BackupData {
   version: number;
   exportedAt: string;
   data: {
-    bookmarks: any[];
-    highlights: any[];
-    notes: any[];
-    readingProgress: any;
-    studyPlan: any;
-    settings: any;
-    lastRead: any;
+    bookmarks: Record<string, unknown>[];
+    highlights: Record<string, unknown>[];
+    notes: Record<string, unknown>[];
+    readingProgress: Record<string, unknown>;
+    studyPlan: Record<string, unknown> | null;
+    settings: Record<string, unknown>;
+    lastRead: Record<string, unknown> | null;
     recentSearches: string[];
   };
 }
@@ -139,9 +139,9 @@ export function useDataBackup() {
 
       setExporting(false);
       return true;
-    } catch (err: any) {
+    } catch (err) {
       // User cancelled share is not an error
-      if (err?.message?.includes('User did not share')) {
+      if (err instanceof Error && err.message?.includes('User did not share')) {
         setExporting(false);
         return true;
       }
@@ -223,9 +223,7 @@ export function useDataBackup() {
     await AsyncStorage.setItem(STORAGE_KEYS.highlights, JSON.stringify(mergedHighlights));
 
     // Notes - merge by verseId
-    const existingNotes = JSON.parse(
-      (await AsyncStorage.getItem(STORAGE_KEYS.notes)) || '[]'
-    );
+    const existingNotes = JSON.parse((await AsyncStorage.getItem(STORAGE_KEYS.notes)) || '[]');
     const mergedNotes = mergeByKey(existingNotes, data.notes, 'verseId');
     await AsyncStorage.setItem(STORAGE_KEYS.notes, JSON.stringify(mergedNotes));
 
@@ -255,7 +253,9 @@ export function useDataBackup() {
       const existingSearches = JSON.parse(
         (await AsyncStorage.getItem(STORAGE_KEYS.recentSearches)) || '[]'
       );
-      const mergedSearches = Array.from(new Set([...existingSearches, ...data.recentSearches])).slice(0, 20);
+      const mergedSearches = Array.from(
+        new Set([...existingSearches, ...data.recentSearches])
+      ).slice(0, 20);
       await AsyncStorage.setItem(STORAGE_KEYS.recentSearches, JSON.stringify(mergedSearches));
     }
   };

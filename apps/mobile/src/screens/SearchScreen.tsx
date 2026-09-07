@@ -18,6 +18,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSearch, highlightSearchTerm, SearchResult } from '../hooks/useSearch';
+import type { ThemeColors } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 import { logger } from '../utils/logger';
 
@@ -38,7 +39,8 @@ export function SearchScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEdition, setSelectedEdition] = useState('all');
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const { results, loading, error, search, clearResults, hasSearched, totalResults } = useSearch(100);
+  const { results, loading, error, search, clearResults, hasSearched, totalResults } =
+    useSearch(100);
 
   // Load recent searches on mount
   useEffect(() => {
@@ -61,7 +63,10 @@ export function SearchScreen() {
       const trimmed = query.trim().toLowerCase();
       if (trimmed.length < 2) return;
 
-      const updated = [trimmed, ...recentSearches.filter(s => s !== trimmed)].slice(0, MAX_RECENT_SEARCHES);
+      const updated = [trimmed, ...recentSearches.filter((s) => s !== trimmed)].slice(
+        0,
+        MAX_RECENT_SEARCHES
+      );
       setRecentSearches(updated);
       await AsyncStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
     } catch (error) {
@@ -130,7 +135,12 @@ export function SearchScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Search Header */}
-      <View style={[styles.searchHeader, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+      <View
+        style={[
+          styles.searchHeader,
+          { backgroundColor: colors.surface, borderBottomColor: colors.border },
+        ]}
+      >
         <View style={[styles.searchInputContainer, { backgroundColor: colors.background }]}>
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
@@ -165,7 +175,10 @@ export function SearchScreen() {
               style={[
                 styles.editionChip,
                 { backgroundColor: colors.background, borderColor: colors.border },
-                selectedEdition === edition.id && { backgroundColor: colors.primary, borderColor: colors.primary },
+                selectedEdition === edition.id && {
+                  backgroundColor: colors.primary,
+                  borderColor: colors.primary,
+                },
               ]}
               onPress={() => handleEditionChange(edition.id)}
             >
@@ -195,14 +208,18 @@ export function SearchScreen() {
         {error && (
           <View style={styles.errorContainer}>
             <Text style={[styles.errorText, { color: colors.error }]}>Search failed</Text>
-            <Text style={[styles.errorDetail, { color: colors.textSecondary }]}>{error.message}</Text>
+            <Text style={[styles.errorDetail, { color: colors.textSecondary }]}>
+              {error.message}
+            </Text>
           </View>
         )}
 
         {!loading && !error && hasSearched && results.length === 0 && (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyIcon}>📖</Text>
-            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No results found</Text>
+            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+              No results found
+            </Text>
             <Text style={[styles.emptyDetail, { color: colors.textSecondary }]}>
               Try different keywords or check your spelling
             </Text>
@@ -246,7 +263,9 @@ export function SearchScreen() {
             {recentSearches.length > 0 && (
               <View style={styles.suggestionsContainer}>
                 <View style={styles.recentHeader}>
-                  <Text style={[styles.suggestionsTitle, { color: colors.textSecondary }]}>Recent searches:</Text>
+                  <Text style={[styles.suggestionsTitle, { color: colors.textSecondary }]}>
+                    Recent searches:
+                  </Text>
                   <Pressable onPress={clearRecentSearches}>
                     <Text style={[styles.clearRecentText, { color: colors.error }]}>Clear</Text>
                   </Pressable>
@@ -255,7 +274,10 @@ export function SearchScreen() {
                   {recentSearches.map((term) => (
                     <Pressable
                       key={term}
-                      style={[styles.recentChip, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                      style={[
+                        styles.recentChip,
+                        { backgroundColor: colors.surface, borderColor: colors.border },
+                      ]}
                       onPress={() => handleSearch(term, true)}
                     >
                       <Text style={[styles.recentIcon, { color: colors.textSecondary }]}>🕐</Text>
@@ -295,7 +317,7 @@ interface SearchResultItemProps {
   result: SearchResult;
   searchTerm: string;
   onPress: () => void;
-  colors: any;
+  colors: ThemeColors;
 }
 
 function SearchResultItem({ result, searchTerm, onPress, colors }: SearchResultItemProps) {
@@ -311,7 +333,12 @@ function SearchResultItem({ result, searchTerm, onPress, colors }: SearchResultI
         <Text style={[styles.resultReference, { color: colors.primary }]}>
           {result.book} {result.chapter}:{result.verse}
         </Text>
-        <Text style={[styles.resultEdition, { backgroundColor: colors.background, color: colors.textSecondary }]}>
+        <Text
+          style={[
+            styles.resultEdition,
+            { backgroundColor: colors.background, color: colors.textSecondary },
+          ]}
+        >
           {result.editionId === 'coc-bom-1908' ? 'BoM' : 'D&C'}
         </Text>
       </View>
@@ -319,7 +346,11 @@ function SearchResultItem({ result, searchTerm, onPress, colors }: SearchResultI
         {highlightedParts.map((part, index) => (
           <Text
             key={index}
-            style={part.isHighlighted ? [styles.highlightedText, { backgroundColor: colors.warning + '40' }] : undefined}
+            style={
+              part.isHighlighted
+                ? [styles.highlightedText, { backgroundColor: colors.warning + '40' }]
+                : undefined
+            }
           >
             {part.text}
           </Text>

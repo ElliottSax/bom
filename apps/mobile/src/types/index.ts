@@ -11,9 +11,11 @@ export type ApolloClientType = ApolloClient<NormalizedCacheObject>;
 export interface ThemeColors {
   primary: string;
   primaryDark: string;
+  primaryLight: string;
   secondary: string;
   background: string;
   surface: string;
+  card: string;
   text: string;
   textSecondary: string;
   border: string;
@@ -69,12 +71,12 @@ export interface StudyTabData {
   searchQuery?: string;
   noteId?: string;
   planId?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface NavigationEntry {
   type: string;
-  data: any;
+  data: NavigationData;
   title: string;
   timestamp: string;
 }
@@ -89,7 +91,14 @@ export interface StudyPlanContent {
 
 // Offline operation types
 export interface OfflineOperationVariables {
-  [key: string]: string | number | boolean | null | undefined | OfflineOperationVariables | OfflineOperationVariables[];
+  [key: string]:
+    | string
+    | number
+    | boolean
+    | null
+    | undefined
+    | OfflineOperationVariables
+    | OfflineOperationVariables[];
 }
 
 // Highlight types

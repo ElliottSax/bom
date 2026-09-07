@@ -16,18 +16,12 @@ import {
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { useDataBackup, BackupStats } from '../hooks/useDataBackup';
+import type { ThemeColors } from '../types';
 
 export function BackupRestoreScreen() {
   const { colors } = useTheme();
-  const {
-    exporting,
-    importing,
-    error,
-    getBackupStats,
-    exportData,
-    importData,
-    clearAllData,
-  } = useDataBackup();
+  const { exporting, importing, error, getBackupStats, exportData, importData, clearAllData } =
+    useDataBackup();
 
   const [stats, setStats] = useState<BackupStats | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -112,40 +106,14 @@ export function BackupRestoreScreen() {
           <ActivityIndicator size="small" color={colors.primary} />
         ) : stats ? (
           <View style={styles.statsGrid}>
-            <StatItem
-              label="Bookmarks"
-              value={stats.bookmarks}
-              icon="🔖"
-              colors={colors}
-            />
-            <StatItem
-              label="Highlights"
-              value={stats.highlights}
-              icon="🖍️"
-              colors={colors}
-            />
-            <StatItem
-              label="Notes"
-              value={stats.notes}
-              icon="📝"
-              colors={colors}
-            />
-            <StatItem
-              label="Chapters Read"
-              value={stats.chaptersRead}
-              icon="✓"
-              colors={colors}
-            />
+            <StatItem label="Bookmarks" value={stats.bookmarks} icon="🔖" colors={colors} />
+            <StatItem label="Highlights" value={stats.highlights} icon="🖍️" colors={colors} />
+            <StatItem label="Notes" value={stats.notes} icon="📝" colors={colors} />
+            <StatItem label="Chapters Read" value={stats.chaptersRead} icon="✓" colors={colors} />
           </View>
         ) : null}
-        <Pressable
-          style={styles.refreshButton}
-          onPress={loadStats}
-          disabled={refreshing}
-        >
-          <Text style={[styles.refreshText, { color: colors.primary }]}>
-            Refresh Stats
-          </Text>
+        <Pressable style={styles.refreshButton} onPress={loadStats} disabled={refreshing}>
+          <Text style={[styles.refreshText, { color: colors.primary }]}>Refresh Stats</Text>
         </Pressable>
       </View>
 
@@ -236,29 +204,19 @@ export function BackupRestoreScreen() {
       {/* Info Section */}
       <View style={styles.infoSection}>
         <Text style={[styles.infoTitle, { color: colors.textSecondary }]}>
-          What's included in backup:
+          What&apos;s included in backup:
         </Text>
-        <Text style={[styles.infoItem, { color: colors.textSecondary }]}>
-          • Bookmarks
-        </Text>
-        <Text style={[styles.infoItem, { color: colors.textSecondary }]}>
-          • Verse highlights
-        </Text>
-        <Text style={[styles.infoItem, { color: colors.textSecondary }]}>
-          • Notes
-        </Text>
+        <Text style={[styles.infoItem, { color: colors.textSecondary }]}>• Bookmarks</Text>
+        <Text style={[styles.infoItem, { color: colors.textSecondary }]}>• Verse highlights</Text>
+        <Text style={[styles.infoItem, { color: colors.textSecondary }]}>• Notes</Text>
         <Text style={[styles.infoItem, { color: colors.textSecondary }]}>
           • Reading progress & streaks
         </Text>
         <Text style={[styles.infoItem, { color: colors.textSecondary }]}>
           • Study plan progress
         </Text>
-        <Text style={[styles.infoItem, { color: colors.textSecondary }]}>
-          • App settings
-        </Text>
-        <Text style={[styles.infoItem, { color: colors.textSecondary }]}>
-          • Recent searches
-        </Text>
+        <Text style={[styles.infoItem, { color: colors.textSecondary }]}>• App settings</Text>
+        <Text style={[styles.infoItem, { color: colors.textSecondary }]}>• Recent searches</Text>
       </View>
 
       <View style={styles.bottomSpacer} />
@@ -271,7 +229,7 @@ interface StatItemProps {
   label: string;
   value: number;
   icon: string;
-  colors: any;
+  colors: ThemeColors;
 }
 
 function StatItem({ label, value, icon, colors }: StatItemProps) {

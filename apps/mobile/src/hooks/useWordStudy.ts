@@ -75,7 +75,23 @@ export function useWordStudy() {
           fetchPolicy: 'network-only',
         });
 
-        const occurrences: WordOccurrence[] = data.searchVerses.map((verse: any) => ({
+        interface SearchVerseResult {
+          id: string;
+          verse: number;
+          text: string;
+          chapter: {
+            number: number;
+            book: {
+              name: string;
+              edition: {
+                id: string;
+                name: string;
+              };
+            };
+          };
+        }
+
+        const occurrences: WordOccurrence[] = data.searchVerses.map((verse: SearchVerseResult) => ({
           id: verse.id,
           verse: verse.verse,
           text: verse.text,
@@ -119,12 +135,59 @@ export function useWordStudy() {
   // Get common scripture words to filter out
   const getCommonWords = (): Set<string> => {
     return new Set([
-      'the', 'and', 'of', 'to', 'a', 'in', 'that', 'is', 'was', 'it',
-      'for', 'be', 'with', 'as', 'his', 'he', 'i', 'on', 'have', 'by',
-      'at', 'this', 'they', 'from', 'or', 'an', 'which', 'we', 'not',
-      'but', 'you', 'are', 'my', 'all', 'their', 'so', 'if', 'them',
-      'unto', 'shall', 'did', 'were', 'had', 'will', 'been', 'would',
-      'said', 'do', 'there', 'me', 'thee', 'thy', 'thou',
+      'the',
+      'and',
+      'of',
+      'to',
+      'a',
+      'in',
+      'that',
+      'is',
+      'was',
+      'it',
+      'for',
+      'be',
+      'with',
+      'as',
+      'his',
+      'he',
+      'i',
+      'on',
+      'have',
+      'by',
+      'at',
+      'this',
+      'they',
+      'from',
+      'or',
+      'an',
+      'which',
+      'we',
+      'not',
+      'but',
+      'you',
+      'are',
+      'my',
+      'all',
+      'their',
+      'so',
+      'if',
+      'them',
+      'unto',
+      'shall',
+      'did',
+      'were',
+      'had',
+      'will',
+      'been',
+      'would',
+      'said',
+      'do',
+      'there',
+      'me',
+      'thee',
+      'thy',
+      'thou',
     ]);
   };
 
@@ -142,30 +205,27 @@ export function useWordStudy() {
   }, []);
 
   // Get word frequency from a list of verses
-  const getWordFrequency = useCallback(
-    (texts: string[]): { word: string; count: number }[] => {
-      const frequency = new Map<string, number>();
-      const commonWords = getCommonWords();
+  const getWordFrequency = useCallback((texts: string[]): { word: string; count: number }[] => {
+    const frequency = new Map<string, number>();
+    const commonWords = getCommonWords();
 
-      texts.forEach((text) => {
-        const words = text
-          .toLowerCase()
-          .replace(/[^a-z\s]/g, '')
-          .split(/\s+/)
-          .filter((word) => word.length >= 3 && !commonWords.has(word));
+    texts.forEach((text) => {
+      const words = text
+        .toLowerCase()
+        .replace(/[^a-z\s]/g, '')
+        .split(/\s+/)
+        .filter((word) => word.length >= 3 && !commonWords.has(word));
 
-        words.forEach((word) => {
-          const current = frequency.get(word) || 0;
-          frequency.set(word, current + 1);
-        });
+      words.forEach((word) => {
+        const current = frequency.get(word) || 0;
+        frequency.set(word, current + 1);
       });
+    });
 
-      return Array.from(frequency.entries())
-        .map(([word, count]) => ({ word, count }))
-        .sort((a, b) => b.count - a.count);
-    },
-    []
-  );
+    return Array.from(frequency.entries())
+      .map(([word, count]) => ({ word, count }))
+      .sort((a, b) => b.count - a.count);
+  }, []);
 
   // Highlight word in text
   const highlightWord = useCallback(

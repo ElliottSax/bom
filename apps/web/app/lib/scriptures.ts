@@ -153,10 +153,10 @@ export const NEW_TESTAMENT: Book[] = [
   { id: 'revelation', name: 'Revelation', shortName: 'Rev.', chapters: 22, volumeId: 'nt' },
 ];
 
-// Doctrine & Covenants - Community of Christ Edition
+// Doctrine & Covenants - Community of Christ Edition (167 sections)
 // Sections 1-144: fetched from centerplace.org
-// Sections 145-165: embedded data (modern revelations)
-export const DOCTRINE_AND_COVENANTS: Book[] = Array.from({ length: 165 }, (_, i) => ({
+// Sections 145-167: embedded data (modern revelations)
+export const DOCTRINE_AND_COVENANTS: Book[] = Array.from({ length: 167 }, (_, i) => ({
   id: `section-${i + 1}`,
   name: `Section ${i + 1}`,
   shortName: `D&C ${i + 1}`,

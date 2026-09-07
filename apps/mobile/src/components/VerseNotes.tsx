@@ -15,7 +15,6 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  FlatList,
 } from 'react-native';
 import { useMutation, useQuery, gql } from '@apollo/client';
 import { logger } from '../utils/logger';
@@ -36,12 +35,7 @@ const GET_NOTES = gql`
 `;
 
 const ADD_NOTE = gql`
-  mutation AddNote(
-    $userId: String!
-    $verseId: String!
-    $content: String!
-    $tags: [String!]
-  ) {
+  mutation AddNote($userId: String!, $verseId: String!, $content: String!, $tags: [String!]) {
     addNote(userId: $userId, verseId: $verseId, content: $content, tags: $tags) {
       id
       content
@@ -80,6 +74,7 @@ interface VerseNotesProps {
 
 interface Note {
   id: string;
+  verseId: string;
   content: string;
   tags: string[];
   createdAt: string;
@@ -187,16 +182,10 @@ export function VerseNotes({
     }
   };
 
-  const verseNotes = notesData?.notes?.filter(
-    (note: Note) => note.verseId === verseId
-  ) || [];
+  const verseNotes = notesData?.notes?.filter((note: Note) => note.verseId === verseId) || [];
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -226,10 +215,7 @@ export function VerseNotes({
                     </View>
                   )}
                   <View style={styles.noteActions}>
-                    <Pressable
-                      onPress={() => setEditingNote(note)}
-                      style={styles.editButton}
-                    >
+                    <Pressable onPress={() => setEditingNote(note)} style={styles.editButton}>
                       <Text style={styles.editButtonText}>Edit</Text>
                     </Pressable>
                     <Pressable
@@ -249,9 +235,7 @@ export function VerseNotes({
 
           {/* Add/Edit Note Form */}
           <View style={styles.formSection}>
-            <Text style={styles.sectionTitle}>
-              {editingNote ? 'Edit Note' : 'Add New Note'}
-            </Text>
+            <Text style={styles.sectionTitle}>{editingNote ? 'Edit Note' : 'Add New Note'}</Text>
 
             <TextInput
               style={styles.noteInput}
@@ -306,15 +290,10 @@ export function VerseNotes({
               )}
               <Pressable
                 onPress={handleSaveNote}
-                style={[
-                  styles.saveButton,
-                  !noteContent.trim() && styles.saveButtonDisabled,
-                ]}
+                style={[styles.saveButton, !noteContent.trim() && styles.saveButtonDisabled]}
                 disabled={!noteContent.trim()}
               >
-                <Text style={styles.saveButtonText}>
-                  {editingNote ? 'Update' : 'Save'} Note
-                </Text>
+                <Text style={styles.saveButtonText}>{editingNote ? 'Update' : 'Save'} Note</Text>
               </Pressable>
             </View>
           </View>

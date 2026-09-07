@@ -1,9 +1,10 @@
 import React from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { type Volume, type Book, type Verse, type VolumeId } from '../lib/types';
-import { CloseIcon, FireIcon } from './Icons';
+import { CloseIcon } from './Icons';
 import { useUserData } from '../contexts/UserDataContext';
 import { fadeInUp, transitionFast } from '../lib/motion';
+import { StreakWidget } from './StreakWidget';
 
 const SIDEBAR_TABS = ['books', 'bookmarks', 'notes', 'progress'] as const;
 
@@ -188,18 +189,12 @@ const Sidebar: React.FC<SidebarProps> = ({
                   </p>
                 </div>
                 <div className="bg-[var(--color-bg-tertiary)] rounded-xl p-4 mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="text-gold-600 dark:text-gold-300">
-                      <FireIcon />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Streak</p>
-                      <p className="text-2xl font-bold">{readingProgress.currentStreak} days</p>
-                      <p className="text-xs text-[var(--color-text-tertiary)]">
-                        Best: {readingProgress.longestStreak}
-                      </p>
-                    </div>
-                  </div>
+                  <StreakWidget
+                    currentStreak={readingProgress.currentStreak}
+                    longestStreak={readingProgress.longestStreak}
+                    variant="detailed"
+                    showShare={true}
+                  />
                 </div>
               </div>
             )}
