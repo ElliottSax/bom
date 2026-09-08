@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { modalOverlay, modalContent, tapPress } from '../../lib/motion';
 
@@ -7,6 +7,8 @@ interface CoCResourcesModalProps {
 }
 
 export function CoCResourcesModal({ onClose }: CoCResourcesModalProps) {
+  const [showScan, setShowScan] = useState(false);
+
   return (
     <motion.div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
@@ -77,6 +79,40 @@ export function CoCResourcesModal({ onClose }: CoCResourcesModalProps) {
             </div>
           </section>
 
+          {/* Downloads */}
+          <section>
+            <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-3">
+              Download for Offline Reading
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <a
+                href="/api/pdf?volume=bom"
+                className="block p-4 bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-border)] rounded-lg transition-colors border border-[var(--color-border)]"
+              >
+                <h4 className="font-semibold text-[var(--color-text-primary)] mb-1">
+                  Book of Mormon (PDF)
+                </h4>
+                <p className="text-sm text-[var(--color-text-secondary)]">
+                  1908 Authorized (RLDS) Edition -- generated from the text in this app
+                </p>
+              </a>
+              <a
+                href="/api/pdf?volume=dc"
+                className="block p-4 bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-border)] rounded-lg transition-colors border border-[var(--color-border)]"
+              >
+                <h4 className="font-semibold text-[var(--color-text-primary)] mb-1">
+                  Doctrine and Covenants (PDF)
+                </h4>
+                <p className="text-sm text-[var(--color-text-secondary)]">
+                  Community of Christ Edition, all 167 sections
+                </p>
+              </a>
+            </div>
+            <p className="text-xs text-[var(--color-text-tertiary)] mt-2">
+              Large PDF -- generation can take a little while on the first request.
+            </p>
+          </section>
+
           {/* Historical RLDS Materials */}
           <section>
             <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-3">
@@ -98,6 +134,36 @@ export function CoCResourcesModal({ onClose }: CoCResourcesModalProps) {
                 title="1874 RLDS Book of Mormon Edition"
                 description="Historical RLDS edition showing textual variations and RLDS perspective from this era"
               />
+              <div className="p-4 bg-[var(--color-bg-tertiary)] rounded-lg border border-[var(--color-border)]">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h4 className="font-semibold text-[var(--color-text-primary)]">
+                      Read the Physical 1874 Scan
+                    </h4>
+                    <p className="text-sm text-[var(--color-text-secondary)]">
+                      Page through the actual scanned book, hosted by the Internet Archive
+                    </p>
+                  </div>
+                  <motion.button
+                    onClick={() => setShowScan((s) => !s)}
+                    whileTap={tapPress}
+                    className="shrink-0 px-4 py-2 bg-[var(--color-accent)] text-white rounded-lg text-sm font-medium"
+                  >
+                    {showScan ? 'Hide' : 'Open'}
+                  </motion.button>
+                </div>
+                {showScan && (
+                  <div className="mt-3 rounded-lg overflow-hidden border border-[var(--color-border)]">
+                    <iframe
+                      src="https://archive.org/embed/TheBookOfMormon1874"
+                      title="1874 RLDS Book of Mormon Edition -- scanned pages"
+                      className="w-full"
+                      style={{ height: '480px', border: 'none' }}
+                      allowFullScreen
+                    />
+                  </div>
+                )}
+              </div>
               <ResourceLink
                 href="https://archive.org/details/josephsmithsnewt00smit"
                 title="Inspired Version Bible (1867 Parallel Edition)"
