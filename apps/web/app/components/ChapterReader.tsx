@@ -30,6 +30,8 @@ interface ChapterReaderProps {
   fontFamily: string;
   showVerseNumbers: boolean;
   isChapterRead: boolean;
+  isFirstChapter: boolean;
+  isLastChapter: boolean;
   onBack: () => void;
   onPreviousChapter: () => void;
   onNextChapter: () => void;
@@ -54,6 +56,8 @@ export const ChapterReader: React.FC<ChapterReaderProps> = ({
   fontFamily,
   showVerseNumbers,
   isChapterRead,
+  isFirstChapter,
+  isLastChapter,
   onBack,
   onPreviousChapter,
   onNextChapter,
@@ -66,9 +70,6 @@ export const ChapterReader: React.FC<ChapterReaderProps> = ({
   openNoteEditor,
 }) => {
   const [selectedVerse, setSelectedVerse] = useState<number | null>(null);
-
-  const isFirstChapter = selectedChapter === 1;
-  const isLastChapter = selectedChapter === currentBook.chapters;
 
   // Cross-references only exist for the Book of Mormon side of the dataset.
   const { getChapterCrossReferences } = useCrossReferences();

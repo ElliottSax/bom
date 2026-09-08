@@ -246,6 +246,54 @@ export const COC_RESOURCES = [
   },
 ];
 
+// Flat, in-order (book, chapter) list for a volume, used to split a study
+// plan's total chapters evenly across its days. "bible-365" spans both
+// testaments, since it's described as a combined Inspired Version read-through.
+function getFlatChaptersForPlan(volumeId: VolumeId): { book: Book; chapter: number }[] {
+  const books =
+    volumeId === 'ot' ? [...OLD_TESTAMENT, ...NEW_TESTAMENT] : getBooksForVolume(volumeId);
+  const flat: { book: Book; chapter: number }[] = [];
+  for (const book of books) {
+    for (let chapter = 1; chapter <= book.chapters; chapter++) {
+      flat.push({ book, chapter });
+    }
+  }
+  return flat;
+}
+
+export interface ReadingAssignment {
+  entries: { book: Book; chapter: number }[];
+  label: string;
+}
+
+// What to actually read on a given day of a plan -- evenly divides the
+// volume's chapters across the plan's day count so every plan has a real,
+// bounded daily assignment instead of just an abstract day counter.
+export function getReadingPlanDay(planId: string, day: number): ReadingAssignment | null {
+  const plan = STUDY_PLANS.find((p) => p.id === planId);
+  if (!plan) return null;
+
+  const flat = getFlatChaptersForPlan(plan.volumeId);
+  const total = flat.length;
+  const clampedDay = Math.min(Math.max(day, 1), plan.days);
+  const startIdx = Math.floor(((clampedDay - 1) * total) / plan.days);
+  const endIdx = Math.max(startIdx + 1, Math.floor((clampedDay * total) / plan.days));
+  const entries = flat.slice(startIdx, endIdx);
+
+  if (entries.length === 0) return { entries: [], label: 'No reading assigned' };
+
+  const first = entries[0];
+  const last = entries[entries.length - 1];
+  const label =
+    first.book.id === last.book.id
+      ? first.chapter === last.chapter
+        ? `${first.book.name} ${first.chapter}`
+        : `${first.book.name} ${first.chapter}-${last.chapter}`
+      : `${first.book.name} ${first.chapter} - ${last.book.name} ${last.chapter}`;
+
+  return { entries, label };
+}
+
 // Study Plans - adjusted for different volumes
 export const STUDY_PLANS = [
   {

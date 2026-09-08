@@ -104,6 +104,7 @@ function HomeContent() {
     notes,
     readingProgress,
     studyPlan,
+    setStudyPlan,
     fileInputRef,
     markChapterRead,
     isChapterRead,
@@ -425,10 +426,16 @@ function HomeContent() {
     [setVolumeId]
   );
 
-  const handleBookSelect = useCallback((bookId: string) => {
-    setSelectedBook(bookId);
-    setSelectedChapter(null);
-  }, []);
+  const handleBookSelect = useCallback(
+    (bookId: string) => {
+      setSelectedBook(bookId);
+      // D&C sections (and any other single-chapter "book") have nothing to
+      // pick on a chapter grid, so jump straight to the reader.
+      const book = books.find((b) => b.id === bookId);
+      setSelectedChapter(book && book.chapters <= 1 ? 1 : null);
+    },
+    [books]
+  );
 
   const navigateToReference = useCallback(
     (vid: VolumeId, bookName: string, chapter: number) => {
@@ -446,16 +453,44 @@ function HomeContent() {
   );
 
   const handlePreviousChapter = useCallback(() => {
-    if (selectedChapter && selectedChapter > 1) {
+    if (!currentBook || !selectedChapter) return;
+    if (selectedChapter > 1) {
       setSelectedChapter(selectedChapter - 1);
+      return;
     }
-  }, [selectedChapter]);
+    // At chapter 1 of this book -- fall back to the previous book's last
+    // chapter instead of dead-ending, since most D&C "books" are one section.
+    const idx = books.findIndex((b) => b.id === selectedBook);
+    if (idx > 0) {
+      const prevBook = books[idx - 1];
+      setSelectedBook(prevBook.id);
+      setSelectedChapter(prevBook.chapters);
+    }
+  }, [selectedChapter, currentBook, books, selectedBook]);
 
   const handleNextChapter = useCallback(() => {
-    if (selectedChapter && currentBook && selectedChapter < currentBook.chapters) {
+    if (!currentBook || !selectedChapter) return;
+    if (selectedChapter < currentBook.chapters) {
       setSelectedChapter(selectedChapter + 1);
+      return;
     }
-  }, [selectedChapter, currentBook]);
+    const idx = books.findIndex((b) => b.id === selectedBook);
+    if (idx >= 0 && idx < books.length - 1) {
+      const nextBook = books[idx + 1];
+      setSelectedBook(nextBook.id);
+      setSelectedChapter(1);
+    }
+  }, [selectedChapter, currentBook, books, selectedBook]);
+
+  const currentBookIndex = useMemo(
+    () => books.findIndex((b) => b.id === selectedBook),
+    [books, selectedBook]
+  );
+  const isFirstOverall = currentBookIndex <= 0 && selectedChapter === 1;
+  const isLastOverall =
+    currentBookIndex === books.length - 1 &&
+    !!currentBook &&
+    selectedChapter === currentBook.chapters;
 
   const clearSearch = useCallback(() => {
     setSearchQuery('');
@@ -563,12 +598,12 @@ function HomeContent() {
               studyPlan={studyPlan}
               onStartPlan={startStudyPlan}
               onCompleteDayComplete={completeStudyPlanDay}
-              onEndPlan={() => {
-                if (typeof window !== 'undefined') {
-                  localStorage.removeItem('coc-studyPlan');
-                  // Small delay to ensure localStorage is updated
-                  setTimeout(() => window.location.reload(), 100);
-                }
+              onEndPlan={() => setStudyPlan(null)}
+              onGoToReading={(readingVolumeId, bookId, chapter) => {
+                setVolumeId(readingVolumeId as VolumeId);
+                setSelectedBook(bookId);
+                setSelectedChapter(chapter);
+                setShowStudyPlanModal(false);
               }}
             />
           )}
@@ -717,7 +752,7 @@ function HomeContent() {
             <ChapterReader
               currentBook={currentBook}
               currentVolume={currentVolume}
-              selectedChapter={selectedChapter}
+              selectedChapter={selectedChapter || 0}
               verses={verses}
               loading={isLoading}
               error={versesError}
@@ -725,11 +760,13 @@ function HomeContent() {
               lineHeight={lineHeight}
               fontFamily={fontFamily}
               showVerseNumbers={showVerseNumbers}
-              isChapterRead={isChapterRead(currentBook?.id || '', selectedChapter)}
+              isChapterRead={isChapterRead(currentBook?.id || '', selectedChapter || 0)}
+              isFirstChapter={isFirstOverall}
+              isLastChapter={isLastOverall}
               onBack={() => setSelectedChapter(null)}
               onPreviousChapter={handlePreviousChapter}
               onNextChapter={handleNextChapter}
-              onMarkChapterRead={() => markChapterRead(currentBook?.id || '', selectedChapter)}
+              onMarkChapterRead={() => markChapterRead(currentBook?.id || '', selectedChapter || 0)}
               isBookmarked={(verseNum) =>
                 isBookmarked(verseNum, currentBook?.name, selectedChapter)
               }

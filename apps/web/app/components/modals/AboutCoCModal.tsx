@@ -221,7 +221,7 @@ export function AboutCoCModal({ onClose }: AboutCoCModalProps) {
               </p>
               <ul className="list-disc list-inside space-y-1 text-[var(--color-text-secondary)] ml-4 mb-3">
                 <li>
-                  <strong>Brigham Young</strong> - Led majority to Utah (became LDS Church)
+                  <strong>Brigham Young</strong> - Led a group to Utah (became LDS Church)
                 </li>
                 <li>
                   <strong>Sidney Rigdon</strong> - Claimed First Presidency succession
@@ -260,11 +260,10 @@ export function AboutCoCModal({ onClose }: AboutCoCModalProps) {
                   Kirtland Temple
                 </h4>
                 <ul className="text-sm text-[var(--color-text-secondary)] space-y-1">
-                  <li>• Owned by CoC since 1880</li>
-                  <li>• Historic site tours</li>
-                  <li>• Community worship services</li>
-                  <li>• Educational programs</li>
-                  <li>• Open to all visitors</li>
+                  <li>• Owned by CoC from 1880 to 2024</li>
+                  <li>• Sold to the LDS Church in 2024</li>
+                  <li>• Proceeds support CoC&apos;s mission and historic preservation</li>
+                  <li>• Still open for tours under LDS Church stewardship</li>
                 </ul>
               </div>
               <div className="bg-[var(--color-bg-tertiary)] p-4 rounded-lg border border-[var(--color-border)]">

@@ -6,7 +6,6 @@ import { fadeInUp, staggerChildren, hoverLift, tapPress, transitionFast } from '
 import { useDailyVerse } from '../hooks/useDailyVerse';
 import { ShareButton } from './ShareButton';
 import { createProgressShareData, createVerseShareData } from '../hooks/useShare';
-import { ReferralWidget } from './ReferralWidget';
 import { CommunityStatsWidget } from './SocialProof';
 
 interface VolumeHomeScreenProps {
@@ -178,11 +177,6 @@ const VolumeHomeScreenComponent: React.FC<VolumeHomeScreenProps> = ({
         {/* Community Stats */}
         <div className="mt-8 max-w-lg mx-auto">
           <CommunityStatsWidget />
-        </div>
-
-        {/* Referral Widget */}
-        <div className="mt-8 max-w-lg mx-auto">
-          <ReferralWidget />
         </div>
       </div>
     </motion.div>

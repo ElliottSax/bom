@@ -105,10 +105,10 @@ const IV_NT_BOOKS = [
   { id: 'revelation', name: 'Revelation', slug: 'revelation', chapters: 22 },
 ];
 
-// D&C - Community of Christ (165 sections)
+// D&C - Community of Christ (167 sections)
 // Sections 1-144: fetched from centerplace.org (3-digit zero-padded format)
-// Sections 145-165: embedded data (modern revelations not on centerplace.org)
-const COC_DC_SECTIONS = Array.from({ length: 165 }, (_, i) => ({
+// Sections 145-167: embedded data (modern revelations not on centerplace.org)
+const COC_DC_SECTIONS = Array.from({ length: 167 }, (_, i) => ({
   id: `section-${i + 1}`,
   name: `Section ${i + 1}`,
   slug: `section${String(i + 1).padStart(3, '0')}`,
@@ -134,11 +134,16 @@ interface BookData {
 
 function getBooksForVolume(volumeId: VolumeId) {
   switch (volumeId) {
-    case 'bom': return RLDS_BOM_BOOKS;
-    case 'ot': return IV_OT_BOOKS;
-    case 'nt': return IV_NT_BOOKS;
-    case 'dc': return COC_DC_SECTIONS;
-    default: return RLDS_BOM_BOOKS;
+    case 'bom':
+      return RLDS_BOM_BOOKS;
+    case 'ot':
+      return IV_OT_BOOKS;
+    case 'nt':
+      return IV_NT_BOOKS;
+    case 'dc':
+      return COC_DC_SECTIONS;
+    default:
+      return RLDS_BOM_BOOKS;
   }
 }
 
@@ -166,7 +171,9 @@ function parseScriptureHTML(html: string, bookName: string, volumeId: VolumeId):
   if (volumeId === 'dc') {
     const verses: Verse[] = [];
     // Match verse patterns like "1a And..." or "1 And..."
-    const verseMatches = text.matchAll(/(?:^|\s)(\d+[a-z]?)\s+([A-Z][^]*?)(?=\s+\d+[a-z]?\s+[A-Z]|$)/gi);
+    const verseMatches = text.matchAll(
+      /(?:^|\s)(\d+[a-z]?)\s+([A-Z][^]*?)(?=\s+\d+[a-z]?\s+[A-Z]|$)/gi
+    );
     let verseNum = 0;
 
     for (const verseMatch of verseMatches) {
@@ -183,7 +190,7 @@ function parseScriptureHTML(html: string, bookName: string, volumeId: VolumeId):
 
     // Fallback: split by sentence patterns if no verses found
     if (verses.length === 0) {
-      const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.length > 20);
+      const sentences = text.split(/(?<=[.!?])\s+/).filter((s) => s.length > 20);
       sentences.slice(0, 50).forEach((sentence, i) => {
         verses.push({
           num: i + 1,
@@ -242,7 +249,11 @@ function parseScriptureHTML(html: string, bookName: string, volumeId: VolumeId):
   return { chapters };
 }
 
-async function fetchBookData(volumeId: VolumeId, bookSlug: string, bookName: string): Promise<BookData> {
+async function fetchBookData(
+  volumeId: VolumeId,
+  bookSlug: string,
+  bookName: string
+): Promise<BookData> {
   const cacheKey = `${volumeId}:${bookSlug}`;
   const cached = bookCache.get(cacheKey);
 
@@ -259,14 +270,16 @@ async function fetchBookData(volumeId: VolumeId, bookSlug: string, bookName: str
         const modernSection = getModernSection(sectionNum);
         if (modernSection) {
           const data = {
-            chapters: [{
-              chapter: 1,
-              verses: modernSection.verses.map(v => ({
-                num: v.num,
-                text: v.text,
-                reference: `D&C ${sectionNum}:${v.num}`,
-              })),
-            }],
+            chapters: [
+              {
+                chapter: 1,
+                verses: modernSection.verses.map((v) => ({
+                  num: v.num,
+                  text: v.text,
+                  reference: `D&C ${sectionNum}:${v.num}`,
+                })),
+              },
+            ],
           };
           bookCache.set(cacheKey, { data, time: Date.now() });
           return data;
@@ -324,9 +337,10 @@ export async function GET(request: NextRequest) {
 
     // Find the book
     const bookInfo = books.find(
-      (b) => b.id === bookParam.toLowerCase() ||
-             b.name.toLowerCase() === bookParam.toLowerCase() ||
-             b.slug === bookParam.toLowerCase()
+      (b) =>
+        b.id === bookParam.toLowerCase() ||
+        b.name.toLowerCase() === bookParam.toLowerCase() ||
+        b.slug === bookParam.toLowerCase()
     );
 
     if (!bookInfo) {
@@ -358,11 +372,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         book: bookInfo.name,
         chapter: chapterNum,
-        verses: [{
-          num: 1,
-          text: `[Scripture text for ${bookInfo.name} Chapter ${chapterNum} - Loading from source...]`,
-          reference: `${bookInfo.name} ${chapterNum}:1`,
-        }],
+        verses: [
+          {
+            num: 1,
+            text: `[Scripture text for ${bookInfo.name} Chapter ${chapterNum} - Loading from source...]`,
+            reference: `${bookInfo.name} ${chapterNum}:1`,
+          },
+        ],
         volume: volumeId,
         note: 'Some texts may not be available in the online source.',
       });
@@ -376,10 +392,13 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     log.error('Error fetching scripture data', error);
-    return NextResponse.json({
-      error: 'Failed to fetch scripture data',
-      details: error instanceof Error ? error.message : 'Unknown error',
-      volume: volumeId,
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: 'Failed to fetch scripture data',
+        details: error instanceof Error ? error.message : 'Unknown error',
+        volume: volumeId,
+      },
+      { status: 500 }
+    );
   }
 }

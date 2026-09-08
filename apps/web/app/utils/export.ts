@@ -1,4 +1,4 @@
-import { type Note, type Highlight, type Bookmark } from '../contexts/UserDataContext';
+import { type Note, type Highlight, type Bookmark } from '../lib/types';
 
 /**
  * Export notes as Markdown format
@@ -20,8 +20,9 @@ export function exportNotesAsMarkdown(notes: Note[]): string {
   markdown += '---\n\n';
 
   sortedNotes.forEach((note, index) => {
-    markdown += `## ${index + 1}. ${note.verseId}\n\n`;
-    markdown += `**Scripture Reference:** ${note.verseId}\n\n`;
+    const reference = `${note.book} ${note.chapter}:${note.verse}`;
+    markdown += `## ${index + 1}. ${reference}\n\n`;
+    markdown += `**Scripture Reference:** ${reference}\n\n`;
     markdown += `**Created:** ${new Date(note.createdAt).toLocaleDateString()}\n\n`;
     if (note.updatedAt) {
       markdown += `**Updated:** ${new Date(note.updatedAt).toLocaleDateString()}\n\n`;
@@ -55,7 +56,7 @@ export function exportAllStudyData(
     });
 
     sortedNotes.forEach((note, index) => {
-      markdown += `### ${index + 1}. ${note.verseId}\n\n`;
+      markdown += `### ${index + 1}. ${note.book} ${note.chapter}:${note.verse}\n\n`;
       markdown += `> ${note.content}\n\n`;
       markdown += `*Created: ${new Date(note.createdAt).toLocaleDateString()}*\n\n`;
     });
@@ -78,7 +79,7 @@ export function exportAllStudyData(
     Object.entries(byColor).forEach(([color, items]) => {
       markdown += `### ${color.charAt(0).toUpperCase() + color.slice(1)} (${items.length})\n\n`;
       items.forEach((item) => {
-        markdown += `- ${item.verseId}\n`;
+        markdown += `- ${item.book} ${item.chapter}:${item.verse}\n`;
       });
       markdown += '\n';
     });
@@ -98,9 +99,9 @@ export function exportAllStudyData(
     });
 
     sortedBookmarks.forEach((bookmark, index) => {
-      markdown += `${index + 1}. **${bookmark.verseId}**`;
-      if (bookmark.note) {
-        markdown += ` - ${bookmark.note}`;
+      markdown += `${index + 1}. **${bookmark.reference}**`;
+      if (bookmark.text) {
+        markdown += ` - ${bookmark.text}`;
       }
       markdown += `\n   *${new Date(bookmark.createdAt).toLocaleDateString()}*\n\n`;
     });

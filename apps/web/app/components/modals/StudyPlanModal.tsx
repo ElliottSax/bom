@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CalendarIcon, CheckIcon, CloseIcon } from '../Icons';
 import { StudyPlanProgress } from '../../lib/types';
-import { STUDY_PLANS, VOLUMES } from '../../lib/scriptures';
+import { STUDY_PLANS, VOLUMES, getReadingPlanDay } from '../../lib/scriptures';
 import { modalOverlay, modalContent, tapPress } from '../../lib/motion';
 
 interface StudyPlanModalProps {
@@ -12,6 +12,7 @@ interface StudyPlanModalProps {
   onStartPlan: (planId: string) => void;
   onCompleteDayComplete: () => void;
   onEndPlan: () => void;
+  onGoToReading: (volumeId: string, bookId: string, chapter: number) => void;
 }
 
 export const StudyPlanModal: React.FC<StudyPlanModalProps> = ({
@@ -21,6 +22,7 @@ export const StudyPlanModal: React.FC<StudyPlanModalProps> = ({
   onStartPlan,
   onCompleteDayComplete,
   onEndPlan,
+  onGoToReading,
 }) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -36,6 +38,8 @@ export const StudyPlanModal: React.FC<StudyPlanModalProps> = ({
   }, [show, onClose]);
 
   const currentPlan = studyPlan ? STUDY_PLANS.find((p) => p.id === studyPlan.planId) : null;
+  const todaysReading =
+    studyPlan && currentPlan ? getReadingPlanDay(currentPlan.id, studyPlan.currentDay) : null;
 
   return (
     <AnimatePresence>
@@ -87,12 +91,38 @@ export const StudyPlanModal: React.FC<StudyPlanModalProps> = ({
                       style={{ width: `${(studyPlan.currentDay / currentPlan.days) * 100}%` }}
                     />
                   </div>
+
+                  {todaysReading && todaysReading.entries.length > 0 && (
+                    <div className="bg-[var(--color-bg-primary)] rounded-lg p-3 mb-4 border border-[var(--color-border)]">
+                      <p className="text-xs text-[var(--color-text-tertiary)] mb-1">
+                        Today&apos;s reading
+                      </p>
+                      <p className="font-semibold text-[var(--color-text-primary)] mb-2">
+                        {todaysReading.label}
+                      </p>
+                      <button
+                        onClick={() =>
+                          onGoToReading(
+                            todaysReading.entries[0].book.volumeId,
+                            todaysReading.entries[0].book.id,
+                            todaysReading.entries[0].chapter
+                          )
+                        }
+                        className="w-full py-2 bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-border)] rounded-lg text-sm font-medium transition"
+                      >
+                        Start Reading
+                      </button>
+                    </div>
+                  )}
+
                   <div className="flex gap-2">
                     <button
                       onClick={onCompleteDayComplete}
-                      className="flex-1 py-2 bg-[var(--color-accent)] text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2"
+                      disabled={studyPlan.currentDay >= currentPlan.days}
+                      className="flex-1 py-2 bg-[var(--color-accent)] text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50"
                     >
-                      <CheckIcon /> Complete Day
+                      <CheckIcon />
+                      {studyPlan.currentDay >= currentPlan.days ? 'Plan Complete' : 'Complete Day'}
                     </button>
                     <button
                       onClick={onEndPlan}
@@ -106,6 +136,7 @@ export const StudyPlanModal: React.FC<StudyPlanModalProps> = ({
                 <div className="space-y-3">
                   {STUDY_PLANS.map((plan) => {
                     const planVolume = VOLUMES.find((v) => v.id === plan.volumeId);
+                    const day1 = getReadingPlanDay(plan.id, 1);
                     return (
                       <button
                         key={plan.id}
@@ -121,6 +152,12 @@ export const StudyPlanModal: React.FC<StudyPlanModalProps> = ({
                         <p className="text-sm text-[var(--color-text-secondary)] mt-1">
                           {plan.description}
                         </p>
+                        {day1 && day1.entries.length > 0 && (
+                          <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
+                            ~{day1.entries.length} chapter{day1.entries.length === 1 ? '' : 's'}/day
+                            &mdash; starts at {day1.label}
+                          </p>
+                        )}
                         <span
                           className="inline-block mt-2 px-2 py-0.5 rounded text-xs font-medium"
                           style={{
